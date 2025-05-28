@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "bits_lines_all")
+@Table(name = "bits_po_entry_header")
 public class BitsLinesAll {
     
     @Id

@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "bits_header_all")
+@Table(name = "bits_po_entry_header")
 public class BitsHeaderAll {
     
     @Id
@@ -15,6 +15,7 @@ public class BitsHeaderAll {
     
     @Column(name = "work_order")
     private String workOrder;
+    
     
     @Column(name = "plant_location")
     private String plantLocation;
