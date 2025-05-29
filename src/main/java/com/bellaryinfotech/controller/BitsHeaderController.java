@@ -1,6 +1,5 @@
 package com.bellaryinfotech.controller;
 
- 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import com.bellaryinfotech.service.BitsHeaderService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -31,6 +31,10 @@ public class BitsHeaderController {
     public static final String SEARCH_BY_PLANTLOCATION = "/searchBitsHeadersByPlantLocation/details";
     public static final String SEARCH_BY_DEPARTMENT = "/searchBitsHeadersByDepartment/details";
     public static final String SEARCH_BY_WORKLOCATION = "/searchBitsHeadersByWorkLocation/details";
+    
+    // New endpoints for work order dropdown
+    public static final String GET_WORKORDER_NUMBERS = "/getworkorder/number";
+    public static final String GET_WORKORDER_DETAILS = "/getworkorder/number/{workOrderNumber}";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsHeaderController.class);
 
@@ -114,5 +118,40 @@ public class BitsHeaderController {
         LOG.info("Searching bits headers by work location: {}", workLocation);
         List<BitsHeaderDto> headers = headerService.searchByWorkLocation(workLocation);
         return ResponseEntity.ok(headers);
+    }
+    
+    // New endpoint to get all work order numbers
+    @GetMapping(value = GET_WORKORDER_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllWorkOrderNumbers() {
+        LOG.info("Fetching all work order numbers");
+        try {
+            List<String> workOrders = headerService.getAllHeaders()
+                .stream()
+                .map(BitsHeaderDto::getWorkOrder)
+                .distinct()
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(workOrders);
+        } catch (Exception e) {
+            LOG.error("Error fetching work order numbers", e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // New endpoint to get details for a specific work order
+    @GetMapping(value = GET_WORKORDER_DETAILS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getWorkOrderDetails(@PathVariable String workOrderNumber) {
+        LOG.info("Fetching details for work order: {}", workOrderNumber);
+        try {
+            List<BitsHeaderDto> headers = headerService.searchByWorkOrder(workOrderNumber);
+            if (headers.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            // Return the first matching work order's details
+            BitsHeaderDto workOrderDetails = headers.get(0);
+            return ResponseEntity.ok(workOrderDetails);
+        } catch (Exception e) {
+            LOG.error("Error fetching work order details", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
