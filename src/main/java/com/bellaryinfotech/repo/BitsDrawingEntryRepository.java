@@ -1,0 +1,147 @@
+package com.bellaryinfotech.repo;
+
+import com.bellaryinfotech.model.BitsDrawingEntry;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEntry, String> {
+
+    /**
+     * Find all entries by drawing number
+     */
+    List<BitsDrawingEntry> findByDrawingNoOrderByCreationDateDesc(String drawingNo);
+
+    /**
+     * Find all entries by mark number
+     */
+    List<BitsDrawingEntry> findByMarkNoOrderByCreationDateDesc(String markNo);
+
+    /**
+     * Find all entries by drawing number and mark number
+     */
+    List<BitsDrawingEntry> findByDrawingNoAndMarkNoOrderByCreationDateDesc(String drawingNo, String markNo);
+
+    /**
+     * Find all entries by session code
+     */
+    List<BitsDrawingEntry> findBySessionCodeOrderByCreationDateDesc(String sessionCode);
+
+    /**
+     * Find all entries by tenant ID
+     */
+    Page<BitsDrawingEntry> findByTenantIdOrderByCreationDateDesc(String tenantId, Pageable pageable);
+
+    /**
+     * Find all entries created by a specific user
+     */
+    List<BitsDrawingEntry> findByCreatedByOrderByCreationDateDesc(String createdBy);
+
+    /**
+     * Find all entries created between dates
+     */
+    List<BitsDrawingEntry> findByCreationDateBetweenOrderByCreationDateDesc(
+            LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Find all entries with marked quantity greater than specified value
+     */
+    List<BitsDrawingEntry> findByMarkedQtyGreaterThanOrderByMarkedQtyDesc(BigDecimal markedQty);
+
+    /**
+     * Find all entries with total marked weight greater than specified value
+     */
+    List<BitsDrawingEntry> findByTotalMarkedWgtGreaterThanOrderByTotalMarkedWgtDesc(BigDecimal totalMarkedWgt);
+
+    /**
+     * Custom query to find entries by multiple criteria
+     */
+    @Query("SELECT bde FROM BitsDrawingEntry bde WHERE " +
+           "(:drawingNo IS NULL OR bde.drawingNo LIKE %:drawingNo%) AND " +
+           "(:markNo IS NULL OR bde.markNo LIKE %:markNo%) AND " +
+           "(:sessionCode IS NULL OR bde.sessionCode = :sessionCode) AND " +
+           "(:tenantId IS NULL OR bde.tenantId = :tenantId) " +
+           "ORDER BY bde.creationDate DESC")
+    Page<BitsDrawingEntry> findByMultipleCriteria(
+            @Param("drawingNo") String drawingNo,
+            @Param("markNo") String markNo,
+            @Param("sessionCode") String sessionCode,
+            @Param("tenantId") String tenantId,
+            Pageable pageable);
+
+    /**
+     * Get total count of entries by drawing number
+     */
+    @Query("SELECT COUNT(bde) FROM BitsDrawingEntry bde WHERE bde.drawingNo = :drawingNo")
+    Long countByDrawingNo(@Param("drawingNo") String drawingNo);
+
+    /**
+     * Get sum of marked quantities by drawing number
+     */
+    @Query("SELECT SUM(bde.markedQty) FROM BitsDrawingEntry bde WHERE bde.drawingNo = :drawingNo")
+    BigDecimal sumMarkedQtyByDrawingNo(@Param("drawingNo") String drawingNo);
+
+    /**
+     * Get sum of total marked weight by drawing number
+     */
+    @Query("SELECT SUM(bde.totalMarkedWgt) FROM BitsDrawingEntry bde WHERE bde.drawingNo = :drawingNo")
+    BigDecimal sumTotalMarkedWgtByDrawingNo(@Param("drawingNo") String drawingNo);
+
+    /**
+     * Find distinct drawing numbers
+     */
+    @Query("SELECT DISTINCT bde.drawingNo FROM BitsDrawingEntry bde WHERE bde.drawingNo IS NOT NULL ORDER BY bde.drawingNo")
+    List<String> findDistinctDrawingNumbers();
+
+    /**
+     * Find distinct mark numbers
+     */
+    @Query("SELECT DISTINCT bde.markNo FROM BitsDrawingEntry bde WHERE bde.markNo IS NOT NULL ORDER BY bde.markNo")
+    List<String> findDistinctMarkNumbers();
+
+    /**
+     * Find distinct session codes
+     */
+    @Query("SELECT DISTINCT bde.sessionCode FROM BitsDrawingEntry bde WHERE bde.sessionCode IS NOT NULL ORDER BY bde.sessionCode")
+    List<String> findDistinctSessionCodes();
+
+    /**
+     * Check if entry exists by drawing number and mark number
+     */
+    boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
+
+    /**
+     * Delete all entries by drawing number
+     */
+    void deleteByDrawingNo(String drawingNo);
+
+    /**
+     * Delete all entries by mark number
+     */
+    void deleteByMarkNo(String markNo);
+
+    /**
+     * Find entries with null or empty session code
+     */
+    @Query("SELECT bde FROM BitsDrawingEntry bde WHERE bde.sessionCode IS NULL OR bde.sessionCode = '' ORDER BY bde.creationDate DESC")
+    List<BitsDrawingEntry> findEntriesWithoutSessionCode();
+
+    /**
+     * Find latest entry by drawing number
+     */
+    Optional<BitsDrawingEntry> findTopByDrawingNoOrderByCreationDateDesc(String drawingNo);
+
+    /**
+     * Find latest entry by mark number
+     */
+    Optional<BitsDrawingEntry> findTopByMarkNoOrderByCreationDateDesc(String markNo);
+}
