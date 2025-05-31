@@ -26,11 +26,6 @@ import java.util.stream.Collectors;
 public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
 
     private static final Logger logger = LoggerFactory.getLogger(BitsDrawingEntryServiceImpl.class);
-    
-    // Counter for generating sequential line IDs
-    private static final AtomicLong lineIdCounter = new AtomicLong(1);
-    private static long currentDrawingGroup = 1;
-    private static final Object lockObject = new Object();
 
     @Autowired
     private BitsDrawingEntryDao bitsDrawingEntryDao;
@@ -47,19 +42,13 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
 
             List<BitsDrawingEntry> entriesToSave = new ArrayList<>();
             int markedQtyInt = drawingEntryDto.getMarkedQty().intValue();
-            
-            // Get the next drawing group number for this batch
-            long drawingGroup;
-            synchronized (lockObject) {
-                drawingGroup = currentDrawingGroup++;
-            }
 
             // Create entries based on marked quantity
             for (int i = 0; i < markedQtyInt; i++) {
                 BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
                 
-                // Generate sequential line ID in format "group.sequence"
-                entry.setLineId(generateSequentialLineId(drawingGroup, i + 1));
+                // Generate UNIQUE line ID using UUID to avoid duplicates
+                entry.setLineId(generateUniqueLineId());
                 
                 // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
@@ -87,8 +76,6 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         }
     }
 
-    // Rest of the service implementation remains the same...
-
     // Helper methods for conversion between Entity and DTO
     private BitsDrawingEntry convertDtoToEntity(BitsDrawingEntryDto dto) {
         BitsDrawingEntry entity = new BitsDrawingEntry();
@@ -111,6 +98,11 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatingDate(dto.getLastUpdatingDate());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+        
+        // NEW: Set PO Line Reference ID if provided
+        if (dto.getPoLineReferenceId() != null) {
+            entity.setPoLineReferenceId(dto.getPoLineReferenceId());
+        }
         
         // Fix for attributes - only set if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
@@ -154,6 +146,9 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setLastUpdatingDate(entity.getLastUpdatingDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
         
+        // NEW: Set PO Line Reference ID if available
+        dto.setPoLineReferenceId(entity.getPoLineReferenceId());
+        
         // Only set attributes if they are not null
         dto.setAttribute1V(entity.getAttribute1V());
         dto.setAttribute2V(entity.getAttribute2V());
@@ -190,6 +185,9 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
         
+        // NEW: Update PO Line Reference ID if provided
+        if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());
+        
         // Fix for attributes - only update if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
@@ -209,17 +207,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     }
 
     /**
-     * Generate a sequential line ID in the format "group.sequence"
-     * For example: "1.1", "1.2", "1.3" for the first group
-     * And "2.1", "2.2", "2.3" for the second group
-     */
-    private String generateSequentialLineId(long groupNumber, long sequenceNumber) {
-        return groupNumber + "." + sequenceNumber;
-    }
-
-    /**
-     * Old method - kept for reference
-     * Generate a unique line ID with UUID
+     * Generate a UNIQUE line ID using UUID and timestamp to avoid duplicates
+     * This ensures no duplicate key violations
      */
     private String generateUniqueLineId() {
         return "BDE-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();

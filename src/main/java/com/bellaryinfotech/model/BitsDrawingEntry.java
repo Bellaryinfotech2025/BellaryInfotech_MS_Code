@@ -65,6 +65,10 @@ public class BitsDrawingEntry {
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
 
+    // NEW FIELD: Store the line_id from bits_po_entry_lines
+    @Column(name = "po_line_reference_id")
+    private BigDecimal poLineReferenceId;
+
     @Column(name = "attribute1_v")
     private String attribute1V;
 
@@ -268,6 +272,15 @@ public class BitsDrawingEntry {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
+    // NEW GETTER/SETTER for PO Line Reference ID
+    public BigDecimal getPoLineReferenceId() {
+        return poLineReferenceId;
+    }
+
+    public void setPoLineReferenceId(BigDecimal poLineReferenceId) {
+        this.poLineReferenceId = poLineReferenceId;
+    }
+
     public String getAttribute1V() {
         return attribute1V;
     }
@@ -422,6 +435,7 @@ public class BitsDrawingEntry {
                 ", createdBy='" + createdBy + '\'' +
                 ", lastUpdatingDate=" + lastUpdatingDate +
                 ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
+                ", poLineReferenceId=" + poLineReferenceId +
                 '}';
     }
 }
