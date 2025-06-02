@@ -14,8 +14,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class BitsLinesServiceImpl implements BitsLinesService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BitsLinesServiceImpl.class);
 
     @Autowired
     private BitsLinesRepository linesRepository;
@@ -33,6 +38,8 @@ public class BitsLinesServiceImpl implements BitsLinesService {
     }
 
     public BitsLinesDto createLine(BitsLinesDto lineDto) {
+        LOG.info("Creating line with DTO: {}", lineDto);
+        
         BitsLinesAll line = convertToEntity(lineDto);
         line.setCreationDate(Timestamp.from(Instant.now()));
         line.setLastUpdateDate(Timestamp.from(Instant.now()));
@@ -46,7 +53,12 @@ public class BitsLinesServiceImpl implements BitsLinesService {
             line.setTotalPrice(totalPrice);
         }
         
+        LOG.info("Saving line entity with attribute1V: {}", line.getAttribute1V());
+        
         BitsLinesAll savedLine = linesRepository.save(line);
+        
+        LOG.info("Saved line with ID: {}, attribute1V: {}", savedLine.getLineId(), savedLine.getAttribute1V());
+        
         return convertToDto(savedLine);
     }
 
@@ -95,6 +107,46 @@ public class BitsLinesServiceImpl implements BitsLinesService {
                 .collect(Collectors.toList());
     }
 
+    // New method to get service orders by work order
+    public List<BitsLinesDto> getLinesByWorkOrder(String workOrder) {
+        LOG.info("Searching for lines with work order: '{}'", workOrder);
+        
+        // Try exact match first
+        List<BitsLinesAll> lines = linesRepository.findByAttribute1V(workOrder);
+        LOG.info("Exact match found {} lines", lines.size());
+        
+        // If no exact match, try case-insensitive contains
+        if (lines.isEmpty()) {
+            lines = linesRepository.findByAttribute1VContainingIgnoreCase(workOrder);
+            LOG.info("Case-insensitive search found {} lines", lines.size());
+        }
+        
+        // Log what we found
+        for (BitsLinesAll line : lines) {
+            LOG.info("Found line: ID={}, SerNo={}, ServiceCode={}, attribute1V='{}'", 
+                line.getLineId(), line.getSerNo(), line.getServiceCode(), line.getAttribute1V());
+        }
+        
+        return lines.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+    
+    // Debug method
+    public List<BitsLinesDto> getAllLinesWithAttributes() {
+        List<BitsLinesAll> lines = linesRepository.findAll();
+        LOG.info("Debug: Total lines in database: {}", lines.size());
+        
+        for (BitsLinesAll line : lines) {
+            LOG.info("Debug: Line ID: {}, attribute1V: '{}', attribute1N: {}", 
+                line.getLineId(), line.getAttribute1V(), line.getAttribute1N());
+        }
+        
+        return lines.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private BitsLinesDto convertToDto(BitsLinesAll entity) {
         BitsLinesDto dto = new BitsLinesDto();
         dto.setLineId(entity.getLineId());
@@ -105,6 +157,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setUom(entity.getUom());
         dto.setRate(entity.getUnitPrice()); // Map unitPrice to rate
         dto.setAmount(entity.getTotalPrice()); // Map totalPrice to amount
+        dto.setWorkOrderRef(entity.getAttribute1V()); // Map attribute1V to workOrderRef
         return dto;
     }
 
@@ -117,6 +170,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setUom(dto.getUom());
         entity.setUnitPrice(dto.getRate()); // Map rate to unitPrice
         entity.setTotalPrice(dto.getAmount()); // Map amount to totalPrice
+        entity.setAttribute1V(dto.getWorkOrderRef()); // Map workOrderRef to attribute1V
         return entity;
     }
 
@@ -128,5 +182,6 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setUom(dto.getUom());
         entity.setUnitPrice(dto.getRate()); // Map rate to unitPrice
         entity.setTotalPrice(dto.getAmount()); // Map amount to totalPrice
+        // Don't update workOrderRef during updates to maintain the link
     }
 }

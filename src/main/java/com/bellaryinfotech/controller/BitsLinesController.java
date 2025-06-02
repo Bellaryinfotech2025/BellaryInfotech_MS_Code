@@ -1,6 +1,5 @@
 package com.bellaryinfotech.controller;
 
- 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,12 @@ public class BitsLinesController {
     public static final String SEARCH_BY_SERNO = "/searchBitsLinesBySerNo/details";
     public static final String SEARCH_BY_SERVICECODE = "/searchBitsLinesByServiceCode/details";
     public static final String SEARCH_BY_SERVICEDESC = "/searchBitsLinesByServiceDesc/details";
+    
+    // New endpoint to get service orders by work order
+    public static final String GET_LINES_BY_WORK_ORDER = "/getBitsLinesByWorkOrder/details";
+    
+    // Debug endpoint
+    public static final String DEBUG_LINES = "/debugBitsLines/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsLinesController.class);
 
@@ -50,9 +55,10 @@ public class BitsLinesController {
 
     @PostMapping(value = CREATE_LINE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createLine(@RequestBody BitsLinesDto lineDto) {
-        LOG.info("Creating a new bits line");
+        LOG.info("Creating a new bits line with data: {}", lineDto);
         try {
             BitsLinesDto createdLine = linesService.createLine(lineDto);
+            LOG.info("Created bits line: {}", createdLine);
             return ResponseEntity.status(201).body(createdLine);
         } catch (Exception e) {
             LOG.error("Error creating bits line", e);
@@ -106,5 +112,37 @@ public class BitsLinesController {
         LOG.info("Searching bits lines by serviceDesc: {}", serviceDesc);
         List<BitsLinesDto> lines = linesService.searchByServiceDesc(serviceDesc);
         return ResponseEntity.ok(lines);
+    }
+
+    // New endpoint to get service orders by work order
+    @RequestMapping(value = GET_LINES_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getLinesByWorkOrder(@RequestParam String workOrder) {
+        LOG.info("Fetching bits lines by work order: {}", workOrder);
+        try {
+            List<BitsLinesDto> lines = linesService.getLinesByWorkOrder(workOrder);
+            LOG.info("Found {} lines for work order: {}", lines.size(), workOrder);
+            return ResponseEntity.ok(lines);
+        } catch (Exception e) {
+            LOG.error("Error fetching bits lines by work order: {}", workOrder, e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // Debug endpoint to see all lines with their attribute values
+    @RequestMapping(value = DEBUG_LINES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> debugLines() {
+        LOG.info("Debug: Fetching all bits lines with attributes");
+        try {
+            List<BitsLinesDto> lines = linesService.getAllLinesWithAttributes();
+            LOG.info("Debug: Found {} total lines", lines.size());
+            for (BitsLinesDto line : lines) {
+                LOG.info("Debug: Line ID: {}, SerNo: {}, ServiceCode: {}, WorkOrder Ref: {}", 
+                    line.getLineId(), line.getSerNo(), line.getServiceCode(), line.getWorkOrderRef());
+            }
+            return ResponseEntity.ok(lines);
+        } catch (Exception e) {
+            LOG.error("Error in debug endpoint", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

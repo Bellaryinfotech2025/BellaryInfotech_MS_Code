@@ -2,36 +2,22 @@ package com.bellaryinfotech.DTO;
 
 import java.math.BigDecimal;
 
-import java.math.BigDecimal;
-
 public class BitsLinesDto {
     
     private Long lineId;
     private String serNo;
     private String serviceCode;
     private String serviceDesc;
-    private String sacHsnCode;
-    private String uom;
     private BigDecimal qty;
+    private String uom;
     private BigDecimal rate;
     private BigDecimal amount;
+    
+    // Add work order reference field
+    private String workOrderRef;
 
     // Default constructor
     public BitsLinesDto() {}
-
-    // Constructor with parameters
-    public BitsLinesDto(String serNo, String serviceCode, String serviceDesc, 
-                       String sacHsnCode, String uom, BigDecimal qty, 
-                       BigDecimal rate, BigDecimal amount) {
-        this.serNo = serNo;
-        this.serviceCode = serviceCode;
-        this.serviceDesc = serviceDesc;
-        this.sacHsnCode = sacHsnCode;
-        this.uom = uom;
-        this.qty = qty;
-        this.rate = rate;
-        this.amount = amount;
-    }
 
     // Getters and Setters
     public Long getLineId() {
@@ -66,12 +52,12 @@ public class BitsLinesDto {
         this.serviceDesc = serviceDesc;
     }
 
-    public String getSacHsnCode() {
-        return sacHsnCode;
+    public BigDecimal getQty() {
+        return qty;
     }
 
-    public void setSacHsnCode(String sacHsnCode) {
-        this.sacHsnCode = sacHsnCode;
+    public void setQty(BigDecimal qty) {
+        this.qty = qty;
     }
 
     public String getUom() {
@@ -80,14 +66,6 @@ public class BitsLinesDto {
 
     public void setUom(String uom) {
         this.uom = uom;
-    }
-
-    public BigDecimal getQty() {
-        return qty;
-    }
-
-    public void setQty(BigDecimal qty) {
-        this.qty = qty;
     }
 
     public BigDecimal getRate() {
@@ -106,20 +84,26 @@ public class BitsLinesDto {
         this.amount = amount;
     }
 
-    // Legacy methods for backward compatibility (mapping to rate and amount)
-    public BigDecimal getUnitPrice() {
-        return this.rate;
+    public String getWorkOrderRef() {
+        return workOrderRef;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.rate = unitPrice;
+    public void setWorkOrderRef(String workOrderRef) {
+        this.workOrderRef = workOrderRef;
     }
 
-    public BigDecimal getTotalPrice() {
-        return this.amount;
-    }
-
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.amount = totalPrice;
+    @Override
+    public String toString() {
+        return "BitsLinesDto{" +
+                "lineId=" + lineId +
+                ", serNo='" + serNo + '\'' +
+                ", serviceCode='" + serviceCode + '\'' +
+                ", serviceDesc='" + serviceDesc + '\'' +
+                ", qty=" + qty +
+                ", uom='" + uom + '\'' +
+                ", rate=" + rate +
+                ", amount=" + amount +
+                ", workOrderRef='" + workOrderRef + '\'' +
+                '}';
     }
 }

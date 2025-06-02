@@ -1,23 +1,34 @@
 package com.bellaryinfotech.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BitsDrawingEntryStatsDto {
+
+    @JsonProperty("drawingNo")
     private String drawingNo;
+
+    @JsonProperty("totalEntries")
     private Long totalEntries;
+
+    @JsonProperty("totalMarkedQty")
     private BigDecimal totalMarkedQty;
-    private BigDecimal totalMarkedWgt;
+
+    @JsonProperty("totalMarkedWeight")
+    private BigDecimal totalMarkedWeight;
 
     // Default constructor
-    public BitsDrawingEntryStatsDto() {
-    }
+    public BitsDrawingEntryStatsDto() {}
 
-    // Constructor with fields
-    public BitsDrawingEntryStatsDto(String drawingNo, Long totalEntries, BigDecimal totalMarkedQty, BigDecimal totalMarkedWgt) {
+    // Constructor with all fields
+    public BitsDrawingEntryStatsDto(String drawingNo, Long totalEntries, BigDecimal totalMarkedQty, BigDecimal totalMarkedWeight) {
         this.drawingNo = drawingNo;
         this.totalEntries = totalEntries;
         this.totalMarkedQty = totalMarkedQty;
-        this.totalMarkedWgt = totalMarkedWgt;
+        this.totalMarkedWeight = totalMarkedWeight;
     }
 
     // Getters and Setters
@@ -45,12 +56,12 @@ public class BitsDrawingEntryStatsDto {
         this.totalMarkedQty = totalMarkedQty;
     }
 
-    public BigDecimal getTotalMarkedWgt() {
-        return totalMarkedWgt;
+    public BigDecimal getTotalMarkedWeight() {
+        return totalMarkedWeight;
     }
 
-    public void setTotalMarkedWgt(BigDecimal totalMarkedWgt) {
-        this.totalMarkedWgt = totalMarkedWgt;
+    public void setTotalMarkedWeight(BigDecimal totalMarkedWeight) {
+        this.totalMarkedWeight = totalMarkedWeight;
     }
 
     @Override
@@ -59,7 +70,7 @@ public class BitsDrawingEntryStatsDto {
                 "drawingNo='" + drawingNo + '\'' +
                 ", totalEntries=" + totalEntries +
                 ", totalMarkedQty=" + totalMarkedQty +
-                ", totalMarkedWgt=" + totalMarkedWgt +
+                ", totalMarkedWeight=" + totalMarkedWeight +
                 '}';
     }
 }

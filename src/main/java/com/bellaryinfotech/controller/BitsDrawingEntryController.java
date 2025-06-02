@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +32,7 @@ public class BitsDrawingEntryController {
 
     // API endpoint constants
     public static final String GET_ALL_DRAWING_ENTRIES = "/getAllBitsDrawingEntries/details";
+    public static final String GET_UNIQUE_DRAWING_ENTRIES = "/getUniqueBitsDrawingEntries/details";
     public static final String GET_DRAWING_ENTRY_BY_ID = "/getBitsDrawingEntryById/details";
     public static final String CREATE_DRAWING_ENTRY = "/createBitsDrawingEntry/details";
     public static final String CREATE_BULK_DRAWING_ENTRIES = "/createBulkBitsDrawingEntries/details";
@@ -87,6 +87,55 @@ public class BitsDrawingEntryController {
             LOG.error("Error getting all drawing entries", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to get drawing entries: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Get unique drawing entries (no duplicates based on drawing_no + mark_no)
+     * This is specifically for the FabricationDatabasesearch frontend
+     */
+    @RequestMapping(value = GET_UNIQUE_DRAWING_ENTRIES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getUniqueDrawingEntries() {
+        try {
+            LOG.info("Fetching unique bits drawing entries for fabrication search");
+            
+            // Get all drawing entries
+            List<BitsDrawingEntryDto> allEntries = bitsDrawingEntryService.getAllDrawingEntries();
+            
+            // Group by drawing_no + mark_no combination and aggregate quantities
+            Map<String, BitsDrawingEntryDto> uniqueEntriesMap = new LinkedHashMap<>();
+            
+            for (BitsDrawingEntryDto entry : allEntries) {
+                String key = (entry.getDrawingNo() != null ? entry.getDrawingNo() : "") + "_" + 
+                           (entry.getMarkNo() != null ? entry.getMarkNo() : "");
+                
+                if (uniqueEntriesMap.containsKey(key)) {
+                    // Aggregate quantities for existing entry
+                    BitsDrawingEntryDto existingEntry = uniqueEntriesMap.get(key);
+                    BigDecimal currentQty = existingEntry.getMarkedQty() != null ? existingEntry.getMarkedQty() : BigDecimal.ZERO;
+                    BigDecimal newQty = entry.getMarkedQty() != null ? entry.getMarkedQty() : BigDecimal.ZERO;
+                    existingEntry.setMarkedQty(currentQty.add(newQty));
+                    
+                    // Update total weight if available
+                    if (entry.getTotalMarkedWgt() != null) {
+                        BigDecimal currentWeight = existingEntry.getTotalMarkedWgt() != null ? existingEntry.getTotalMarkedWgt() : BigDecimal.ZERO;
+                        existingEntry.setTotalMarkedWgt(currentWeight.add(entry.getTotalMarkedWgt()));
+                    }
+                } else {
+                    // Add new unique entry
+                    uniqueEntriesMap.put(key, entry);
+                }
+            }
+            
+            List<BitsDrawingEntryDto> uniqueEntries = new ArrayList<>(uniqueEntriesMap.values());
+            
+            LOG.info("Returning {} unique drawing entries out of {} total entries", uniqueEntries.size(), allEntries.size());
+            return ResponseEntity.ok(uniqueEntries);
+            
+        } catch (Exception e) {
+            LOG.error("Error getting unique drawing entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get unique drawing entries: " + e.getMessage());
         }
     }
 
@@ -160,6 +209,17 @@ public class BitsDrawingEntryController {
             @Valid @RequestBody BitsDrawingEntryDto drawingEntryDto) {
         try {
             LOG.info("Updating drawing entry with line ID: {}", lineId);
+        
+            // Validate lineId
+            if (lineId == null || lineId.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Line ID cannot be null or empty");
+            }
+        
+            // Validate DTO
+            if (drawingEntryDto == null) {
+                return ResponseEntity.badRequest().body("Drawing entry data cannot be null");
+            }
+        
             BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, drawingEntryDto);
             return ResponseEntity.ok(updatedEntry);
         } catch (IllegalArgumentException e) {
@@ -597,15 +657,12 @@ public class BitsDrawingEntryController {
     public ResponseEntity<?> getAllDrawingNumbers() {
         try {
             LOG.info("Fetching all drawing numbers");
-            List<String> drawingNumbers = bitsDrawingEntryService.getAllDrawingEntries()
-                .stream()
-                .map(BitsDrawingEntryDto::getDrawingNo)
-                .distinct()
-                .collect(Collectors.toList());
+            List<String> drawingNumbers = bitsDrawingEntryService.getDistinctDrawingNumbers();
             return ResponseEntity.ok(drawingNumbers);
         } catch (Exception e) {
             LOG.error("Error fetching drawing numbers", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get drawing numbers: " + e.getMessage());
         }
     }
     
@@ -625,7 +682,8 @@ public class BitsDrawingEntryController {
             return ResponseEntity.ok(drawingDetails);
         } catch (Exception e) {
             LOG.error("Error fetching drawing details", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get drawing details: " + e.getMessage());
         }
     }
 }

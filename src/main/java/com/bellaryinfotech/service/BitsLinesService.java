@@ -5,8 +5,6 @@ import java.util.Optional;
 
 import com.bellaryinfotech.DTO.BitsLinesDto;
 
- 
-
 public interface BitsLinesService {
     
     List<BitsLinesDto> getAllLines();
@@ -17,4 +15,10 @@ public interface BitsLinesService {
     List<BitsLinesDto> searchBySerNo(String serNo);
     List<BitsLinesDto> searchByServiceCode(String serviceCode);
     List<BitsLinesDto> searchByServiceDesc(String serviceDesc);
+    
+    // New method to get service orders by work order
+    List<BitsLinesDto> getLinesByWorkOrder(String workOrder);
+    
+    // Debug method
+    List<BitsLinesDto> getAllLinesWithAttributes();
 }

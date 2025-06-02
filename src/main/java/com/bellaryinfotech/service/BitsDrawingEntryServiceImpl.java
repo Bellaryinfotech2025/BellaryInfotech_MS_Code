@@ -4,10 +4,12 @@ import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryStatsDto;
 import com.bellaryinfotech.DAO.BitsDrawingEntryDao;
 import com.bellaryinfotech.model.BitsDrawingEntry;
+import com.bellaryinfotech.repo.BitsDrawingEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
 
     @Autowired
     private BitsDrawingEntryDao bitsDrawingEntryDao;
+    
+    @Autowired
+    private BitsDrawingEntryRepository bitsDrawingEntryRepository;
+
+    // Counter for sequential line IDs
+    private static final AtomicLong lineIdCounter = new AtomicLong(1);
 
     @Override
     public List<BitsDrawingEntryDto> createDrawingEntry(BitsDrawingEntryDto drawingEntryDto) {
@@ -47,8 +54,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             for (int i = 0; i < markedQtyInt; i++) {
                 BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
                 
-                // Generate UNIQUE line ID using UUID to avoid duplicates
-                entry.setLineId(generateUniqueLineId());
+                // Generate sequential line ID
+                entry.setLineId(generateSequentialLineId());
                 
                 // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
@@ -76,6 +83,414 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         }
     }
 
+    @Override
+    public List<BitsDrawingEntryDto> createDrawingEntries(List<BitsDrawingEntryDto> drawingEntryDtos) {
+        try {
+            logger.info("Creating {} drawing entries", drawingEntryDtos.size());
+            
+            List<BitsDrawingEntry> allEntriesToSave = new ArrayList<>();
+            
+            for (BitsDrawingEntryDto dto : drawingEntryDtos) {
+                // Validate input
+                if (dto.getMarkedQty() == null || dto.getMarkedQty().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("Marked quantity must be greater than zero for drawing: " + dto.getDrawingNo());
+                }
+
+                int markedQtyInt = dto.getMarkedQty().intValue();
+
+                // Create entries based on marked quantity
+                for (int i = 0; i < markedQtyInt; i++) {
+                    BitsDrawingEntry entry = convertDtoToEntity(dto);
+                    
+                    // Generate sequential line ID
+                    entry.setLineId(generateSequentialLineId());
+                    
+                    // Set creation metadata
+                    entry.setCreationDate(LocalDateTime.now());
+                    entry.setLastUpdatingDate(LocalDateTime.now());
+                    
+                    // Set marked quantity to 1 for each individual entry
+                    entry.setMarkedQty(BigDecimal.ONE);
+                    
+                    allEntriesToSave.add(entry);
+                }
+            }
+
+            // Save all entries
+            List<BitsDrawingEntry> savedEntries = bitsDrawingEntryDao.saveAll(allEntriesToSave);
+            
+            logger.info("Successfully created {} total drawing entries", savedEntries.size());
+            
+            // Convert back to DTOs
+            return savedEntries.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+                    
+        } catch (Exception e) {
+            logger.error("Error creating drawing entries", e);
+            throw new RuntimeException("Failed to create drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<BitsDrawingEntryDto> getDrawingEntryById(String lineId) {
+        try {
+            logger.info("Fetching drawing entry by line ID: {}", lineId);
+            Optional<BitsDrawingEntry> entity = bitsDrawingEntryRepository.findById(lineId);
+            return entity.map(this::convertEntityToDto);
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entry by ID: {}", lineId, e);
+            throw new RuntimeException("Failed to fetch drawing entry: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Page<BitsDrawingEntryDto> getAllDrawingEntries(Pageable pageable) {
+        try {
+            logger.info("Fetching all drawing entries with pagination");
+            Page<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findAll(pageable);
+            List<BitsDrawingEntryDto> dtos = entities.getContent().stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+            return new PageImpl<>(dtos, pageable, entities.getTotalElements());
+        } catch (Exception e) {
+            logger.error("Error fetching all drawing entries", e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getAllDrawingEntries() {
+        try {
+            logger.info("Fetching all drawing entries");
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findAll();
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching all drawing entries", e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getDrawingEntriesByDrawingNo(String drawingNo) {
+        try {
+            logger.info("Fetching drawing entries by drawing number: {}", drawingNo);
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByDrawingNoOrderByCreationDateDesc(drawingNo);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by drawing number: {}", drawingNo, e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getDrawingEntriesByMarkNo(String markNo) {
+        try {
+            logger.info("Fetching drawing entries by mark number: {}", markNo);
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByMarkNoOrderByCreationDateDesc(markNo);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by mark number: {}", markNo, e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getDrawingEntriesBySessionCode(String sessionCode) {
+        try {
+            logger.info("Fetching drawing entries by session code: {}", sessionCode);
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findBySessionCodeOrderByCreationDateDesc(sessionCode);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by session code: {}", sessionCode, e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Page<BitsDrawingEntryDto> getDrawingEntriesByTenantId(String tenantId, Pageable pageable) {
+        try {
+            logger.info("Fetching drawing entries by tenant ID: {}", tenantId);
+            Page<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByTenantIdOrderByCreationDateDesc(tenantId, pageable);
+            List<BitsDrawingEntryDto> dtos = entities.getContent().stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+            return new PageImpl<>(dtos, pageable, entities.getTotalElements());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by tenant ID: {}", tenantId, e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Page<BitsDrawingEntryDto> searchDrawingEntries(String drawingNo, String markNo, String sessionCode, String tenantId, Pageable pageable) {
+        try {
+            logger.info("Searching drawing entries with criteria");
+            Page<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByMultipleCriteria(drawingNo, markNo, sessionCode, tenantId, pageable);
+            List<BitsDrawingEntryDto> dtos = entities.getContent().stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+            return new PageImpl<>(dtos, pageable, entities.getTotalElements());
+        } catch (Exception e) {
+            logger.error("Error searching drawing entries", e);
+            throw new RuntimeException("Failed to search drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getDrawingEntriesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        try {
+            logger.info("Fetching drawing entries by date range: {} to {}", startDate, endDate);
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByCreationDateBetweenOrderByCreationDateDesc(startDate, endDate);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by date range", e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<BitsDrawingEntryDto> getDrawingEntriesByMarkedQtyGreaterThan(BigDecimal markedQty) {
+        try {
+            logger.info("Fetching drawing entries with marked quantity greater than: {}", markedQty);
+            List<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByMarkedQtyGreaterThanOrderByMarkedQtyDesc(markedQty);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching drawing entries by marked quantity", e);
+            throw new RuntimeException("Failed to fetch drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BitsDrawingEntryDto updateDrawingEntry(String lineId, BitsDrawingEntryDto drawingEntryDto) {
+        try {
+            logger.info("Updating drawing entry with line ID: {}", lineId);
+            
+            // Validate lineId
+            if (lineId == null || lineId.trim().isEmpty()) {
+                throw new IllegalArgumentException("Line ID cannot be null or empty");
+            }
+            
+            Optional<BitsDrawingEntry> existingEntityOpt = bitsDrawingEntryRepository.findById(lineId);
+            if (!existingEntityOpt.isPresent()) {
+                throw new RuntimeException("Drawing entry not found with line ID: " + lineId);
+            }
+            
+            BitsDrawingEntry existingEntity = existingEntityOpt.get();
+            
+            // Validate the DTO
+            if (drawingEntryDto == null) {
+                throw new IllegalArgumentException("Drawing entry data cannot be null");
+            }
+            
+            updateEntityFromDto(existingEntity, drawingEntryDto);
+            existingEntity.setLastUpdatingDate(LocalDateTime.now());
+            
+            BitsDrawingEntry savedEntity = bitsDrawingEntryRepository.save(existingEntity);
+            logger.info("Successfully updated drawing entry with line ID: {}", lineId);
+            return convertEntityToDto(savedEntity);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid argument for updating drawing entry: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error updating drawing entry: {}", lineId, e);
+            throw new RuntimeException("Failed to update drawing entry: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteDrawingEntry(String lineId) {
+        try {
+            logger.info("Deleting drawing entry with line ID: {}", lineId);
+            if (!bitsDrawingEntryRepository.existsById(lineId)) {
+                throw new RuntimeException("Drawing entry not found with line ID: " + lineId);
+            }
+            bitsDrawingEntryRepository.deleteById(lineId);
+        } catch (Exception e) {
+            logger.error("Error deleting drawing entry: {}", lineId, e);
+            throw new RuntimeException("Failed to delete drawing entry: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteDrawingEntriesByDrawingNo(String drawingNo) {
+        try {
+            logger.info("Deleting drawing entries by drawing number: {}", drawingNo);
+            bitsDrawingEntryRepository.deleteByDrawingNo(drawingNo);
+        } catch (Exception e) {
+            logger.error("Error deleting drawing entries by drawing number: {}", drawingNo, e);
+            throw new RuntimeException("Failed to delete drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteDrawingEntriesByMarkNo(String markNo) {
+        try {
+            logger.info("Deleting drawing entries by mark number: {}", markNo);
+            bitsDrawingEntryRepository.deleteByMarkNo(markNo);
+        } catch (Exception e) {
+            logger.error("Error deleting drawing entries by mark number: {}", markNo, e);
+            throw new RuntimeException("Failed to delete drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Long getCountByDrawingNo(String drawingNo) {
+        try {
+            return bitsDrawingEntryRepository.countByDrawingNo(drawingNo);
+        } catch (Exception e) {
+            logger.error("Error getting count by drawing number: {}", drawingNo, e);
+            throw new RuntimeException("Failed to get count: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BigDecimal getSumMarkedQtyByDrawingNo(String drawingNo) {
+        try {
+            return bitsDrawingEntryRepository.sumMarkedQtyByDrawingNo(drawingNo);
+        } catch (Exception e) {
+            logger.error("Error getting sum of marked quantities: {}", drawingNo, e);
+            throw new RuntimeException("Failed to get sum: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BigDecimal getSumTotalMarkedWgtByDrawingNo(String drawingNo) {
+        try {
+            return bitsDrawingEntryRepository.sumTotalMarkedWgtByDrawingNo(drawingNo);
+        } catch (Exception e) {
+            logger.error("Error getting sum of total marked weights: {}", drawingNo, e);
+            throw new RuntimeException("Failed to get sum: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctDrawingNumbers() {
+        try {
+            return bitsDrawingEntryRepository.findDistinctDrawingNumbers();
+        } catch (Exception e) {
+            logger.error("Error getting distinct drawing numbers", e);
+            throw new RuntimeException("Failed to get distinct drawing numbers: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctMarkNumbers() {
+        try {
+            return bitsDrawingEntryRepository.findDistinctMarkNumbers();
+        } catch (Exception e) {
+            logger.error("Error getting distinct mark numbers", e);
+            throw new RuntimeException("Failed to get distinct mark numbers: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctSessionCodes() {
+        try {
+            return bitsDrawingEntryRepository.findDistinctSessionCodes();
+        } catch (Exception e) {
+            logger.error("Error getting distinct session codes", e);
+            throw new RuntimeException("Failed to get distinct session codes: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean existsById(String lineId) {
+        try {
+            return bitsDrawingEntryRepository.existsById(lineId);
+        } catch (Exception e) {
+            logger.error("Error checking existence by line ID: {}", lineId, e);
+            throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo) {
+        try {
+            return bitsDrawingEntryRepository.existsByDrawingNoAndMarkNo(drawingNo, markNo);
+        } catch (Exception e) {
+            logger.error("Error checking existence by drawing and mark number", e);
+            throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public long getTotalCount() {
+        try {
+            return bitsDrawingEntryRepository.count();
+        } catch (Exception e) {
+            logger.error("Error getting total count", e);
+            throw new RuntimeException("Failed to get total count: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<BitsDrawingEntryDto> getLatestByDrawingNo(String drawingNo) {
+        try {
+            Optional<BitsDrawingEntry> entity = bitsDrawingEntryRepository.findTopByDrawingNoOrderByCreationDateDesc(drawingNo);
+            return entity.map(this::convertEntityToDto);
+        } catch (Exception e) {
+            logger.error("Error getting latest entry by drawing number: {}", drawingNo, e);
+            throw new RuntimeException("Failed to get latest entry: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<BitsDrawingEntryDto> getLatestByMarkNo(String markNo) {
+        try {
+            Optional<BitsDrawingEntry> entity = bitsDrawingEntryRepository.findTopByMarkNoOrderByCreationDateDesc(markNo);
+            return entity.map(this::convertEntityToDto);
+        } catch (Exception e) {
+            logger.error("Error getting latest entry by mark number: {}", markNo, e);
+            throw new RuntimeException("Failed to get latest entry: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void bulkDeleteDrawingEntries(List<String> lineIds) {
+        try {
+            logger.info("Bulk deleting {} drawing entries", lineIds.size());
+            bitsDrawingEntryRepository.deleteAllById(lineIds);
+        } catch (Exception e) {
+            logger.error("Error bulk deleting drawing entries", e);
+            throw new RuntimeException("Failed to bulk delete drawing entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BitsDrawingEntryStatsDto getDrawingEntryStats(String drawingNo) {
+        try {
+            logger.info("Getting drawing entry statistics for: {}", drawingNo);
+            
+            Long count = getCountByDrawingNo(drawingNo);
+            BigDecimal sumMarkedQty = getSumMarkedQtyByDrawingNo(drawingNo);
+            BigDecimal sumTotalMarkedWgt = getSumTotalMarkedWgtByDrawingNo(drawingNo);
+            
+            BitsDrawingEntryStatsDto stats = new BitsDrawingEntryStatsDto();
+            stats.setDrawingNo(drawingNo);
+            stats.setTotalEntries(count);
+            stats.setTotalMarkedQty(sumMarkedQty);
+            stats.setTotalMarkedWeight(sumTotalMarkedWgt);
+            
+            return stats;
+        } catch (Exception e) {
+            logger.error("Error getting drawing entry statistics: {}", drawingNo, e);
+            throw new RuntimeException("Failed to get statistics: " + e.getMessage(), e);
+        }
+    }
+
     // Helper methods for conversion between Entity and DTO
     private BitsDrawingEntry convertDtoToEntity(BitsDrawingEntryDto dto) {
         BitsDrawingEntry entity = new BitsDrawingEntry();
@@ -99,12 +514,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setLastUpdatingDate(dto.getLastUpdatingDate());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
         
-        // NEW: Set PO Line Reference ID if provided
+        // Set PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) {
             entity.setPoLineReferenceId(dto.getPoLineReferenceId());
         }
         
-        // Fix for attributes - only set if not null
+        // Set attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
         if (dto.getAttribute3V() != null) entity.setAttribute3V(dto.getAttribute3V());
@@ -146,10 +561,10 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setLastUpdatingDate(entity.getLastUpdatingDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
         
-        // NEW: Set PO Line Reference ID if available
+        // Set PO Line Reference ID if available
         dto.setPoLineReferenceId(entity.getPoLineReferenceId());
         
-        // Only set attributes if they are not null
+        // Set attributes
         dto.setAttribute1V(entity.getAttribute1V());
         dto.setAttribute2V(entity.getAttribute2V());
         dto.setAttribute3V(entity.getAttribute3V());
@@ -185,10 +600,10 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
         
-        // NEW: Update PO Line Reference ID if provided
+        // Update PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());
         
-        // Fix for attributes - only update if not null
+        // Update attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
         if (dto.getAttribute3V() != null) entity.setAttribute3V(dto.getAttribute3V());
@@ -207,179 +622,51 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     }
 
     /**
-     * Generate a UNIQUE line ID using UUID and timestamp to avoid duplicates
-     * This ensures no duplicate key violations
+     * Generate a sequential line ID in format 1.1, 1.2, 1.3, etc.
+     * This ensures unique, sequential serial numbers
      */
-    private String generateUniqueLineId() {
-        return "BDE-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    private synchronized String generateSequentialLineId() {
+        // Get the current maximum line ID from database
+        long maxId = getMaxLineIdNumber();
+        long nextId = Math.max(maxId + 1, lineIdCounter.get());
+        
+        // Update the counter
+        lineIdCounter.set(nextId + 1);
+        
+        // Generate format like 1.1, 1.2, etc.
+        long major = (nextId - 1) / 10 + 1;
+        long minor = (nextId - 1) % 10 + 1;
+        
+        return major + "." + minor;
     }
-
-	@Override
-	public List<BitsDrawingEntryDto> createDrawingEntries(List<BitsDrawingEntryDto> drawingEntryDtos) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Optional<BitsDrawingEntryDto> getDrawingEntryById(String lineId) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
-	@Override
-	public Page<BitsDrawingEntryDto> getAllDrawingEntries(Pageable pageable) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getAllDrawingEntries() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getDrawingEntriesByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getDrawingEntriesByMarkNo(String markNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getDrawingEntriesBySessionCode(String sessionCode) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Page<BitsDrawingEntryDto> getDrawingEntriesByTenantId(String tenantId, Pageable pageable) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Page<BitsDrawingEntryDto> searchDrawingEntries(String drawingNo, String markNo, String sessionCode,
-			String tenantId, Pageable pageable) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getDrawingEntriesByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<BitsDrawingEntryDto> getDrawingEntriesByMarkedQtyGreaterThan(BigDecimal markedQty) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public BitsDrawingEntryDto updateDrawingEntry(String lineId, BitsDrawingEntryDto drawingEntryDto) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void deleteDrawingEntry(String lineId) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void deleteDrawingEntriesByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void deleteDrawingEntriesByMarkNo(String markNo) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Long getCountByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public BigDecimal getSumMarkedQtyByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public BigDecimal getSumTotalMarkedWgtByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getDistinctDrawingNumbers() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getDistinctMarkNumbers() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getDistinctSessionCodes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean existsById(String lineId) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public long getTotalCount() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public Optional<BitsDrawingEntryDto> getLatestByDrawingNo(String drawingNo) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
-	@Override
-	public Optional<BitsDrawingEntryDto> getLatestByMarkNo(String markNo) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
-	@Override
-	public void bulkDeleteDrawingEntries(List<String> lineIds) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public BitsDrawingEntryStatsDto getDrawingEntryStats(String drawingNo) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    
+    /**
+     * Get the maximum line ID number from existing records
+     */
+    private long getMaxLineIdNumber() {
+        try {
+            List<BitsDrawingEntry> allEntries = bitsDrawingEntryRepository.findAll();
+            long maxNumber = 0;
+            
+            for (BitsDrawingEntry entry : allEntries) {
+                String lineId = entry.getLineId();
+                if (lineId != null && lineId.matches("\\d+\\.\\d+")) {
+                    try {
+                        String[] parts = lineId.split("\\.");
+                        long major = Long.parseLong(parts[0]);
+                        long minor = Long.parseLong(parts[1]);
+                        long number = (major - 1) * 10 + minor;
+                        maxNumber = Math.max(maxNumber, number);
+                    } catch (NumberFormatException e) {
+                        // Skip invalid format
+                    }
+                }
+            }
+            
+            return maxNumber;
+        } catch (Exception e) {
+            logger.warn("Error getting max line ID number, starting from 0", e);
+            return 0;
+        }
+    }
 }
