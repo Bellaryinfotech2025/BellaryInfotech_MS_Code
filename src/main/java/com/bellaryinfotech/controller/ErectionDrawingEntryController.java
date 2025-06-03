@@ -402,6 +402,62 @@ public class ErectionDrawingEntryController {
     
     
     
+    //new endpoint
+    
+    
+    
+ // Add this method to your ErectionDrawingEntryController.java
+
+    /**
+     * Get all erection entries with complete data (non-paginated)
+     */
+    @RequestMapping(value = "/getAllErectionDrawingEntriesComplete/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getAllErectionEntriesComplete() {
+        try {
+            LOG.info("Fetching all erection drawing entries with complete data");
+            List<ErectionDrawingEntryDto> erectionEntries = erectionDrawingEntryService.getAllErectionEntries();
+            return ResponseEntity.ok(erectionEntries);
+        } catch (Exception e) {
+            LOG.error("Error getting all erection entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get erection entries: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get erection entries by drawing number with complete data
+     */
+    @RequestMapping(value = "/getErectionEntriesByDrawingNoComplete/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getErectionEntriesByDrawingNoComplete(@RequestParam String drawingNo) {
+        try {
+            LOG.info("Fetching complete erection entries by drawing number: {}", drawingNo);
+            List<ErectionDrawingEntryDto> erectionEntries = erectionDrawingEntryService.getErectionEntriesByDrawingNo(drawingNo);
+            return ResponseEntity.ok(erectionEntries);
+        } catch (Exception e) {
+            LOG.error("Error getting erection entries by drawing number: {}", drawingNo, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get erection entries: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get erection entries by mark number with complete data
+     */
+    @RequestMapping(value = "/getErectionEntriesByMarkNoComplete/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getErectionEntriesByMarkNoComplete(@RequestParam String markNo) {
+        try {
+            LOG.info("Fetching complete erection entries by mark number: {}", markNo);
+            List<ErectionDrawingEntryDto> erectionEntries = erectionDrawingEntryService.getErectionEntriesByMarkNo(markNo);
+            return ResponseEntity.ok(erectionEntries);
+        } catch (Exception e) {
+            LOG.error("Error getting erection entries by mark number: {}", markNo, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get erection entries: " + e.getMessage());
+        }
+    }
+
+    
+    
     
     
     
