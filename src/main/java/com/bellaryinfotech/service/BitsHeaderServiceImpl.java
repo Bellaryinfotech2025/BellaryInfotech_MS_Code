@@ -2,14 +2,10 @@ package com.bellaryinfotech.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.bellaryinfotech.DTO.BitsHeaderDto;
 import com.bellaryinfotech.model.BitsHeaderAll;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -22,9 +18,6 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
 
    @Autowired
    private BitsHeaderRepository headerRepository;
-   
-   @Autowired
-   private TenantResolutionService tenantResolutionService;
 
    public List<BitsHeaderDto> getAllHeaders() {
        List<BitsHeaderAll> headers = headerRepository.findAll();
@@ -44,10 +37,7 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        header.setLastUpdateDate(Timestamp.from(Instant.now()));
        header.setCreatedBy(1L); // Default user
        header.setLastUpdatedBy(1L); // Default user
-       
-       // Resolve tenant ID from the current request
-       Integer tenantId = resolveTenantIdFromRequest();
-       header.setTenantId(tenantId);
+       header.setTenantId(1); // Default tenant
        
        BitsHeaderAll savedHeader = headerRepository.save(header);
        return convertToDto(savedHeader);
@@ -60,8 +50,6 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
            updateEntityFromDto(header, headerDto);
            header.setLastUpdateDate(Timestamp.from(Instant.now()));
            header.setLastUpdatedBy(1L); // Default user
-           
-           // We don't update the tenant ID on updates to maintain data integrity
            
            BitsHeaderAll updatedHeader = headerRepository.save(header);
            return convertToDto(updatedHeader);
@@ -134,26 +122,5 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        entity.setWorkOrderDate(dto.getWorkOrderDate());
        entity.setCompletionDate(dto.getCompletionDate());
        entity.setLdApplicable(dto.getLdApplicable());
-   }
-   
-   /**
-    * Resolves the tenant ID from the current HTTP request
-    * 
-    * @return The resolved tenant ID
-    */
-   private Integer resolveTenantIdFromRequest() {
-       try {
-           ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-           if (attributes != null) {
-               HttpServletRequest request = attributes.getRequest();
-               return tenantResolutionService.resolveTenantId(request);
-           }
-       } catch (Exception e) {
-           // Log the error but don't fail the operation
-           System.err.println("Error resolving tenant ID: " + e.getMessage());
-       }
-       
-       // Default tenant ID if resolution fails
-       return 1;
    }
 }
