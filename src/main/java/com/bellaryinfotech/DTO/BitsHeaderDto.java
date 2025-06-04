@@ -13,6 +13,7 @@ public class BitsHeaderDto {
     private LocalDate workOrderDate;
     private LocalDate completionDate;
     private Boolean ldApplicable;
+     
 
     // Default constructor
     public BitsHeaderDto() {}

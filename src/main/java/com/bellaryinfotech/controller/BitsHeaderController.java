@@ -56,6 +56,7 @@ public class BitsHeaderController {
     @PostMapping(value = CREATE_HEADER, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createHeader(@RequestBody BitsHeaderDto headerDto) {
         LOG.info("Creating a new bits header");
+        
         try {
             BitsHeaderDto createdHeader = headerService.createHeader(headerDto);
             return ResponseEntity.status(201).body(createdHeader);

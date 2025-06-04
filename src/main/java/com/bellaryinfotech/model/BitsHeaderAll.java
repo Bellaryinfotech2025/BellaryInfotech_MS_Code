@@ -16,7 +16,6 @@ public class BitsHeaderAll {
     @Column(name = "work_order")
     private String workOrder;
     
-    
     @Column(name = "plant_location")
     private String plantLocation;
     
@@ -35,8 +34,9 @@ public class BitsHeaderAll {
     @Column(name = "ld_applicable")
     private Boolean ldApplicable;
     
+    // Changed from Integer to String to store error messages
     @Column(name = "tenant_id")
-    private Integer tenantId;
+    private String tenantId;
     
     @Column(name = "creation_date")
     private Timestamp creationDate;
@@ -127,9 +127,9 @@ public class BitsHeaderAll {
         return department;
     }
 
-    
-
-    
+    public void setDepartment(String department) {
+        this.department = department;
+    }
 
     public String getWorkLocation() {
         return workLocation;
@@ -163,11 +163,13 @@ public class BitsHeaderAll {
         this.ldApplicable = ldApplicable;
     }
 
-    public Integer getTenantId() {
+    // Changed return type from Integer to String
+    public String getTenantId() {
         return tenantId;
     }
 
-    public void setTenantId(Integer tenantId) {
+    // Changed parameter type from Integer to String
+    public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
 
@@ -322,9 +324,9 @@ public class BitsHeaderAll {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
-    public void setDepartment(String department) {
-        this.department = department;
-    }
 
+	public void setTenantId(Integer tenantId2) {
+		// TODO Auto-generated method stub
+		
+	}
 }
-
