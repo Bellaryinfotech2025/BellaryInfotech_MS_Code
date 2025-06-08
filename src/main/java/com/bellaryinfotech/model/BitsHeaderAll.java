@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bits_po_entry_header")
@@ -15,7 +16,6 @@ public class BitsHeaderAll {
     
     @Column(name = "work_order")
     private String workOrder;
-    
     
     @Column(name = "plant_location")
     private String plantLocation;
@@ -127,9 +127,9 @@ public class BitsHeaderAll {
         return department;
     }
 
-    
-
-    
+    public void setDepartment(String department) {
+        this.department = department;
+    }
 
     public String getWorkLocation() {
         return workLocation;
@@ -179,6 +179,11 @@ public class BitsHeaderAll {
         this.creationDate = creationDate;
     }
 
+    // Remove this conflicting method
+    // public void setCreationDate(LocalDateTime localDateTime) {
+    //     // This method is causing the conflict
+    // }
+
     public Long getCreatedBy() {
         return createdBy;
     }
@@ -194,6 +199,11 @@ public class BitsHeaderAll {
     public void setLastUpdateDate(Timestamp lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
+
+    // Remove this conflicting method
+    // public void setLastUpdatingDate(LocalDateTime localDateTime) {
+    //     // This method is causing the conflict
+    // }
 
     public Long getLastUpdatedBy() {
         return lastUpdatedBy;
@@ -322,9 +332,44 @@ public class BitsHeaderAll {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
-    public void setDepartment(String department) {
-        this.department = department;
+
+    // Helper method to convert LocalDateTime to Timestamp
+    public void setCreationDateFromLocalDateTime(LocalDateTime localDateTime) {
+        if (localDateTime != null) {
+            this.creationDate = Timestamp.valueOf(localDateTime);
+        }
     }
 
-}
+    // Helper method to convert LocalDateTime to Timestamp
+    public void setLastUpdateDateFromLocalDateTime(LocalDateTime localDateTime) {
+        if (localDateTime != null) {
+            this.lastUpdateDate = Timestamp.valueOf(localDateTime);
+        }
+    }
 
+    // Helper method to set createdBy from String
+    public void setCreatedByFromString(String createdBy) {
+        if (createdBy != null && !createdBy.isEmpty()) {
+            try {
+                this.createdBy = Long.parseLong(createdBy);
+            } catch (NumberFormatException e) {
+                this.createdBy = 1L; // Default value
+            }
+        } else {
+            this.createdBy = 1L; // Default value
+        }
+    }
+
+    // Helper method to set lastUpdatedBy from String
+    public void setLastUpdatedByFromString(String lastUpdatedBy) {
+        if (lastUpdatedBy != null && !lastUpdatedBy.isEmpty()) {
+            try {
+                this.lastUpdatedBy = Long.parseLong(lastUpdatedBy);
+            } catch (NumberFormatException e) {
+                this.lastUpdatedBy = 1L; // Default value
+            }
+        } else {
+            this.lastUpdatedBy = 1L; // Default value
+        }
+    }
+}

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class AlignmentDrawingEntry {
 
     @Id
+    
     @Column(name = "line_id", nullable = false)
     private String lineId;
 

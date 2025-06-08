@@ -64,6 +64,11 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
                 // Set marked quantity to 1 for each individual entry
                 entry.setMarkedQty(BigDecimal.ONE);
                 
+                // Set default tenant if not provided
+                if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
+                    entry.setTenantId("DEFAULT");
+                }
+                
                 entriesToSave.add(entry);
             }
 
@@ -111,6 +116,11 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
                     
                     // Set marked quantity to 1 for each individual entry
                     entry.setMarkedQty(BigDecimal.ONE);
+                    
+                    // Set default tenant if not provided
+                    if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
+                        entry.setTenantId("DEFAULT");
+                    }
                     
                     allEntriesToSave.add(entry);
                 }
@@ -508,11 +518,24 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
-        entity.setTenantId(dto.getTenantId());
+        
+        // Set default tenant if not provided
+        String tenantId = dto.getTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            tenantId = "DEFAULT";
+        }
+        entity.setTenantId(tenantId);
+        
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatingDate(dto.getLastUpdatingDate());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+
+        // Set new fields
+        entity.setDrawingWeight(dto.getDrawingWeight());
+        entity.setMarkWeight(dto.getMarkWeight());
+        entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        entity.setTargetDate(dto.getTargetDate());
         
         // Set PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) {
@@ -561,6 +584,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setLastUpdatingDate(entity.getLastUpdatingDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
         
+        // Set new fields
+        dto.setDrawingWeight(entity.getDrawingWeight());
+        dto.setMarkWeight(entity.getMarkWeight());
+        dto.setDrawingReceivedDate(entity.getDrawingReceivedDate());
+        dto.setTargetDate(entity.getTargetDate());
+        
         // Set PO Line Reference ID if available
         dto.setPoLineReferenceId(entity.getPoLineReferenceId());
         
@@ -596,9 +625,22 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
-        if (dto.getTenantId() != null) entity.setTenantId(dto.getTenantId());
+        
+        // Handle tenant ID with default
+        if (dto.getTenantId() != null) {
+            entity.setTenantId(dto.getTenantId());
+        } else if (entity.getTenantId() == null || entity.getTenantId().trim().isEmpty()) {
+            entity.setTenantId("DEFAULT");
+        }
+        
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+        
+        // Update new fields
+        if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
+        if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
+        if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
         
         // Update PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());

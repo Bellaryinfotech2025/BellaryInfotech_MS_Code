@@ -149,28 +149,66 @@ public class BitsLinesServiceImpl implements BitsLinesService {
 
     private BitsLinesDto convertToDto(BitsLinesAll entity) {
         BitsLinesDto dto = new BitsLinesDto();
+        // Core fields
         dto.setLineId(entity.getLineId());
+        dto.setLineNumber(entity.getLineNumber());
         dto.setSerNo(entity.getSerNo());
         dto.setServiceCode(entity.getServiceCode());
         dto.setServiceDesc(entity.getServiceDesc());
         dto.setQty(entity.getQty());
         dto.setUom(entity.getUom());
-        dto.setRate(entity.getUnitPrice()); // Map unitPrice to rate
-        dto.setAmount(entity.getTotalPrice()); // Map totalPrice to amount
-        dto.setWorkOrderRef(entity.getAttribute1V()); // Map attribute1V to workOrderRef
+        dto.setUnitPrice(entity.getUnitPrice());
+        dto.setTotalPrice(entity.getTotalPrice());
+        
+        // Attribute mappings
+        dto.setWorkOrderRef(entity.getAttribute1V());
+        dto.setAttribute2V(entity.getAttribute2V());
+        dto.setAttribute3V(entity.getAttribute3V());
+        dto.setAttribute4V(entity.getAttribute4V());
+        dto.setAttribute5V(entity.getAttribute5V());
+        dto.setAttribute1N(entity.getAttribute1N());
+        dto.setAttribute2N(entity.getAttribute2N());
+        dto.setAttribute3N(entity.getAttribute3N());
+        dto.setAttribute4N(entity.getAttribute4N());
+        dto.setAttribute5N(entity.getAttribute5N());
+        dto.setAttribute1D(entity.getAttribute1D());
+        dto.setAttribute2D(entity.getAttribute2D());
+        dto.setAttribute3D(entity.getAttribute3D());
+        dto.setAttribute4D(entity.getAttribute4D());
+        dto.setAttribute5D(entity.getAttribute5D());
+        
         return dto;
     }
 
     private BitsLinesAll convertToEntity(BitsLinesDto dto) {
         BitsLinesAll entity = new BitsLinesAll();
+        // Core fields
+        entity.setLineNumber(dto.getLineNumber());
         entity.setSerNo(dto.getSerNo());
         entity.setServiceCode(dto.getServiceCode());
         entity.setServiceDesc(dto.getServiceDesc());
         entity.setQty(dto.getQty());
         entity.setUom(dto.getUom());
-        entity.setUnitPrice(dto.getRate()); // Map rate to unitPrice
-        entity.setTotalPrice(dto.getAmount()); // Map amount to totalPrice
-        entity.setAttribute1V(dto.getWorkOrderRef()); // Map workOrderRef to attribute1V
+        entity.setUnitPrice(dto.getUnitPrice());
+        entity.setTotalPrice(dto.getTotalPrice());
+        
+        // Attribute mappings
+        entity.setAttribute1V(dto.getWorkOrderRef());
+        entity.setAttribute2V(dto.getAttribute2V());
+        entity.setAttribute3V(dto.getAttribute3V());
+        entity.setAttribute4V(dto.getAttribute4V());
+        entity.setAttribute5V(dto.getAttribute5V());
+        entity.setAttribute1N(dto.getAttribute1N());
+        entity.setAttribute2N(dto.getAttribute2N());
+        entity.setAttribute3N(dto.getAttribute3N());
+        entity.setAttribute4N(dto.getAttribute4N());
+        entity.setAttribute5N(dto.getAttribute5N());
+        entity.setAttribute1D(dto.getAttribute1D());
+        entity.setAttribute2D(dto.getAttribute2D());
+        entity.setAttribute3D(dto.getAttribute3D());
+        entity.setAttribute4D(dto.getAttribute4D());
+        entity.setAttribute5D(dto.getAttribute5D());
+        
         return entity;
     }
 
@@ -180,8 +218,8 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setServiceDesc(dto.getServiceDesc());
         entity.setQty(dto.getQty());
         entity.setUom(dto.getUom());
-        entity.setUnitPrice(dto.getRate()); // Map rate to unitPrice
-        entity.setTotalPrice(dto.getAmount()); // Map amount to totalPrice
+        entity.setUnitPrice(dto.getUnitPrice());     // Correct getter
+        entity.setTotalPrice(dto.getTotalPrice());   // Correct getter
         // Don't update workOrderRef during updates to maintain the link
     }
 }

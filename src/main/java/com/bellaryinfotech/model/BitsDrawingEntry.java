@@ -113,8 +113,23 @@ public class BitsDrawingEntry {
 
     @Column(name = "attribute5_d")
     private LocalDate attribute5D;
+    
+    @Column(name = "drawing_weight", precision = 19, scale = 4)
+    private BigDecimal drawingWeight;
 
-    // Default constructor
+    @Column(name = "mark_weight", precision = 19, scale = 4)
+    private BigDecimal markWeight;
+
+    @Column(name = "drawing_received_date")
+    private LocalDate drawingReceivedDate;
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+    
+
+    
+
+	// Default constructor
     public BitsDrawingEntry() {}
 
     // Constructor with essential fields
@@ -400,6 +415,38 @@ public class BitsDrawingEntry {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
+    
+    public BigDecimal getDrawingWeight() {
+		return drawingWeight;
+	}
+
+	public void setDrawingWeight(BigDecimal drawingWeight) {
+		this.drawingWeight = drawingWeight;
+	}
+
+	public BigDecimal getMarkWeight() {
+		return markWeight;
+	}
+
+	public void setMarkWeight(BigDecimal markWeight) {
+		this.markWeight = markWeight;
+	}
+
+	public LocalDate getDrawingReceivedDate() {
+		return drawingReceivedDate;
+	}
+
+	public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+		this.drawingReceivedDate = drawingReceivedDate;
+	}
+
+	public LocalDate getTargetDate() {
+		return targetDate;
+	}
+
+	public void setTargetDate(LocalDate targetDate) {
+		this.targetDate = targetDate;
+	}
 
     @PrePersist
     protected void onCreate() {

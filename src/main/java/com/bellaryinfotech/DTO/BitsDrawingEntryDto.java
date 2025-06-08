@@ -128,6 +128,20 @@ private LocalDate attribute4D;
 @JsonFormat(pattern = "yyyy-MM-dd")
 private LocalDate attribute5D;
 
+@JsonProperty("drawingWeight")
+private BigDecimal drawingWeight;
+
+@JsonProperty("markWeight")
+private BigDecimal markWeight;
+
+@JsonProperty("drawingReceivedDate")
+@JsonFormat(pattern = "yyyy-MM-dd")
+private LocalDate drawingReceivedDate;
+
+@JsonProperty("targetDate")
+@JsonFormat(pattern = "yyyy-MM-dd")
+private LocalDate targetDate;
+
 // Default constructor
 public BitsDrawingEntryDto() {}
 
@@ -413,4 +427,38 @@ public LocalDate getAttribute5D() {
 public void setAttribute5D(LocalDate attribute5D) {
     this.attribute5D = attribute5D;
 }
+
+public BigDecimal getDrawingWeight() {
+	return drawingWeight;
+}
+
+public void setDrawingWeight(BigDecimal drawingWeight) {
+	this.drawingWeight = drawingWeight;
+}
+
+public BigDecimal getMarkWeight() {
+	return markWeight;
+}
+
+public void setMarkWeight(BigDecimal markWeight) {
+	this.markWeight = markWeight;
+}
+
+public LocalDate getDrawingReceivedDate() {
+	return drawingReceivedDate;
+}
+
+public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+	this.drawingReceivedDate = drawingReceivedDate;
+}
+
+public LocalDate getTargetDate() {
+	return targetDate;
+}
+
+public void setTargetDate(LocalDate targetDate) {
+	this.targetDate = targetDate;
+}
+
+
 }
