@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class ErectionDrawingEntryDto {
 
     @JsonProperty("lineId")
-    @NotBlank(message = "Line ID is required")
     private String lineId;
 
     @JsonProperty("version")
@@ -121,6 +120,34 @@ public class ErectionDrawingEntryDto {
     @JsonProperty("status")
     private String status;
 
+    // NEW FIELDS
+    @JsonProperty("drawingWeight")
+    private BigDecimal drawingWeight;
+
+    @JsonProperty("markWeight")
+    private BigDecimal markWeight;
+
+    @JsonProperty("drawingReceivedDate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate drawingReceivedDate;
+
+    @JsonProperty("targetDate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate targetDate;
+
+    // FABRICATION STAGE FIELDS
+    @JsonProperty("cuttingStage")
+    private String cuttingStage = "N";
+
+    @JsonProperty("fitUpStage")
+    private String fitUpStage = "N";
+
+    @JsonProperty("weldingStage")
+    private String weldingStage = "N";
+
+    @JsonProperty("finishingStage")
+    private String finishingStage = "N";
+
     // Default constructor
     public ErectionDrawingEntryDto() {}
 
@@ -133,7 +160,7 @@ public class ErectionDrawingEntryDto {
         this.status = "erection";
     }
 
-    // Getters and Setters
+    // Getters and Setters for existing fields
     public String getLineId() {
         return lineId;
     }
@@ -414,6 +441,72 @@ public class ErectionDrawingEntryDto {
         this.status = status;
     }
 
+    // NEW GETTERS AND SETTERS
+    public BigDecimal getDrawingWeight() {
+        return drawingWeight;
+    }
+
+    public void setDrawingWeight(BigDecimal drawingWeight) {
+        this.drawingWeight = drawingWeight;
+    }
+
+    public BigDecimal getMarkWeight() {
+        return markWeight;
+    }
+
+    public void setMarkWeight(BigDecimal markWeight) {
+        this.markWeight = markWeight;
+    }
+
+    public LocalDate getDrawingReceivedDate() {
+        return drawingReceivedDate;
+    }
+
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+        this.drawingReceivedDate = drawingReceivedDate;
+    }
+
+    public LocalDate getTargetDate() {
+        return targetDate;
+    }
+
+    public void setTargetDate(LocalDate targetDate) {
+        this.targetDate = targetDate;
+    }
+
+    // FABRICATION STAGE GETTERS AND SETTERS
+    public String getCuttingStage() {
+        return cuttingStage;
+    }
+
+    public void setCuttingStage(String cuttingStage) {
+        this.cuttingStage = cuttingStage != null ? cuttingStage : "N";
+    }
+
+    public String getFitUpStage() {
+        return fitUpStage;
+    }
+
+    public void setFitUpStage(String fitUpStage) {
+        this.fitUpStage = fitUpStage != null ? fitUpStage : "N";
+    }
+
+    public String getWeldingStage() {
+        return weldingStage;
+    }
+
+    public void setWeldingStage(String weldingStage) {
+        this.weldingStage = weldingStage != null ? weldingStage : "N";
+    }
+
+    public String getFinishingStage() {
+        return finishingStage;
+    }
+
+    public void setFinishingStage(String finishingStage) {
+        this.finishingStage = finishingStage != null ? finishingStage : "N";
+    }
+
     @Override
     public String toString() {
         return "ErectionDrawingEntryDto{" +
@@ -426,6 +519,12 @@ public class ErectionDrawingEntryDto {
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
                 ", status='" + status + '\'' +
+                ", drawingWeight=" + drawingWeight +
+                ", markWeight=" + markWeight +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 '}';
     }
 }

@@ -1,7 +1,9 @@
 package com.bellaryinfotech.controller;
 
 import com.bellaryinfotech.DTO.ErectionDrawingEntryDto;
+import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.service.ErectionDrawingEntryService;
+import com.bellaryinfotech.service.BitsDrawingEntryService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +32,13 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class ErectionDrawingEntryController {
 	
-	 private static final Logger logger = LoggerFactory.getLogger(ErectionDrawingEntryController.class);
-
-	   
+    private static final Logger logger = LoggerFactory.getLogger(ErectionDrawingEntryController.class);
 
     @Autowired
     private ErectionDrawingEntryService erectionDrawingEntryService;
+
+    @Autowired
+    private BitsDrawingEntryService bitsDrawingEntryService;
 
     // API endpoint constants
     public static final String GET_ALL_ERECTION_ENTRIES = "/getAllErectionDrawingEntries/details";
@@ -74,7 +77,81 @@ public class ErectionDrawingEntryController {
     public static final String GET_LATEST_BY_MARK_NO = "/getLatestErectionDrawingEntryByMarkNo/details";
     public static final String GET_LATEST_BY_STATUS = "/getLatestErectionDrawingEntryByStatus/details";
 
+    // NEW ENDPOINT FOR ENHANCED DATA WITH FABRICATION STAGES
+    public static final String GET_ENHANCED_ERECTION_ENTRIES = "/getEnhancedErectionDrawingEntries/details";
+
     private static final Logger LOG = LoggerFactory.getLogger(ErectionDrawingEntryController.class);
+
+    /**
+     * NEW: Get enhanced erection entries with fabrication stage data synchronized
+     */
+    @RequestMapping(value = GET_ENHANCED_ERECTION_ENTRIES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getEnhancedErectionEntries() {
+        try {
+            LOG.info("Fetching enhanced erection entries with fabrication stage synchronization");
+            
+            // Get all erection entries
+            List<ErectionDrawingEntryDto> erectionEntries = erectionDrawingEntryService.getAllErectionEntries();
+            
+            // Synchronize fabrication stage data for each entry
+            for (ErectionDrawingEntryDto erectionEntry : erectionEntries) {
+                try {
+                    // Find corresponding fabrication entry by drawing and mark number
+                    List<BitsDrawingEntryDto> fabricationEntries = bitsDrawingEntryService.getDrawingEntriesByDrawingNo(erectionEntry.getDrawingNo());
+                    
+                    // Find the specific entry with matching mark number
+                    Optional<BitsDrawingEntryDto> matchingFabEntry = fabricationEntries.stream()
+                            .filter(fab -> fab.getMarkNo() != null && fab.getMarkNo().equals(erectionEntry.getMarkNo()))
+                            .findFirst();
+                    
+                    if (matchingFabEntry.isPresent()) {
+                        BitsDrawingEntryDto fabEntry = matchingFabEntry.get();
+                        
+                        // Synchronize fabrication stage data
+                        erectionEntry.setCuttingStage(fabEntry.getCuttingStage() != null ? fabEntry.getCuttingStage() : "N");
+                        erectionEntry.setFitUpStage(fabEntry.getFitUpStage() != null ? fabEntry.getFitUpStage() : "N");
+                        erectionEntry.setWeldingStage(fabEntry.getWeldingStage() != null ? fabEntry.getWeldingStage() : "N");
+                        erectionEntry.setFinishingStage(fabEntry.getFinishingStage() != null ? fabEntry.getFinishingStage() : "N");
+                        
+                        // Synchronize additional fields if available
+                        if (fabEntry.getDrawingWeight() != null) {
+                            erectionEntry.setDrawingWeight(fabEntry.getDrawingWeight());
+                        }
+                        if (fabEntry.getMarkWeight() != null) {
+                            erectionEntry.setMarkWeight(fabEntry.getMarkWeight());
+                        }
+                        if (fabEntry.getDrawingReceivedDate() != null) {
+                            erectionEntry.setDrawingReceivedDate(fabEntry.getDrawingReceivedDate());
+                        }
+                        if (fabEntry.getTargetDate() != null) {
+                            erectionEntry.setTargetDate(fabEntry.getTargetDate());
+                        }
+                        
+                        LOG.debug("Synchronized fabrication data for Drawing: {}, Mark: {}", 
+                                erectionEntry.getDrawingNo(), erectionEntry.getMarkNo());
+                    } else {
+                        // Set default values if no fabrication entry found
+                        erectionEntry.setCuttingStage("N");
+                        erectionEntry.setFitUpStage("N");
+                        erectionEntry.setWeldingStage("N");
+                        erectionEntry.setFinishingStage("N");
+                    }
+                } catch (Exception e) {
+                    LOG.warn("Error synchronizing fabrication data for Drawing: {}, Mark: {} - {}",
+                            erectionEntry.getDrawingNo(), erectionEntry.getMarkNo(), e.getMessage());
+                    // Continue with other entries
+                }
+            }
+            
+            LOG.info("Successfully synchronized fabrication data for {} erection entries", erectionEntries.size());
+            return ResponseEntity.ok(erectionEntries);
+            
+        } catch (Exception e) {
+            LOG.error("Error getting enhanced erection entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get enhanced erection entries: " + e.getMessage());
+        }
+    }
 
     /**
      * Get all erection entries with pagination
@@ -142,7 +219,7 @@ public class ErectionDrawingEntryController {
      * Create a new erection entry
      */
     @RequestMapping(value = CREATE_ERECTION_ENTRY, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-    public ResponseEntity<?> createErectionEntry(@RequestBody ErectionDrawingEntryDto erectionEntryDto) {  // Removed @Valid
+    public ResponseEntity<?> createErectionEntry(@RequestBody ErectionDrawingEntryDto erectionEntryDto) {
         try {
             LOG.info("Creating new erection entry for drawing number: {}", erectionEntryDto.getDrawingNo());
             List<ErectionDrawingEntryDto> createdEntries = erectionDrawingEntryService.createErectionEntry(erectionEntryDto);
@@ -162,7 +239,7 @@ public class ErectionDrawingEntryController {
      * Create multiple erection entries
      */
     @RequestMapping(value = CREATE_BULK_ERECTION_ENTRIES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-    public ResponseEntity<?> createErectionEntries(@RequestBody List<ErectionDrawingEntryDto> erectionEntryDtos) {  // Removed @Valid
+    public ResponseEntity<?> createErectionEntries(@RequestBody List<ErectionDrawingEntryDto> erectionEntryDtos) {
         try {
             LOG.info("Creating {} erection entries", erectionEntryDtos.size());
             List<ErectionDrawingEntryDto> createdEntries = erectionDrawingEntryService.createErectionEntries(erectionEntryDtos);
@@ -288,6 +365,37 @@ public class ErectionDrawingEntryController {
     }
 
     /**
+     * Search erection entries by multiple criteria
+     */
+    @RequestMapping(value = SEARCH_BY_MULTIPLE_CRITERIA, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> searchErectionEntries(
+            @RequestParam(required = false) String drawingNo,
+            @RequestParam(required = false) String markNo,
+            @RequestParam(required = false) String sessionCode,
+            @RequestParam(required = false) String tenantId,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "creationDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        try {
+            LOG.info("Searching erection entries with multiple criteria");
+            
+            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            Page<ErectionDrawingEntryDto> erectionEntries = erectionDrawingEntryService.searchErectionEntries(
+                    drawingNo, markNo, sessionCode, tenantId, status, pageable);
+            return ResponseEntity.ok(erectionEntries);
+        } catch (Exception e) {
+            LOG.error("Error searching erection entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to search erection entries: " + e.getMessage());
+        }
+    }
+
+    /**
      * Get distinct drawing numbers
      */
     @RequestMapping(value = GET_DISTINCT_DRAWING_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
@@ -334,15 +442,6 @@ public class ErectionDrawingEntryController {
                     .body("Failed to get total count: " + e.getMessage());
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     @PostMapping("/createBulkErectionDrawingEntriesWithDuplicateCheck/details")
     public ResponseEntity<?> createBulkErectionDrawingEntriesWithDuplicateCheck(@RequestBody List<ErectionDrawingEntryDto> erectionEntryDtos) {
@@ -399,14 +498,6 @@ public class ErectionDrawingEntryController {
                     .body("Error creating erection entries: " + e.getMessage());
         }
     }
-    
-    
-    
-    //new endpoint
-    
-    
-    
- // Add this method to your ErectionDrawingEntryController.java
 
     /**
      * Get all erection entries with complete data (non-paginated)
@@ -455,10 +546,4 @@ public class ErectionDrawingEntryController {
                     .body("Failed to get erection entries: " + e.getMessage());
         }
     }
-
-    
-    
-    
-    
-    
 }

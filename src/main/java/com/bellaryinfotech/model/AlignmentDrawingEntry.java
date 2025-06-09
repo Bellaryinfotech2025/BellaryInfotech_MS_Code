@@ -10,7 +10,6 @@ import java.time.LocalDate;
 public class AlignmentDrawingEntry {
 
     @Id
-    
     @Column(name = "line_id", nullable = false)
     private String lineId;
 
@@ -117,6 +116,32 @@ public class AlignmentDrawingEntry {
     @Column(name = "status", length = 50)
     private String status;
 
+    // NEW FIELDS FOR ENHANCED FUNCTIONALITY - EXACTLY LIKE ERECTION
+    @Column(name = "drawing_weight", precision = 19, scale = 4)
+    private BigDecimal drawingWeight;
+
+    @Column(name = "mark_weight", precision = 19, scale = 4)
+    private BigDecimal markWeight;
+
+    @Column(name = "drawing_received_date")
+    private LocalDate drawingReceivedDate;
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+
+    // FABRICATION STAGE FIELDS (synchronized from fabrication/erection tables)
+    @Column(name = "cutting_stage", length = 1)
+    private String cuttingStage = "N";
+
+    @Column(name = "fit_up_stage", length = 1)
+    private String fitUpStage = "N";
+
+    @Column(name = "welding_stage", length = 1)
+    private String weldingStage = "N";
+
+    @Column(name = "finishing_stage", length = 1)
+    private String finishingStage = "N";
+
     // Default constructor
     public AlignmentDrawingEntry() {}
 
@@ -131,111 +156,371 @@ public class AlignmentDrawingEntry {
         this.status = "alignment";
     }
 
-    // Getters and Setters
-    public String getLineId() { return lineId; }
-    public void setLineId(String lineId) { this.lineId = lineId; }
+    // Getters and Setters for existing fields
+    public String getLineId() {
+        return lineId;
+    }
 
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
+    public void setLineId(String lineId) {
+        this.lineId = lineId;
+    }
 
-    public String getDrawingNo() { return drawingNo; }
-    public void setDrawingNo(String drawingNo) { this.drawingNo = drawingNo; }
+    public Long getVersion() {
+        return version;
+    }
 
-    public String getMarkNo() { return markNo; }
-    public void setMarkNo(String markNo) { this.markNo = markNo; }
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
-    public BigDecimal getMarkedQty() { return markedQty; }
-    public void setMarkedQty(BigDecimal markedQty) { this.markedQty = markedQty; }
+    public String getDrawingNo() {
+        return drawingNo;
+    }
 
-    public BigDecimal getTotalMarkedWgt() { return totalMarkedWgt; }
-    public void setTotalMarkedWgt(BigDecimal totalMarkedWgt) { this.totalMarkedWgt = totalMarkedWgt; }
+    public void setDrawingNo(String drawingNo) {
+        this.drawingNo = drawingNo;
+    }
 
-    public String getSessionCode() { return sessionCode; }
-    public void setSessionCode(String sessionCode) { this.sessionCode = sessionCode; }
+    public String getMarkNo() {
+        return markNo;
+    }
 
-    public String getSessionName() { return sessionName; }
-    public void setSessionName(String sessionName) { this.sessionName = sessionName; }
+    public void setMarkNo(String markNo) {
+        this.markNo = markNo;
+    }
 
-    public BigDecimal getSessionWeight() { return sessionWeight; }
-    public void setSessionWeight(BigDecimal sessionWeight) { this.sessionWeight = sessionWeight; }
+    public BigDecimal getMarkedQty() {
+        return markedQty;
+    }
 
-    public BigDecimal getWidth() { return width; }
-    public void setWidth(BigDecimal width) { this.width = width; }
+    public void setMarkedQty(BigDecimal markedQty) {
+        this.markedQty = markedQty;
+    }
 
-    public BigDecimal getLength() { return length; }
-    public void setLength(BigDecimal length) { this.length = length; }
+    public BigDecimal getTotalMarkedWgt() {
+        return totalMarkedWgt;
+    }
 
-    public BigDecimal getItemQty() { return itemQty; }
-    public void setItemQty(BigDecimal itemQty) { this.itemQty = itemQty; }
+    public void setTotalMarkedWgt(BigDecimal totalMarkedWgt) {
+        this.totalMarkedWgt = totalMarkedWgt;
+    }
 
-    public BigDecimal getItemWeight() { return itemWeight; }
-    public void setItemWeight(BigDecimal itemWeight) { this.itemWeight = itemWeight; }
+    public String getSessionCode() {
+        return sessionCode;
+    }
 
-    public String getTenantId() { return tenantId; }
-    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+    public void setSessionCode(String sessionCode) {
+        this.sessionCode = sessionCode;
+    }
 
-    public LocalDateTime getCreationDate() { return creationDate; }
-    public void setCreationDate(LocalDateTime creationDate) { this.creationDate = creationDate; }
+    public String getSessionName() {
+        return sessionName;
+    }
 
-    public String getCreatedBy() { return createdBy; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+    public void setSessionName(String sessionName) {
+        this.sessionName = sessionName;
+    }
 
-    public LocalDateTime getLastUpdatingDate() { return lastUpdatingDate; }
-    public void setLastUpdatingDate(LocalDateTime lastUpdatingDate) { this.lastUpdatingDate = lastUpdatingDate; }
+    public BigDecimal getSessionWeight() {
+        return sessionWeight;
+    }
 
-    public String getLastUpdatedBy() { return lastUpdatedBy; }
-    public void setLastUpdatedBy(String lastUpdatedBy) { this.lastUpdatedBy = lastUpdatedBy; }
+    public void setSessionWeight(BigDecimal sessionWeight) {
+        this.sessionWeight = sessionWeight;
+    }
 
-    public String getAttribute1V() { return attribute1V; }
-    public void setAttribute1V(String attribute1V) { this.attribute1V = attribute1V; }
+    public BigDecimal getWidth() {
+        return width;
+    }
 
-    public String getAttribute2V() { return attribute2V; }
-    public void setAttribute2V(String attribute2V) { this.attribute2V = attribute2V; }
+    public void setWidth(BigDecimal width) {
+        this.width = width;
+    }
 
-    public String getAttribute3V() { return attribute3V; }
-    public void setAttribute3V(String attribute3V) { this.attribute3V = attribute3V; }
+    public BigDecimal getLength() {
+        return length;
+    }
 
-    public String getAttribute4V() { return attribute4V; }
-    public void setAttribute4V(String attribute4V) { this.attribute4V = attribute4V; }
+    public void setLength(BigDecimal length) {
+        this.length = length;
+    }
 
-    public String getAttribute5V() { return attribute5V; }
-    public void setAttribute5V(String attribute5V) { this.attribute5V = attribute5V; }
+    public BigDecimal getItemQty() {
+        return itemQty;
+    }
 
-    public BigDecimal getAttribute1N() { return attribute1N; }
-    public void setAttribute1N(BigDecimal attribute1N) { this.attribute1N = attribute1N; }
+    public void setItemQty(BigDecimal itemQty) {
+        this.itemQty = itemQty;
+    }
 
-    public BigDecimal getAttribute2N() { return attribute2N; }
-    public void setAttribute2N(BigDecimal attribute2N) { this.attribute2N = attribute2N; }
+    public BigDecimal getItemWeight() {
+        return itemWeight;
+    }
 
-    public BigDecimal getAttribute3N() { return attribute3N; }
-    public void setAttribute3N(BigDecimal attribute3N) { this.attribute3N = attribute3N; }
+    public void setItemWeight(BigDecimal itemWeight) {
+        this.itemWeight = itemWeight;
+    }
 
-    public BigDecimal getAttribute4N() { return attribute4N; }
-    public void setAttribute4N(BigDecimal attribute4N) { this.attribute4N = attribute4N; }
+    public String getTenantId() {
+        return tenantId;
+    }
 
-    public BigDecimal getAttribute5N() { return attribute5N; }
-    public void setAttribute5N(BigDecimal attribute5N) { this.attribute5N = attribute5N; }
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
 
-    public LocalDate getAttribute1D() { return attribute1D; }
-    public void setAttribute1D(LocalDate attribute1D) { this.attribute1D = attribute1D; }
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
 
-    public LocalDate getAttribute2D() { return attribute2D; }
-    public void setAttribute2D(LocalDate attribute2D) { this.attribute2D = attribute2D; }
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
 
-    public LocalDate getAttribute3D() { return attribute3D; }
-    public void setAttribute3D(LocalDate attribute3D) { this.attribute3D = attribute3D; }
+    public String getCreatedBy() {
+        return createdBy;
+    }
 
-    public LocalDate getAttribute4D() { return attribute4D; }
-    public void setAttribute4D(LocalDate attribute4D) { this.attribute4D = attribute4D; }
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
 
-    public LocalDate getAttribute5D() { return attribute5D; }
-    public void setAttribute5D(LocalDate attribute5D) { this.attribute5D = attribute5D; }
+    public LocalDateTime getLastUpdatingDate() {
+        return lastUpdatingDate;
+    }
 
-    public BigDecimal getPoLineReferenceId() { return poLineReferenceId; }
-    public void setPoLineReferenceId(BigDecimal poLineReferenceId) { this.poLineReferenceId = poLineReferenceId; }
+    public void setLastUpdatingDate(LocalDateTime lastUpdatingDate) {
+        this.lastUpdatingDate = lastUpdatingDate;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public String getAttribute1V() {
+        return attribute1V;
+    }
+
+    public void setAttribute1V(String attribute1V) {
+        this.attribute1V = attribute1V;
+    }
+
+    public String getAttribute2V() {
+        return attribute2V;
+    }
+
+    public void setAttribute2V(String attribute2V) {
+        this.attribute2V = attribute2V;
+    }
+
+    public String getAttribute3V() {
+        return attribute3V;
+    }
+
+    public void setAttribute3V(String attribute3V) {
+        this.attribute3V = attribute3V;
+    }
+
+    public String getAttribute4V() {
+        return attribute4V;
+    }
+
+    public void setAttribute4V(String attribute4V) {
+        this.attribute4V = attribute4V;
+    }
+
+    public String getAttribute5V() {
+        return attribute5V;
+    }
+
+    public void setAttribute5V(String attribute5V) {
+        this.attribute5V = attribute5V;
+    }
+
+    public BigDecimal getAttribute1N() {
+        return attribute1N;
+    }
+
+    public void setAttribute1N(BigDecimal attribute1N) {
+        this.attribute1N = attribute1N;
+    }
+
+    public BigDecimal getAttribute2N() {
+        return attribute2N;
+    }
+
+    public void setAttribute2N(BigDecimal attribute2N) {
+        this.attribute2N = attribute2N;
+    }
+
+    public BigDecimal getAttribute3N() {
+        return attribute3N;
+    }
+
+    public void setAttribute3N(BigDecimal attribute3N) {
+        this.attribute3N = attribute3N;
+    }
+
+    public BigDecimal getAttribute4N() {
+        return attribute4N;
+    }
+
+    public void setAttribute4N(BigDecimal attribute4N) {
+        this.attribute4N = attribute4N;
+    }
+
+    public BigDecimal getAttribute5N() {
+        return attribute5N;
+    }
+
+    public void setAttribute5N(BigDecimal attribute5N) {
+        this.attribute5N = attribute5N;
+    }
+
+    public LocalDate getAttribute1D() {
+        return attribute1D;
+    }
+
+    public void setAttribute1D(LocalDate attribute1D) {
+        this.attribute1D = attribute1D;
+    }
+
+    public LocalDate getAttribute2D() {
+        return attribute2D;
+    }
+
+    public void setAttribute2D(LocalDate attribute2D) {
+        this.attribute2D = attribute2D;
+    }
+
+    public LocalDate getAttribute3D() {
+        return attribute3D;
+    }
+
+    public void setAttribute3D(LocalDate attribute3D) {
+        this.attribute3D = attribute3D;
+    }
+
+    public LocalDate getAttribute4D() {
+        return attribute4D;
+    }
+
+    public void setAttribute4D(LocalDate attribute4D) {
+        this.attribute4D = attribute4D;
+    }
+
+    public LocalDate getAttribute5D() {
+        return attribute5D;
+    }
+
+    public void setAttribute5D(LocalDate attribute5D) {
+        this.attribute5D = attribute5D;
+    }
+
+    public BigDecimal getPoLineReferenceId() {
+        return poLineReferenceId;
+    }
+
+    public void setPoLineReferenceId(BigDecimal poLineReferenceId) {
+        this.poLineReferenceId = poLineReferenceId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // NEW GETTERS AND SETTERS - EXACTLY LIKE ERECTION
+    public BigDecimal getDrawingWeight() {
+        return drawingWeight;
+    }
+
+    public void setDrawingWeight(BigDecimal drawingWeight) {
+        this.drawingWeight = drawingWeight;
+    }
+
+    public BigDecimal getMarkWeight() {
+        return markWeight;
+    }
+
+    public void setMarkWeight(BigDecimal markWeight) {
+        this.markWeight = markWeight;
+    }
+
+    public LocalDate getDrawingReceivedDate() {
+        return drawingReceivedDate;
+    }
+
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+        this.drawingReceivedDate = drawingReceivedDate;
+    }
+
+    public LocalDate getTargetDate() {
+        return targetDate;
+    }
+
+    public void setTargetDate(LocalDate targetDate) {
+        this.targetDate = targetDate;
+    }
+
+    // FABRICATION STAGE GETTERS AND SETTERS - EXACTLY LIKE ERECTION
+    public String getCuttingStage() {
+        return cuttingStage;
+    }
+
+    public void setCuttingStage(String cuttingStage) {
+        this.cuttingStage = cuttingStage != null ? cuttingStage : "N";
+    }
+
+    public String getFitUpStage() {
+        return fitUpStage;
+    }
+
+    public void setFitUpStage(String fitUpStage) {
+        this.fitUpStage = fitUpStage != null ? fitUpStage : "N";
+    }
+
+    public String getWeldingStage() {
+        return weldingStage;
+    }
+
+    public void setWeldingStage(String weldingStage) {
+        this.weldingStage = weldingStage != null ? weldingStage : "N";
+    }
+
+    public String getFinishingStage() {
+        return finishingStage;
+    }
+
+    public void setFinishingStage(String finishingStage) {
+        this.finishingStage = finishingStage != null ? finishingStage : "N";
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (creationDate == null) {
+            creationDate = LocalDateTime.now();
+        }
+        lastUpdatingDate = LocalDateTime.now();
+        
+        // Ensure fabrication stages have default values
+        if (cuttingStage == null) cuttingStage = "N";
+        if (fitUpStage == null) fitUpStage = "N";
+        if (weldingStage == null) weldingStage = "N";
+        if (finishingStage == null) finishingStage = "N";
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        lastUpdatingDate = LocalDateTime.now();
+    }
 
     @Override
     public String toString() {
@@ -245,7 +530,16 @@ public class AlignmentDrawingEntry {
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +
+                ", totalMarkedWgt=" + totalMarkedWgt +
+                ", sessionCode='" + sessionCode + '\'' +
+                ", sessionName='" + sessionName + '\'' +
                 ", status='" + status + '\'' +
+                ", drawingWeight=" + drawingWeight +
+                ", markWeight=" + markWeight +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 '}';
     }
 }

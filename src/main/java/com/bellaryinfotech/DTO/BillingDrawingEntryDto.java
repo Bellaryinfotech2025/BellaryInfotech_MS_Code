@@ -42,6 +42,18 @@ public class BillingDrawingEntryDto {
     private BigDecimal poLineReferenceId;
     private String status;
 
+    // NEW ENHANCED FIELDS - Add the new fields for enhanced data
+    private BigDecimal drawingWeight;
+    private BigDecimal markWeight;
+    private LocalDate drawingReceivedDate;
+    private LocalDate targetDate;
+
+    // NEW ENHANCED FIELDS - Add fabrication stage fields
+    private String cuttingStage;
+    private String fitUpStage;
+    private String weldingStage;
+    private String finishingStage;
+
     // Default constructor
     public BillingDrawingEntryDto() {}
 
@@ -52,6 +64,11 @@ public class BillingDrawingEntryDto {
         this.markNo = markNo;
         this.markedQty = markedQty;
         this.status = "billing";
+        // Initialize fabrication stages to "N"
+        this.cuttingStage = "N";
+        this.fitUpStage = "N";
+        this.weldingStage = "N";
+        this.finishingStage = "N";
     }
 
     // Getters and Setters
@@ -160,6 +177,32 @@ public class BillingDrawingEntryDto {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
+    // NEW ENHANCED FIELDS - Getters and Setters for new fields
+    public BigDecimal getDrawingWeight() { return drawingWeight; }
+    public void setDrawingWeight(BigDecimal drawingWeight) { this.drawingWeight = drawingWeight; }
+
+    public BigDecimal getMarkWeight() { return markWeight; }
+    public void setMarkWeight(BigDecimal markWeight) { this.markWeight = markWeight; }
+
+    public LocalDate getDrawingReceivedDate() { return drawingReceivedDate; }
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) { this.drawingReceivedDate = drawingReceivedDate; }
+
+    public LocalDate getTargetDate() { return targetDate; }
+    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+
+    // NEW ENHANCED FIELDS - Getters and Setters for fabrication stage fields
+    public String getCuttingStage() { return cuttingStage; }
+    public void setCuttingStage(String cuttingStage) { this.cuttingStage = cuttingStage; }
+
+    public String getFitUpStage() { return fitUpStage; }
+    public void setFitUpStage(String fitUpStage) { this.fitUpStage = fitUpStage; }
+
+    public String getWeldingStage() { return weldingStage; }
+    public void setWeldingStage(String weldingStage) { this.weldingStage = weldingStage; }
+
+    public String getFinishingStage() { return finishingStage; }
+    public void setFinishingStage(String finishingStage) { this.finishingStage = finishingStage; }
+
     @Override
     public String toString() {
         return "BillingDrawingEntryDto{" +
@@ -167,6 +210,12 @@ public class BillingDrawingEntryDto {
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +
+                ", drawingWeight=" + drawingWeight +
+                ", markWeight=" + markWeight +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 ", status='" + status + '\'' +
                 '}';
     }

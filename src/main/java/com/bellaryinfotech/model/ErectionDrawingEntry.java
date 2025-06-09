@@ -116,6 +116,32 @@ public class ErectionDrawingEntry {
     @Column(name = "status", length = 50)
     private String status;
 
+    // NEW FIELDS FOR ENHANCED FUNCTIONALITY
+    @Column(name = "drawing_weight", precision = 19, scale = 4)
+    private BigDecimal drawingWeight;
+
+    @Column(name = "mark_weight", precision = 19, scale = 4)
+    private BigDecimal markWeight;
+
+    @Column(name = "drawing_received_date")
+    private LocalDate drawingReceivedDate;
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+
+    // FABRICATION STAGE FIELDS (synchronized from fabrication table)
+    @Column(name = "cutting_stage", length = 1)
+    private String cuttingStage = "N";
+
+    @Column(name = "fit_up_stage", length = 1)
+    private String fitUpStage = "N";
+
+    @Column(name = "welding_stage", length = 1)
+    private String weldingStage = "N";
+
+    @Column(name = "finishing_stage", length = 1)
+    private String finishingStage = "N";
+
     // Default constructor
     public ErectionDrawingEntry() {}
 
@@ -130,7 +156,7 @@ public class ErectionDrawingEntry {
         this.status = "erection";
     }
 
-    // Getters and Setters
+    // Getters and Setters for existing fields
     public String getLineId() {
         return lineId;
     }
@@ -411,6 +437,91 @@ public class ErectionDrawingEntry {
         this.status = status;
     }
 
+    // NEW GETTERS AND SETTERS
+    public BigDecimal getDrawingWeight() {
+        return drawingWeight;
+    }
+
+    public void setDrawingWeight(BigDecimal drawingWeight) {
+        this.drawingWeight = drawingWeight;
+    }
+
+    public BigDecimal getMarkWeight() {
+        return markWeight;
+    }
+
+    public void setMarkWeight(BigDecimal markWeight) {
+        this.markWeight = markWeight;
+    }
+
+    public LocalDate getDrawingReceivedDate() {
+        return drawingReceivedDate;
+    }
+
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+        this.drawingReceivedDate = drawingReceivedDate;
+    }
+
+    public LocalDate getTargetDate() {
+        return targetDate;
+    }
+
+    public void setTargetDate(LocalDate targetDate) {
+        this.targetDate = targetDate;
+    }
+
+    // FABRICATION STAGE GETTERS AND SETTERS
+    public String getCuttingStage() {
+        return cuttingStage;
+    }
+
+    public void setCuttingStage(String cuttingStage) {
+        this.cuttingStage = cuttingStage != null ? cuttingStage : "N";
+    }
+
+    public String getFitUpStage() {
+        return fitUpStage;
+    }
+
+    public void setFitUpStage(String fitUpStage) {
+        this.fitUpStage = fitUpStage != null ? fitUpStage : "N";
+    }
+
+    public String getWeldingStage() {
+        return weldingStage;
+    }
+
+    public void setWeldingStage(String weldingStage) {
+        this.weldingStage = weldingStage != null ? weldingStage : "N";
+    }
+
+    public String getFinishingStage() {
+        return finishingStage;
+    }
+
+    public void setFinishingStage(String finishingStage) {
+        this.finishingStage = finishingStage != null ? finishingStage : "N";
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (creationDate == null) {
+            creationDate = LocalDateTime.now();
+        }
+        lastUpdatingDate = LocalDateTime.now();
+        
+        // Ensure fabrication stages have default values
+        if (cuttingStage == null) cuttingStage = "N";
+        if (fitUpStage == null) fitUpStage = "N";
+        if (weldingStage == null) weldingStage = "N";
+        if (finishingStage == null) finishingStage = "N";
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        lastUpdatingDate = LocalDateTime.now();
+    }
+
     @Override
     public String toString() {
         return "ErectionDrawingEntry{" +
@@ -423,6 +534,12 @@ public class ErectionDrawingEntry {
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
                 ", status='" + status + '\'' +
+                ", drawingWeight=" + drawingWeight +
+                ", markWeight=" + markWeight +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 '}';
     }
 }

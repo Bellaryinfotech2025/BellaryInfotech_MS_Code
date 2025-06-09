@@ -116,6 +116,32 @@ public class BillingDrawingEntry {
     @Column(name = "status", length = 50)
     private String status;
 
+    // NEW ENHANCED FIELDS - Add the new fields for enhanced data
+    @Column(name = "drawing_weight", precision = 19, scale = 4)
+    private BigDecimal drawingWeight;
+
+    @Column(name = "mark_weight", precision = 19, scale = 4)
+    private BigDecimal markWeight;
+
+    @Column(name = "drawing_received_date")
+    private LocalDate drawingReceivedDate;
+
+    @Column(name = "target_date")
+    private LocalDate targetDate;
+
+    // NEW ENHANCED FIELDS - Add fabrication stage fields
+    @Column(name = "cutting_stage", length = 1)
+    private String cuttingStage = "N";
+
+    @Column(name = "fit_up_stage", length = 1)
+    private String fitUpStage = "N";
+
+    @Column(name = "welding_stage", length = 1)
+    private String weldingStage = "N";
+
+    @Column(name = "finishing_stage", length = 1)
+    private String finishingStage = "N";
+
     // Default constructor
     public BillingDrawingEntry() {}
 
@@ -128,6 +154,11 @@ public class BillingDrawingEntry {
         this.creationDate = LocalDateTime.now();
         this.lastUpdatingDate = LocalDateTime.now();
         this.status = "billing";
+        // Initialize fabrication stages to "N"
+        this.cuttingStage = "N";
+        this.fitUpStage = "N";
+        this.weldingStage = "N";
+        this.finishingStage = "N";
     }
 
     // Getters and Setters
@@ -236,6 +267,32 @@ public class BillingDrawingEntry {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
+    // NEW ENHANCED FIELDS - Getters and Setters for new fields
+    public BigDecimal getDrawingWeight() { return drawingWeight; }
+    public void setDrawingWeight(BigDecimal drawingWeight) { this.drawingWeight = drawingWeight; }
+
+    public BigDecimal getMarkWeight() { return markWeight; }
+    public void setMarkWeight(BigDecimal markWeight) { this.markWeight = markWeight; }
+
+    public LocalDate getDrawingReceivedDate() { return drawingReceivedDate; }
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) { this.drawingReceivedDate = drawingReceivedDate; }
+
+    public LocalDate getTargetDate() { return targetDate; }
+    public void setTargetDate(LocalDate targetDate) { this.targetDate = targetDate; }
+
+    // NEW ENHANCED FIELDS - Getters and Setters for fabrication stage fields
+    public String getCuttingStage() { return cuttingStage; }
+    public void setCuttingStage(String cuttingStage) { this.cuttingStage = cuttingStage; }
+
+    public String getFitUpStage() { return fitUpStage; }
+    public void setFitUpStage(String fitUpStage) { this.fitUpStage = fitUpStage; }
+
+    public String getWeldingStage() { return weldingStage; }
+    public void setWeldingStage(String weldingStage) { this.weldingStage = weldingStage; }
+
+    public String getFinishingStage() { return finishingStage; }
+    public void setFinishingStage(String finishingStage) { this.finishingStage = finishingStage; }
+
     @Override
     public String toString() {
         return "BillingDrawingEntry{" +
@@ -244,6 +301,12 @@ public class BillingDrawingEntry {
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +
+                ", drawingWeight=" + drawingWeight +
+                ", markWeight=" + markWeight +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 ", status='" + status + '\'' +
                 '}';
     }

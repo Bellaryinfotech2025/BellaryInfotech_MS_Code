@@ -37,6 +37,7 @@ public class BitsDrawingEntryController {
     public static final String CREATE_DRAWING_ENTRY = "/createBitsDrawingEntry/details";
     public static final String CREATE_BULK_DRAWING_ENTRIES = "/createBulkBitsDrawingEntries/details";
     public static final String UPDATE_DRAWING_ENTRY = "/updateBitsDrawingEntry/details";
+    public static final String UPDATE_FABRICATION_STAGES = "/updateFabricationStages/details";
     public static final String DELETE_DRAWING_ENTRY = "/deleteBitsDrawingEntry/details";
     public static final String DELETE_DRAWING_ENTRIES_BY_DRAWING_NO = "/deleteBitsDrawingEntriesByDrawingNo/details";
     public static final String DELETE_DRAWING_ENTRIES_BY_MARK_NO = "/deleteBitsDrawingEntriesByMarkNo/details";
@@ -240,6 +241,69 @@ public class BitsDrawingEntryController {
     }
 
     /**
+     * NEW: Update fabrication stages for multiple entries
+     */
+    @RequestMapping(value = UPDATE_FABRICATION_STAGES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PUT)
+    public ResponseEntity<?> updateFabricationStages(@RequestBody Map<String, Object> requestBody) {
+        try {
+            LOG.info("Updating fabrication stages");
+            
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> fabricationUpdates = (List<Map<String, Object>>) requestBody.get("fabricationStages");
+            
+            if (fabricationUpdates == null || fabricationUpdates.isEmpty()) {
+                return ResponseEntity.badRequest().body("No fabrication stage updates provided");
+            }
+            
+            List<BitsDrawingEntryDto> updatedEntries = new ArrayList<>();
+            
+            for (Map<String, Object> update : fabricationUpdates) {
+                String lineId = (String) update.get("lineId");
+                String cuttingStage = (String) update.get("cuttingStage");
+                String fitUpStage = (String) update.get("fitUpStage");
+                String weldingStage = (String) update.get("weldingStage");
+                String finishingStage = (String) update.get("finishingStage");
+                
+                if (lineId == null || lineId.trim().isEmpty()) {
+                    continue; // Skip invalid entries
+                }
+                
+                // Get existing entry
+                Optional<BitsDrawingEntryDto> existingEntryOpt = bitsDrawingEntryService.getDrawingEntryById(lineId);
+                if (existingEntryOpt.isPresent()) {
+                    BitsDrawingEntryDto existingEntry = existingEntryOpt.get();
+                    
+                    // Update only fabrication stages
+                    existingEntry.setCuttingStage(cuttingStage != null ? cuttingStage : "N");
+                    existingEntry.setFitUpStage(fitUpStage != null ? fitUpStage : "N");
+                    existingEntry.setWeldingStage(weldingStage != null ? weldingStage : "N");
+                    existingEntry.setFinishingStage(finishingStage != null ? finishingStage : "N");
+                    existingEntry.setLastUpdatedBy("fabrication_system");
+                    
+                    // Update the entry
+                    BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, existingEntry);
+                    updatedEntries.add(updatedEntry);
+                }
+            }
+            
+            LOG.info("Successfully updated fabrication stages for {} entries", updatedEntries.size());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Fabrication stages updated successfully");
+            response.put("updatedCount", updatedEntries.size());
+            response.put("updatedEntries", updatedEntries);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            LOG.error("Error updating fabrication stages", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update fabrication stages: " + e.getMessage());
+        }
+    }
+
+    /**
      * Delete drawing entry by line ID
      */
     @RequestMapping(value = DELETE_DRAWING_ENTRY, method = RequestMethod.DELETE)
@@ -262,6 +326,8 @@ public class BitsDrawingEntryController {
         }
     }
 
+    // ... (rest of the existing methods remain the same)
+    
     /**
      * Delete drawing entries by drawing number
      */

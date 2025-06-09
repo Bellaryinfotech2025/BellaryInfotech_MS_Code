@@ -157,7 +157,7 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Create multiple alignment entries
+     * Create multiple alignment entries - NEW ENDPOINT FOR BULK CREATION FROM ERECTION
      */
     @RequestMapping(value = CREATE_BULK_ALIGNMENT_ENTRIES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
     public ResponseEntity<?> createAlignmentEntries(@RequestBody List<AlignmentDrawingEntryDto> alignmentEntryDtos) {
@@ -228,149 +228,42 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Delete alignment entries by drawing number
-     */
-    @RequestMapping(value = DELETE_ALIGNMENT_ENTRIES_BY_DRAWING_NO, method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteAlignmentEntriesByDrawingNo(@RequestParam String drawingNo) {
-        try {
-            LOG.info("Deleting alignment entries with drawing number: {}", drawingNo);
-            alignmentDrawingEntryService.deleteAlignmentEntriesByDrawingNo(drawingNo);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            LOG.error("Error deleting alignment entries by drawing number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to delete alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Delete alignment entries by mark number
-     */
-    @RequestMapping(value = DELETE_ALIGNMENT_ENTRIES_BY_MARK_NO, method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteAlignmentEntriesByMarkNo(@RequestParam String markNo) {
-        try {
-            LOG.info("Deleting alignment entries with mark number: {}", markNo);
-            alignmentDrawingEntryService.deleteAlignmentEntriesByMarkNo(markNo);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            LOG.error("Error deleting alignment entries by mark number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to delete alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Delete alignment entries by status
-     */
-    @RequestMapping(value = DELETE_ALIGNMENT_ENTRIES_BY_STATUS, method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteAlignmentEntriesByStatus(@RequestParam String status) {
-        try {
-            LOG.info("Deleting alignment entries with status: {}", status);
-            alignmentDrawingEntryService.deleteAlignmentEntriesByStatus(status);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            LOG.error("Error deleting alignment entries by status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to delete alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Bulk delete alignment entries
-     */
-    @RequestMapping(value = BULK_DELETE_ALIGNMENT_ENTRIES, method = RequestMethod.DELETE)
-    public ResponseEntity<?> bulkDeleteAlignmentEntries(@RequestParam String lineIds) {
-        try {
-            LOG.info("Bulk deleting alignment entries with line IDs: {}", lineIds);
-            List<String> lineIdList = Arrays.asList(lineIds.split(","));
-            alignmentDrawingEntryService.bulkDeleteAlignmentEntries(lineIdList);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            LOG.error("Error bulk deleting alignment entries", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to delete alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Search alignment entries by drawing number
+     * Get alignment entries by drawing number
      */
     @RequestMapping(value = SEARCH_BY_DRAWING_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByDrawingNo(@RequestParam String drawingNo) {
+    public ResponseEntity<?> getAlignmentEntriesByDrawingNo(@RequestParam String drawingNo) {
         try {
             LOG.info("Searching alignment entries by drawing number: {}", drawingNo);
             List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByDrawingNo(drawingNo);
             return ResponseEntity.ok(alignmentEntries);
         } catch (Exception e) {
-            LOG.error("Error searching alignment entries by drawing number", e);
+            LOG.error("Error getting alignment entries by drawing number: {}", drawingNo, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
+                    .body("Failed to get alignment entries: " + e.getMessage());
         }
     }
 
     /**
-     * Search alignment entries by mark number
+     * Get alignment entries by mark number
      */
     @RequestMapping(value = SEARCH_BY_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByMarkNo(@RequestParam String markNo) {
+    public ResponseEntity<?> getAlignmentEntriesByMarkNo(@RequestParam String markNo) {
         try {
             LOG.info("Searching alignment entries by mark number: {}", markNo);
             List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByMarkNo(markNo);
             return ResponseEntity.ok(alignmentEntries);
         } catch (Exception e) {
-            LOG.error("Error searching alignment entries by mark number", e);
+            LOG.error("Error getting alignment entries by mark number: {}", markNo, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
+                    .body("Failed to get alignment entries: " + e.getMessage());
         }
     }
 
     /**
-     * Search alignment entries by session code
-     */
-    @RequestMapping(value = SEARCH_BY_SESSION_CODE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesBySessionCode(@RequestParam String sessionCode) {
-        try {
-            LOG.info("Searching alignment entries by session code: {}", sessionCode);
-            List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesBySessionCode(sessionCode);
-            return ResponseEntity.ok(alignmentEntries);
-        } catch (Exception e) {
-            LOG.error("Error searching alignment entries by session code", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Search alignment entries by tenant ID
-     */
-    @RequestMapping(value = SEARCH_BY_TENANT_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByTenantId(
-            @RequestParam String tenantId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-        try {
-            LOG.info("Searching alignment entries by tenant ID: {}", tenantId);
-            
-            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-            Pageable pageable = PageRequest.of(page, size, sort);
-            
-            Page<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByTenantId(tenantId, pageable);
-            return ResponseEntity.ok(alignmentEntries);
-        } catch (Exception e) {
-            LOG.error("Error searching alignment entries by tenant ID", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Search alignment entries by status
+     * Get alignment entries by status
      */
     @RequestMapping(value = SEARCH_BY_STATUS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByStatus(
+    public ResponseEntity<?> getAlignmentEntriesByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -386,9 +279,9 @@ public class AlignmentDrawingEntryController {
             Page<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByStatus(status, pageable);
             return ResponseEntity.ok(alignmentEntries);
         } catch (Exception e) {
-            LOG.error("Error searching alignment entries by status", e);
+            LOG.error("Error getting alignment entries by status: {}", status, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
+                    .body("Failed to get alignment entries: " + e.getMessage());
         }
     }
 
@@ -409,13 +302,6 @@ public class AlignmentDrawingEntryController {
         try {
             LOG.info("Searching alignment entries with multiple criteria");
             
-            // Convert empty strings to null for proper search
-            drawingNo = (drawingNo != null && drawingNo.trim().isEmpty()) ? null : drawingNo;
-            markNo = (markNo != null && markNo.trim().isEmpty()) ? null : markNo;
-            sessionCode = (sessionCode != null && sessionCode.trim().isEmpty()) ? null : sessionCode;
-            tenantId = (tenantId != null && tenantId.trim().isEmpty()) ? null : tenantId;
-            status = (status != null && status.trim().isEmpty()) ? null : status;
-            
             Sort sort = sortDir.equalsIgnoreCase("desc") ? 
                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, size, sort);
@@ -424,133 +310,9 @@ public class AlignmentDrawingEntryController {
                     drawingNo, markNo, sessionCode, tenantId, status, pageable);
             return ResponseEntity.ok(alignmentEntries);
         } catch (Exception e) {
-            LOG.error("Error searching alignment entries with multiple criteria", e);
+            LOG.error("Error searching alignment entries", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to search alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Search alignment entries by date range
-     */
-    @RequestMapping(value = SEARCH_BY_DATE_RANGE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByDateRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
-        try {
-            LOG.info("Searching alignment entries by date range: {} to {}", startDate, endDate);
-            List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByDateRange(startDate, endDate);
-            return ResponseEntity.ok(alignmentEntries);
-        } catch (Exception e) {
-            LOG.error("Error searching alignment entries by date range", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Search alignment entries by marked quantity greater than
-     */
-    @RequestMapping(value = SEARCH_BY_MARKED_QTY_GREATER_THAN, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> searchAlignmentEntriesByMarkedQtyGreaterThan(@RequestParam BigDecimal markedQty) {
-        try {
-            LOG.info("Searching alignment entries by marked quantity greater than: {}", markedQty);
-            List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByMarkedQtyGreaterThan(markedQty);
-            return ResponseEntity.ok(alignmentEntries);
-        } catch (Exception e) {
-            LOG.error("Error searching alignment entries by marked quantity", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to search alignment entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get count by drawing number
-     */
-    @RequestMapping(value = GET_COUNT_BY_DRAWING_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getCountByDrawingNo(@RequestParam String drawingNo) {
-        try {
-            LOG.info("Getting count by drawing number: {}", drawingNo);
-            Long count = alignmentDrawingEntryService.getCountByDrawingNo(drawingNo);
-            Map<String, Long> response = new HashMap<>();
-            response.put("count", count);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error getting count by drawing number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get count: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get count by mark number
-     */
-    @RequestMapping(value = GET_COUNT_BY_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getCountByMarkNo(@RequestParam String markNo) {
-        try {
-            LOG.info("Getting count by mark number: {}", markNo);
-            Long count = alignmentDrawingEntryService.getCountByMarkNo(markNo);
-            Map<String, Long> response = new HashMap<>();
-            response.put("count", count);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error getting count by mark number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get count: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get count by status
-     */
-    @RequestMapping(value = GET_COUNT_BY_STATUS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getCountByStatus(@RequestParam String status) {
-        try {
-            LOG.info("Getting count by status: {}", status);
-            Long count = alignmentDrawingEntryService.getCountByStatus(status);
-            Map<String, Long> response = new HashMap<>();
-            response.put("count", count);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error getting count by status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get count: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get sum of marked quantities by drawing number
-     */
-    @RequestMapping(value = GET_SUM_MARKED_QTY_BY_DRAWING_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getSumMarkedQtyByDrawingNo(@RequestParam String drawingNo) {
-        try {
-            LOG.info("Getting sum of marked quantities by drawing number: {}", drawingNo);
-            BigDecimal sum = alignmentDrawingEntryService.getSumMarkedQtyByDrawingNo(drawingNo);
-            Map<String, BigDecimal> response = new HashMap<>();
-            response.put("sum", sum != null ? sum : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error getting sum of marked quantities", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get sum: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get sum of total marked weights by drawing number
-     */
-    @RequestMapping(value = GET_SUM_TOTAL_MARKED_WGT_BY_DRAWING_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getSumTotalMarkedWgtByDrawingNo(@RequestParam String drawingNo) {
-        try {
-            LOG.info("Getting sum of total marked weights by drawing number: {}", drawingNo);
-            BigDecimal sum = alignmentDrawingEntryService.getSumTotalMarkedWgtByDrawingNo(drawingNo);
-            Map<String, BigDecimal> response = new HashMap<>();
-            response.put("sum", sum != null ? sum : BigDecimal.ZERO);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error getting sum of total marked weights", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get sum: " + e.getMessage());
         }
     }
 
@@ -587,108 +349,14 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Get distinct session codes
-     */
-    @RequestMapping(value = GET_DISTINCT_SESSION_CODES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getDistinctSessionCodes() {
-        try {
-            LOG.info("Getting distinct session codes");
-            List<String> sessionCodes = alignmentDrawingEntryService.getDistinctSessionCodes();
-            return ResponseEntity.ok(sessionCodes);
-        } catch (Exception e) {
-            LOG.error("Error getting distinct session codes", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get distinct session codes: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get distinct statuses
-     */
-    @RequestMapping(value = GET_DISTINCT_STATUSES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getDistinctStatuses() {
-        try {
-            LOG.info("Getting distinct statuses");
-            List<String> statuses = alignmentDrawingEntryService.getDistinctStatuses();
-            return ResponseEntity.ok(statuses);
-        } catch (Exception e) {
-            LOG.error("Error getting distinct statuses", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get distinct statuses: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Check if alignment entry exists by ID
-     */
-    @RequestMapping(value = CHECK_EXISTS_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> checkExistsById(@RequestParam String lineId) {
-        try {
-            LOG.info("Checking if alignment entry exists by line ID: {}", lineId);
-            boolean exists = alignmentDrawingEntryService.existsById(lineId);
-            Map<String, Boolean> response = new HashMap<>();
-            response.put("exists", exists);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error checking existence by line ID", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to check existence: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Check if alignment entry exists by drawing number and mark number
-     */
-    @RequestMapping(value = CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> checkExistsByDrawingNoAndMarkNo(
-            @RequestParam String drawingNo,
-            @RequestParam String markNo) {
-        try {
-            LOG.info("Checking if alignment entry exists by drawing number: {} and mark number: {}", drawingNo, markNo);
-            boolean exists = alignmentDrawingEntryService.existsByDrawingNoAndMarkNo(drawingNo, markNo);
-            Map<String, Boolean> response = new HashMap<>();
-            response.put("exists", exists);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error checking existence by drawing number and mark number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to check existence: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Check if alignment entry exists by drawing number, mark number, and status
-     */
-    @RequestMapping(value = CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO_AND_STATUS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> checkExistsByDrawingNoAndMarkNoAndStatus(
-            @RequestParam String drawingNo,
-            @RequestParam String markNo,
-            @RequestParam String status) {
-        try {
-            LOG.info("Checking if alignment entry exists by drawing number: {}, mark number: {}, and status: {}", 
-                    drawingNo, markNo, status);
-            boolean exists = alignmentDrawingEntryService.existsByDrawingNoAndMarkNoAndStatus(drawingNo, markNo, status);
-            Map<String, Boolean> response = new HashMap<>();
-            response.put("exists", exists);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            LOG.error("Error checking existence by drawing number, mark number, and status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to check existence: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get total count of alignment entries
+     * Get total count of all entries
      */
     @RequestMapping(value = GET_TOTAL_COUNT, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getTotalCount() {
         try {
             LOG.info("Getting total count of alignment entries");
             long count = alignmentDrawingEntryService.getTotalCount();
-            Map<String, Long> response = new HashMap<>();
-            response.put("count", count);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(count);
         } catch (Exception e) {
             LOG.error("Error getting total count", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -697,96 +365,25 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Get latest alignment entry by drawing number
+     * Check if entry exists by drawing and mark number
      */
-    @RequestMapping(value = GET_LATEST_BY_DRAWING_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getLatestByDrawingNo(@RequestParam String drawingNo) {
+    @RequestMapping(value = CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> existsByDrawingNoAndMarkNo(
+            @RequestParam String drawingNo,
+            @RequestParam String markNo) {
         try {
-            LOG.info("Getting latest alignment entry by drawing number: {}", drawingNo);
-            Optional<AlignmentDrawingEntryDto> latestEntry = alignmentDrawingEntryService.getLatestByDrawingNo(drawingNo);
-            
-            if (latestEntry.isPresent()) {
-                return ResponseEntity.ok(latestEntry.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            LOG.info("Checking if alignment entry exists for drawing: {} and mark: {}", drawingNo, markNo);
+            boolean exists = alignmentDrawingEntryService.existsByDrawingNoAndMarkNo(drawingNo, markNo);
+            return ResponseEntity.ok(exists);
         } catch (Exception e) {
-            LOG.error("Error getting latest entry by drawing number", e);
+            LOG.error("Error checking if entry exists", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get latest entry: " + e.getMessage());
+                    .body("Failed to check if entry exists: " + e.getMessage());
         }
     }
 
     /**
-     * Get latest alignment entry by mark number
-     */
-    @RequestMapping(value = GET_LATEST_BY_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getLatestByMarkNo(@RequestParam String markNo) {
-        try {
-            LOG.info("Getting latest alignment entry by mark number: {}", markNo);
-            Optional<AlignmentDrawingEntryDto> latestEntry = alignmentDrawingEntryService.getLatestByMarkNo(markNo);
-            
-            if (latestEntry.isPresent()) {
-                return ResponseEntity.ok(latestEntry.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            LOG.error("Error getting latest entry by mark number", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get latest entry: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get latest alignment entry by status
-     */
-    @RequestMapping(value = GET_LATEST_BY_STATUS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getLatestByStatus(@RequestParam String status) {
-        try {
-            LOG.info("Getting latest alignment entry by status: {}", status);
-            Optional<AlignmentDrawingEntryDto> latestEntry = alignmentDrawingEntryService.getLatestByStatus(status);
-            
-            if (latestEntry.isPresent()) {
-                return ResponseEntity.ok(latestEntry.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            LOG.error("Error getting latest entry by status", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to get latest entry: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Create bulk completion drawing entries
-     */
-    @RequestMapping(value = "/createBulkCompletionDrawingEntries/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-    public ResponseEntity<?> createBulkCompletionDrawingEntries(@RequestBody List<AlignmentDrawingEntryDto> completionEntryDtos) {
-        try {
-            LOG.info("Creating {} completion entries", completionEntryDtos.size());
-            
-            // Ensure all entries have status set to "completed"
-            completionEntryDtos.forEach(dto -> dto.setStatus("completed"));
-            
-            // Use the same service method but with "completed" status
-            List<AlignmentDrawingEntryDto> createdEntries = alignmentDrawingEntryService.createAlignmentEntries(completionEntryDtos);
-            
-            LOG.info("Successfully created {} completion entries", createdEntries.size());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdEntries);
-        } catch (IllegalArgumentException e) {
-            LOG.error("Invalid input for creating completion entries: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Invalid input: " + e.getMessage());
-        } catch (Exception e) {
-            LOG.error("Error creating completion entries", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create completion entries: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Get all alignment entries (non-paginated)
+     * Get all alignment entries with complete data (non-paginated)
      */
     @RequestMapping(value = "/getAllAlignmentDrawingEntriesComplete/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getAllAlignmentEntriesComplete() {

@@ -621,6 +621,18 @@ public class BillingDrawingEntryServiceImpl implements BillingDrawingEntryServic
         if (dto.getAttribute4D() != null) entity.setAttribute4D(dto.getAttribute4D());
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
         
+        // NEW FIELDS - Set the new fields for enhanced data
+        if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
+        if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
+        if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
+        
+        // NEW FIELDS - Set fabrication stage fields with default "N" if null
+        entity.setCuttingStage(dto.getCuttingStage() != null ? dto.getCuttingStage() : "N");
+        entity.setFitUpStage(dto.getFitUpStage() != null ? dto.getFitUpStage() : "N");
+        entity.setWeldingStage(dto.getWeldingStage() != null ? dto.getWeldingStage() : "N");
+        entity.setFinishingStage(dto.getFinishingStage() != null ? dto.getFinishingStage() : "N");
+        
         return entity;
     }
 
@@ -667,6 +679,18 @@ public class BillingDrawingEntryServiceImpl implements BillingDrawingEntryServic
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
         
+        // NEW FIELDS - Get the new fields for enhanced data
+        dto.setDrawingWeight(entity.getDrawingWeight());
+        dto.setMarkWeight(entity.getMarkWeight());
+        dto.setDrawingReceivedDate(entity.getDrawingReceivedDate());
+        dto.setTargetDate(entity.getTargetDate());
+        
+        // NEW FIELDS - Get fabrication stage fields
+        dto.setCuttingStage(entity.getCuttingStage());
+        dto.setFitUpStage(entity.getFitUpStage());
+        dto.setWeldingStage(entity.getWeldingStage());
+        dto.setFinishingStage(entity.getFinishingStage());
+        
         return dto;
     }
 
@@ -706,6 +730,18 @@ public class BillingDrawingEntryServiceImpl implements BillingDrawingEntryServic
         if (dto.getAttribute3D() != null) entity.setAttribute3D(dto.getAttribute3D());
         if (dto.getAttribute4D() != null) entity.setAttribute4D(dto.getAttribute4D());
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
+        
+        // NEW FIELDS - Update the new fields for enhanced data
+        if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
+        if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
+        if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
+        
+        // NEW FIELDS - Update fabrication stage fields
+        if (dto.getCuttingStage() != null) entity.setCuttingStage(dto.getCuttingStage());
+        if (dto.getFitUpStage() != null) entity.setFitUpStage(dto.getFitUpStage());
+        if (dto.getWeldingStage() != null) entity.setWeldingStage(dto.getWeldingStage());
+        if (dto.getFinishingStage() != null) entity.setFinishingStage(dto.getFinishingStage());
     }
 
     /**

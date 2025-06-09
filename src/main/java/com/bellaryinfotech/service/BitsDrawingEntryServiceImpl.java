@@ -542,6 +542,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             entity.setPoLineReferenceId(dto.getPoLineReferenceId());
         }
         
+        // Set fabrication stages
+        entity.setCuttingStage(dto.getCuttingStage() != null ? dto.getCuttingStage() : "N");
+        entity.setFitUpStage(dto.getFitUpStage() != null ? dto.getFitUpStage() : "N");
+        entity.setWeldingStage(dto.getWeldingStage() != null ? dto.getWeldingStage() : "N");
+        entity.setFinishingStage(dto.getFinishingStage() != null ? dto.getFinishingStage() : "N");
+        
         // Set attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
@@ -592,6 +598,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         
         // Set PO Line Reference ID if available
         dto.setPoLineReferenceId(entity.getPoLineReferenceId());
+        
+        // Set fabrication stages
+        dto.setCuttingStage(entity.getCuttingStage() != null ? entity.getCuttingStage() : "N");
+        dto.setFitUpStage(entity.getFitUpStage() != null ? entity.getFitUpStage() : "N");
+        dto.setWeldingStage(entity.getWeldingStage() != null ? entity.getWeldingStage() : "N");
+        dto.setFinishingStage(entity.getFinishingStage() != null ? entity.getFinishingStage() : "N");
         
         // Set attributes
         dto.setAttribute1V(entity.getAttribute1V());
@@ -644,6 +656,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         
         // Update PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());
+        
+        // Update fabrication stages
+        if (dto.getCuttingStage() != null) entity.setCuttingStage(dto.getCuttingStage());
+        if (dto.getFitUpStage() != null) entity.setFitUpStage(dto.getFitUpStage());
+        if (dto.getWeldingStage() != null) entity.setWeldingStage(dto.getWeldingStage());
+        if (dto.getFinishingStage() != null) entity.setFinishingStage(dto.getFinishingStage());
         
         // Update attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());

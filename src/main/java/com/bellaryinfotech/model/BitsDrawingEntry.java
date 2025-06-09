@@ -65,7 +65,6 @@ public class BitsDrawingEntry {
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
 
-    // NEW FIELD: Store the line_id from bits_po_entry_lines
     @Column(name = "po_line_reference_id")
     private BigDecimal poLineReferenceId;
 
@@ -125,11 +124,21 @@ public class BitsDrawingEntry {
 
     @Column(name = "target_date")
     private LocalDate targetDate;
-    
 
-    
+    // NEW FABRICATION STAGE FIELDS
+    @Column(name = "cutting_stage", length = 1)
+    private String cuttingStage = "N";
 
-	// Default constructor
+    @Column(name = "fit_up_stage", length = 1)
+    private String fitUpStage = "N";
+
+    @Column(name = "welding_stage", length = 1)
+    private String weldingStage = "N";
+
+    @Column(name = "finishing_stage", length = 1)
+    private String finishingStage = "N";
+
+    // Default constructor
     public BitsDrawingEntry() {}
 
     // Constructor with essential fields
@@ -287,7 +296,6 @@ public class BitsDrawingEntry {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    // NEW GETTER/SETTER for PO Line Reference ID
     public BigDecimal getPoLineReferenceId() {
         return poLineReferenceId;
     }
@@ -417,36 +425,69 @@ public class BitsDrawingEntry {
     }
     
     public BigDecimal getDrawingWeight() {
-		return drawingWeight;
-	}
+        return drawingWeight;
+    }
 
-	public void setDrawingWeight(BigDecimal drawingWeight) {
-		this.drawingWeight = drawingWeight;
-	}
+    public void setDrawingWeight(BigDecimal drawingWeight) {
+        this.drawingWeight = drawingWeight;
+    }
 
-	public BigDecimal getMarkWeight() {
-		return markWeight;
-	}
+    public BigDecimal getMarkWeight() {
+        return markWeight;
+    }
 
-	public void setMarkWeight(BigDecimal markWeight) {
-		this.markWeight = markWeight;
-	}
+    public void setMarkWeight(BigDecimal markWeight) {
+        this.markWeight = markWeight;
+    }
 
-	public LocalDate getDrawingReceivedDate() {
-		return drawingReceivedDate;
-	}
+    public LocalDate getDrawingReceivedDate() {
+        return drawingReceivedDate;
+    }
 
-	public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
-		this.drawingReceivedDate = drawingReceivedDate;
-	}
+    public void setDrawingReceivedDate(LocalDate drawingReceivedDate) {
+        this.drawingReceivedDate = drawingReceivedDate;
+    }
 
-	public LocalDate getTargetDate() {
-		return targetDate;
-	}
+    public LocalDate getTargetDate() {
+        return targetDate;
+    }
 
-	public void setTargetDate(LocalDate targetDate) {
-		this.targetDate = targetDate;
-	}
+    public void setTargetDate(LocalDate targetDate) {
+        this.targetDate = targetDate;
+    }
+
+    // NEW GETTERS AND SETTERS FOR FABRICATION STAGES
+    public String getCuttingStage() {
+        return cuttingStage;
+    }
+
+    public void setCuttingStage(String cuttingStage) {
+        this.cuttingStage = cuttingStage != null ? cuttingStage : "N";
+    }
+
+    public String getFitUpStage() {
+        return fitUpStage;
+    }
+
+    public void setFitUpStage(String fitUpStage) {
+        this.fitUpStage = fitUpStage != null ? fitUpStage : "N";
+    }
+
+    public String getWeldingStage() {
+        return weldingStage;
+    }
+
+    public void setWeldingStage(String weldingStage) {
+        this.weldingStage = weldingStage != null ? weldingStage : "N";
+    }
+
+    public String getFinishingStage() {
+        return finishingStage;
+    }
+
+    public void setFinishingStage(String finishingStage) {
+        this.finishingStage = finishingStage != null ? finishingStage : "N";
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -454,6 +495,12 @@ public class BitsDrawingEntry {
             creationDate = LocalDateTime.now();
         }
         lastUpdatingDate = LocalDateTime.now();
+        
+        // Ensure fabrication stages have default values
+        if (cuttingStage == null) cuttingStage = "N";
+        if (fitUpStage == null) fitUpStage = "N";
+        if (weldingStage == null) weldingStage = "N";
+        if (finishingStage == null) finishingStage = "N";
     }
 
     @PreUpdate
@@ -483,6 +530,10 @@ public class BitsDrawingEntry {
                 ", lastUpdatingDate=" + lastUpdatingDate +
                 ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
                 ", poLineReferenceId=" + poLineReferenceId +
+                ", cuttingStage='" + cuttingStage + '\'' +
+                ", fitUpStage='" + fitUpStage + '\'' +
+                ", weldingStage='" + weldingStage + '\'' +
+                ", finishingStage='" + finishingStage + '\'' +
                 '}';
     }
 }
