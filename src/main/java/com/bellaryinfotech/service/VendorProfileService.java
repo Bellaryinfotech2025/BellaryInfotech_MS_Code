@@ -1,39 +1,50 @@
 package com.bellaryinfotech.service;
 
- 
+import com.bellaryinfotech.DTO.VendorProfileDTO;
+import org.springframework.web.multipart.MultipartFile;
 
- 
 import java.util.List;
 
-import com.bellaryinfotech.DTO.VendorDTO;
-
-public interface VendorService {
+public interface VendorProfileService {
     
-    VendorDTO createVendor(VendorDTO vendorDTO);
+    VendorProfileDTO createProfile(VendorProfileDTO profileDTO);
     
-    VendorDTO updateVendor(Long id, VendorDTO vendorDTO);
+    VendorProfileDTO updateProfile(Long id, VendorProfileDTO profileDTO);
     
-    VendorDTO getVendorById(Long id);
+    VendorProfileDTO getProfileById(Long id);
     
-    VendorDTO getVendorByCode(String vendorCode);
+    VendorProfileDTO getProfileByCompanyName(String companyName);
     
-    List<VendorDTO> getAllVendors();
+    List<VendorProfileDTO> getAllProfiles();
     
-    List<VendorDTO> getActiveVendors();
+    List<VendorProfileDTO> getActiveProfiles();
     
-    List<VendorDTO> searchVendors(String searchTerm);
+    List<VendorProfileDTO> searchProfiles(String searchTerm);
     
-    void deleteVendor(Long id);
+    void deleteProfile(Long id);
     
-    void deactivateVendor(Long id);
+    void deactivateProfile(Long id);
     
-    void activateVendor(Long id);
+    void activateProfile(Long id);
     
-    boolean existsByVendorCode(String vendorCode);
+    boolean existsByCompanyName(String companyName);
     
     boolean existsByEmail(String email);
     
-    long getTotalVendorCount();
+    long getTotalProfileCount();
     
-    long getActiveVendorCount();
+    long getActiveProfileCount();
+    
+    // Image handling methods
+    VendorProfileDTO uploadLogo(Long id, MultipartFile logoFile);
+    
+    VendorProfileDTO uploadLetterHead(Long id, MultipartFile letterHeadFile);
+    
+    byte[] getLogoData(Long id);
+    
+    byte[] getLetterHeadData(Long id);
+    
+    void deleteLogo(Long id);
+    
+    void deleteLetterHead(Long id);
 }

@@ -1,146 +1,176 @@
 package com.bellaryinfotech.DTO;
- 
- 
 
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 
-public class VendorDTO {
+public class VendorProfileDTO {
     
     private Long id;
     
-    @NotBlank(message = "Vendor code is required")
-    @Size(max = 50, message = "Vendor code must not exceed 50 characters")
-    private String vendorCode;
+    @NotBlank(message = "Company name is required")
+    @Size(max = 255, message = "Company name must not exceed 255 characters")
+    private String companyName;
     
-    @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must not exceed 100 characters")
-    private String name;
+    @Size(max = 100, message = "House/Plot number must not exceed 100 characters")
+    private String housePlotNo;
     
-    private String address;
+    @Size(max = 50, message = "Floor must not exceed 50 characters")
+    private String floor;
     
-    @Pattern(regexp = "^[0-9+\\-\\s()]*$", message = "Invalid phone number format")
-    private String phone;
+    @Size(max = 255, message = "Building name must not exceed 255 characters")
+    private String buildingName;
+    
+    @Size(max = 255, message = "Street must not exceed 255 characters")
+    private String street;
+    
+    @Size(max = 255, message = "Area must not exceed 255 characters")
+    private String area;
+    
+    @Size(max = 255, message = "Village/Post must not exceed 255 characters")
+    private String villagePost;
+    
+    @Size(max = 255, message = "Mandal/Tq must not exceed 255 characters")
+    private String mandalTq;
+    
+    @Size(max = 255, message = "District must not exceed 255 characters")
+    private String district;
+    
+    @Size(max = 255, message = "State must not exceed 255 characters")
+    private String state;
+    
+    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    private String pinCode;
+    
+    @Size(max = 255, message = "Contact person must not exceed 255 characters")
+    private String contactPerson;
+    
+    @Pattern(regexp = "^[0-9+\\-\\s()]*$", message = "Invalid contact number format")
+    private String contactNumber;
     
     @Email(message = "Invalid email format")
     private String email;
     
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format")
-    private String panNo;
+    // Logo information (not the actual data for DTO)
+    private String logoFilename;
+    private String logoContentType;
+    private boolean hasLogo;
+    
+    // Letter head information
+    private String letterHeadFilename;
+    private String letterHeadContentType;
+    private boolean hasLetterHead;
+    
+    @Size(max = 50, message = "Bank account must not exceed 50 characters")
+    private String bankAccount;
+    
+    @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code format")
+    private String ifscCode;
+    
+    @Size(max = 255, message = "Branch name must not exceed 255 characters")
+    private String branchName;
     
     @Pattern(regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST format")
     private String gstNo;
     
-    private String bankAccount;
+    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format")
+    private String panNo;
     
     private String status;
-    
     private LocalDateTime createdAt;
-    
     private LocalDateTime updatedAt;
     
     // Constructors
-    public VendorDTO() {}
+    public VendorProfileDTO() {}
     
-    public VendorDTO(String vendorCode, String name) {
-        this.vendorCode = vendorCode;
-        this.name = name;
+    public VendorProfileDTO(String companyName) {
+        this.companyName = companyName;
     }
     
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
     
-    public String getVendorCode() {
-        return vendorCode;
-    }
+    public String getHousePlotNo() { return housePlotNo; }
+    public void setHousePlotNo(String housePlotNo) { this.housePlotNo = housePlotNo; }
     
-    public void setVendorCode(String vendorCode) {
-        this.vendorCode = vendorCode;
-    }
+    public String getFloor() { return floor; }
+    public void setFloor(String floor) { this.floor = floor; }
     
-    public String getName() {
-        return name;
-    }
+    public String getBuildingName() { return buildingName; }
+    public void setBuildingName(String buildingName) { this.buildingName = buildingName; }
     
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getStreet() { return street; }
+    public void setStreet(String street) { this.street = street; }
     
-    public String getAddress() {
-        return address;
-    }
+    public String getArea() { return area; }
+    public void setArea(String area) { this.area = area; }
     
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public String getVillagePost() { return villagePost; }
+    public void setVillagePost(String villagePost) { this.villagePost = villagePost; }
     
-    public String getPhone() {
-        return phone;
-    }
+    public String getMandalTq() { return mandalTq; }
+    public void setMandalTq(String mandalTq) { this.mandalTq = mandalTq; }
     
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    public String getDistrict() { return district; }
+    public void setDistrict(String district) { this.district = district; }
     
-    public String getEmail() {
-        return email;
-    }
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
     
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getPinCode() { return pinCode; }
+    public void setPinCode(String pinCode) { this.pinCode = pinCode; }
     
-    public String getPanNo() {
-        return panNo;
-    }
+    public String getContactPerson() { return contactPerson; }
+    public void setContactPerson(String contactPerson) { this.contactPerson = contactPerson; }
     
-    public void setPanNo(String panNo) {
-        this.panNo = panNo;
-    }
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
     
-    public String getGstNo() {
-        return gstNo;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     
-    public void setGstNo(String gstNo) {
-        this.gstNo = gstNo;
-    }
+    public String getLogoFilename() { return logoFilename; }
+    public void setLogoFilename(String logoFilename) { this.logoFilename = logoFilename; }
     
-    public String getBankAccount() {
-        return bankAccount;
-    }
+    public String getLogoContentType() { return logoContentType; }
+    public void setLogoContentType(String logoContentType) { this.logoContentType = logoContentType; }
     
-    public void setBankAccount(String bankAccount) {
-        this.bankAccount = bankAccount;
-    }
+    public boolean isHasLogo() { return hasLogo; }
+    public void setHasLogo(boolean hasLogo) { this.hasLogo = hasLogo; }
     
-    public String getStatus() {
-        return status;
-    }
+    public String getLetterHeadFilename() { return letterHeadFilename; }
+    public void setLetterHeadFilename(String letterHeadFilename) { this.letterHeadFilename = letterHeadFilename; }
     
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getLetterHeadContentType() { return letterHeadContentType; }
+    public void setLetterHeadContentType(String letterHeadContentType) { this.letterHeadContentType = letterHeadContentType; }
     
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public boolean isHasLetterHead() { return hasLetterHead; }
+    public void setHasLetterHead(boolean hasLetterHead) { this.hasLetterHead = hasLetterHead; }
     
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public String getBankAccount() { return bankAccount; }
+    public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
     
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public String getIfscCode() { return ifscCode; }
+    public void setIfscCode(String ifscCode) { this.ifscCode = ifscCode; }
     
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public String getBranchName() { return branchName; }
+    public void setBranchName(String branchName) { this.branchName = branchName; }
+    
+    public String getGstNo() { return gstNo; }
+    public void setGstNo(String gstNo) { this.gstNo = gstNo; }
+    
+    public String getPanNo() { return panNo; }
+    public void setPanNo(String panNo) { this.panNo = panNo; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
