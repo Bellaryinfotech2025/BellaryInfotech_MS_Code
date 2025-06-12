@@ -99,6 +99,9 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        dto.setWorkOrderDate(entity.getWorkOrderDate());
        dto.setCompletionDate(entity.getCompletionDate());
        dto.setLdApplicable(entity.getLdApplicable());
+       dto.setScrapAllowanceVisiblePercent(entity.getScrapAllowanceVisiblePercent());
+       dto.setScrapAllowanceInvisiblePercent(entity.getScrapAllowanceInvisiblePercent());
+       dto.setMaterialIssueType(entity.getMaterialIssueType());
        return dto;
    }
 
@@ -111,6 +114,9 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        entity.setWorkOrderDate(dto.getWorkOrderDate());
        entity.setCompletionDate(dto.getCompletionDate());
        entity.setLdApplicable(dto.getLdApplicable());
+       entity.setScrapAllowanceVisiblePercent(dto.getScrapAllowanceVisiblePercent());
+       entity.setScrapAllowanceInvisiblePercent(dto.getScrapAllowanceInvisiblePercent());
+       entity.setMaterialIssueType(dto.getMaterialIssueType());
        return entity;
    }
 
@@ -122,5 +128,8 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        entity.setWorkOrderDate(dto.getWorkOrderDate());
        entity.setCompletionDate(dto.getCompletionDate());
        entity.setLdApplicable(dto.getLdApplicable());
+       entity.setScrapAllowanceVisiblePercent(dto.getScrapAllowanceVisiblePercent());
+       entity.setScrapAllowanceInvisiblePercent(dto.getScrapAllowanceInvisiblePercent());
+       entity.setMaterialIssueType(dto.getMaterialIssueType());
    }
 }

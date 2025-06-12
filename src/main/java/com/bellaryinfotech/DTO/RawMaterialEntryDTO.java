@@ -1,6 +1,4 @@
 package com.bellaryinfotech.DTO;
- 
- 
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,17 +61,26 @@ public class RawMaterialEntryDTO {
         private String qty;
         private String uom;
         private String totalWeight;
+        private String vehicleNumber;
+        private String documentNo;
+        private String documentDate;
+        private String receivedDate;
         
         public ServiceEntryDTO() {}
         
         public ServiceEntryDTO(String section, String width, 
-                              String length, String qty, String uom, String totalWeight) {
+                              String length, String qty, String uom, String totalWeight,
+                              String vehicleNumber, String documentNo, String documentDate, String receivedDate) {
             this.section = section;
             this.width = width;
             this.length = length;
             this.qty = qty;
             this.uom = uom;
             this.totalWeight = totalWeight;
+            this.vehicleNumber = vehicleNumber;
+            this.documentNo = documentNo;
+            this.documentDate = documentDate;
+            this.receivedDate = receivedDate;
         }
         
         // Getters and Setters
@@ -96,6 +103,18 @@ public class RawMaterialEntryDTO {
         
         public String getTotalWeight() { return totalWeight; }
         public void setTotalWeight(String totalWeight) { this.totalWeight = totalWeight; }
+        
+        public String getVehicleNumber() { return vehicleNumber; }
+        public void setVehicleNumber(String vehicleNumber) { this.vehicleNumber = vehicleNumber; }
+
+        public String getDocumentNo() { return documentNo; }
+        public void setDocumentNo(String documentNo) { this.documentNo = documentNo; }
+
+        public String getDocumentDate() { return documentDate; }
+        public void setDocumentDate(String documentDate) { this.documentDate = documentDate; }
+
+        public String getReceivedDate() { return receivedDate; }
+        public void setReceivedDate(String receivedDate) { this.receivedDate = receivedDate; }
     }
     
     @Override

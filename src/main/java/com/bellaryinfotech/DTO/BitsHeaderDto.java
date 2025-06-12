@@ -1,6 +1,5 @@
 package com.bellaryinfotech.DTO;
 
-
 import java.time.LocalDate;
 
 public class BitsHeaderDto {
@@ -13,6 +12,9 @@ public class BitsHeaderDto {
     private LocalDate workOrderDate;
     private LocalDate completionDate;
     private Boolean ldApplicable;
+    private String scrapAllowanceVisiblePercent;
+    private String scrapAllowanceInvisiblePercent;
+    private String materialIssueType;
      
 
     // Default constructor
@@ -21,7 +23,9 @@ public class BitsHeaderDto {
     // Constructor with parameters
     public BitsHeaderDto(String workOrder, String plantLocation, String department, 
                         String workLocation, LocalDate workOrderDate, 
-                        LocalDate completionDate, Boolean ldApplicable) {
+                        LocalDate completionDate, Boolean ldApplicable,
+                        String scrapAllowanceVisiblePercent, String scrapAllowanceInvisiblePercent,
+                        String materialIssueType) {
         this.workOrder = workOrder;
         this.plantLocation = plantLocation;
         this.department = department;
@@ -29,6 +33,9 @@ public class BitsHeaderDto {
         this.workOrderDate = workOrderDate;
         this.completionDate = completionDate;
         this.ldApplicable = ldApplicable;
+        this.scrapAllowanceVisiblePercent = scrapAllowanceVisiblePercent;
+        this.scrapAllowanceInvisiblePercent = scrapAllowanceInvisiblePercent;
+        this.materialIssueType = materialIssueType;
     }
 
     // Getters and Setters
@@ -95,5 +102,28 @@ public class BitsHeaderDto {
     public void setLdApplicable(Boolean ldApplicable) {
         this.ldApplicable = ldApplicable;
     }
-}
+    
+    public String getScrapAllowanceVisiblePercent() {
+        return scrapAllowanceVisiblePercent;
+    }
 
+    public void setScrapAllowanceVisiblePercent(String scrapAllowanceVisiblePercent) {
+        this.scrapAllowanceVisiblePercent = scrapAllowanceVisiblePercent;
+    }
+
+    public String getScrapAllowanceInvisiblePercent() {
+        return scrapAllowanceInvisiblePercent;
+    }
+
+    public void setScrapAllowanceInvisiblePercent(String scrapAllowanceInvisiblePercent) {
+        this.scrapAllowanceInvisiblePercent = scrapAllowanceInvisiblePercent;
+    }
+
+    public String getMaterialIssueType() {
+        return materialIssueType;
+    }
+
+    public void setMaterialIssueType(String materialIssueType) {
+        this.materialIssueType = materialIssueType;
+    }
+}

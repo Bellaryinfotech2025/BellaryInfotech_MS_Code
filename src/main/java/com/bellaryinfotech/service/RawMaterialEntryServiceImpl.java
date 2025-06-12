@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,27 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                 entry.setQty(parseBigDecimal(serviceEntryDTO.getQty()));
                 entry.setUom(serviceEntryDTO.getUom());
                 entry.setTotalWeight(parseBigDecimal(serviceEntryDTO.getTotalWeight()));
+                
+                // Set the new fields
+                entry.setVehicleNumber(serviceEntryDTO.getVehicleNumber());
+                entry.setDocumentNo(serviceEntryDTO.getDocumentNo());
+
+                // Parse and set date fields
+                if (serviceEntryDTO.getDocumentDate() != null && !serviceEntryDTO.getDocumentDate().trim().isEmpty()) {
+                    try {
+                        entry.setDocumentDate(LocalDate.parse(serviceEntryDTO.getDocumentDate()));
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing document date: {}", serviceEntryDTO.getDocumentDate());
+                    }
+                }
+
+                if (serviceEntryDTO.getReceivedDate() != null && !serviceEntryDTO.getReceivedDate().trim().isEmpty()) {
+                    try {
+                        entry.setReceivedDate(LocalDate.parse(serviceEntryDTO.getReceivedDate()));
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing received date: {}", serviceEntryDTO.getReceivedDate());
+                    }
+                }
                 
                 // Set audit fields
                 entry.setCreatedBy(rawMaterialEntryDTO.getCreatedBy());

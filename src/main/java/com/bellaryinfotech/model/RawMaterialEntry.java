@@ -16,7 +16,7 @@ public class RawMaterialEntry {
     @Column(name = "work_order")
     private String workOrder;
     
-    
+    // REMOVED: service_number column completely
     
     @Column(name = "section")
     private String section;
@@ -35,6 +35,18 @@ public class RawMaterialEntry {
     
     @Column(name = "total_weight", precision = 10, scale = 3)
     private BigDecimal totalWeight;
+    
+    @Column(name = "vehicle_number")
+    private String vehicleNumber;
+
+    @Column(name = "document_no")
+    private String documentNo;
+
+    @Column(name = "document_date")
+    private LocalDate documentDate;
+
+    @Column(name = "received_date")
+    private LocalDate receivedDate;
     
     @Column(name = "created_by")
     private String createdBy;
@@ -204,4 +216,16 @@ public class RawMaterialEntry {
     
     public LocalDate getAttribute5D() { return attribute5D; }
     public void setAttribute5D(LocalDate attribute5D) { this.attribute5D = attribute5D; }
+    
+    public String getVehicleNumber() { return vehicleNumber; }
+    public void setVehicleNumber(String vehicleNumber) { this.vehicleNumber = vehicleNumber; }
+
+    public String getDocumentNo() { return documentNo; }
+    public void setDocumentNo(String documentNo) { this.documentNo = documentNo; }
+
+    public LocalDate getDocumentDate() { return documentDate; }
+    public void setDocumentDate(LocalDate documentDate) { this.documentDate = documentDate; }
+
+    public LocalDate getReceivedDate() { return receivedDate; }
+    public void setReceivedDate(LocalDate receivedDate) { this.receivedDate = receivedDate; }
 }

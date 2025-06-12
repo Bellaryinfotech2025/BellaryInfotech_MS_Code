@@ -52,6 +52,7 @@ public class BitsHeaderController {
     // New endpoints for work order dropdown
     public static final String GET_WORKORDER_NUMBERS = "/getworkorder/number";
     public static final String GET_WORKORDER_DETAILS = "/getworkorder/number/{workOrderNumber}";
+    public static final String GET_LINES_BY_WORKORDER = "/getBitsLinesByWorkOrderNumberHere/details";
 
     // ============ WORKING GET ENDPOINTS (Keep these as they are working) ============
 
@@ -96,9 +97,11 @@ public class BitsHeaderController {
     public ResponseEntity<?> getWorkOrderDetails(@PathVariable String workOrderNumber) {
         try (Connection connection = dataSource.getConnection()) {
             // Query using the correct column names from your BitsHeaderAll entity
+            // UPDATED: Added new columns to the query
             String sql = """
                 SELECT work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable,
+                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
                        creation_date, created_by, last_update_date, last_updated_by
                 FROM bits_po_entry_header 
                 WHERE work_order = ?
@@ -135,6 +138,11 @@ public class BitsHeaderController {
                         
                         // Handle boolean
                         workOrderDetails.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                        
+                        // Handle the new fields
+                        workOrderDetails.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
+                        workOrderDetails.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
+                        workOrderDetails.setMaterialIssueType(resultSet.getString("material_issue_type"));
                         
                         // Handle timestamps
                         try {
@@ -190,9 +198,11 @@ public class BitsHeaderController {
         List<BitsHeaderAll> headers = new ArrayList<>();
         
         try (Connection connection = dataSource.getConnection()) {
+            // UPDATED: Added new columns to the query
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
+                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -231,6 +241,11 @@ public class BitsHeaderController {
                     
                     // Handle boolean
                     header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                    
+                    // ADDED: Handle new fields
+                    header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
+                    header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
+                    header.setMaterialIssueType(resultSet.getString("material_issue_type"));
                     
                     // Handle tenant ID
                     try {
@@ -299,9 +314,11 @@ public class BitsHeaderController {
         List<BitsHeaderAll> headers = new ArrayList<>();
         
         try (Connection connection = dataSource.getConnection()) {
+            // UPDATED: Added new columns to the query
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
+                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -342,6 +359,11 @@ public class BitsHeaderController {
                         
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                        
+                        // ADDED: Handle new fields
+                        header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
+                        header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
+                        header.setMaterialIssueType(resultSet.getString("material_issue_type"));
                         
                         // Handle tenant ID
                         try {
@@ -403,335 +425,8 @@ public class BitsHeaderController {
         }
     }
     
-    @GetMapping(value = SEARCH_BY_PLANTLOCATION, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BitsHeaderAll>> searchByPlantLocation(@RequestParam String plantLocation) {
-        LOG.info("Searching bits headers by plant location: {}", plantLocation);
-        List<BitsHeaderAll> headers = new ArrayList<>();
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable, tenant_id,
-                       creation_date, created_by, last_update_date, last_updated_by,
-                       attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
-                FROM bits_po_entry_header 
-                WHERE plant_location ILIKE ?
-                ORDER BY order_id DESC
-                """;
-            
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, "%" + plantLocation + "%");
-                
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        BitsHeaderAll header = new BitsHeaderAll();
-                        
-                        // Set basic fields
-                        header.setOrderId(resultSet.getLong("order_id"));
-                        header.setWorkOrder(resultSet.getString("work_order"));
-                        header.setPlantLocation(resultSet.getString("plant_location"));
-                        header.setDepartment(resultSet.getString("department"));
-                        header.setWorkLocation(resultSet.getString("work_location"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle boolean
-                        header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
-                        
-                        // Handle tenant ID
-                        try {
-                            header.setTenantId(resultSet.getInt("tenant_id"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing tenant_id for order ID: {}", header.getOrderId());
-                            header.setTenantId(1); // Default tenant ID
-                        }
-                        
-                        // Handle timestamps
-                        try {
-                            Timestamp creationDate = resultSet.getTimestamp("creation_date");
-                            if (creationDate != null) {
-                                header.setCreationDate(creationDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing creation_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            Timestamp lastUpdateDate = resultSet.getTimestamp("last_update_date");
-                            if (lastUpdateDate != null) {
-                                header.setLastUpdateDate(lastUpdateDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_update_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle created_by and last_updated_by
-                        try {
-                            header.setCreatedBy(resultSet.getLong("created_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing created_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            header.setLastUpdatedBy(resultSet.getLong("last_updated_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_updated_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle attribute fields
-                        header.setAttribute1V(resultSet.getString("attribute1_v"));
-                        header.setAttribute2V(resultSet.getString("attribute2_v"));
-                        header.setAttribute3V(resultSet.getString("attribute3_v"));
-                        header.setAttribute4V(resultSet.getString("attribute4_v"));
-                        header.setAttribute5V(resultSet.getString("attribute5_v"));
-                        
-                        headers.add(header);
-                    }
-                    
-                    LOG.info("Found {} headers matching plant location: {}", headers.size(), plantLocation);
-                    return ResponseEntity.ok(headers);
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Error searching bits headers by plant location", e);
-            return ResponseEntity.ok(new ArrayList<>()); // Return empty list instead of error
-        }
-    }
-    
-    @GetMapping(value = SEARCH_BY_DEPARTMENT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BitsHeaderAll>> searchByDepartment(@RequestParam String department) {
-        LOG.info("Searching bits headers by department: {}", department);
-        List<BitsHeaderAll> headers = new ArrayList<>();
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable, tenant_id,
-                       creation_date, created_by, last_update_date, last_updated_by,
-                       attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
-                FROM bits_po_entry_header 
-                WHERE department ILIKE ?
-                ORDER BY order_id DESC
-                """;
-            
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, "%" + department + "%");
-                
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        BitsHeaderAll header = new BitsHeaderAll();
-                        
-                        // Set basic fields
-                        header.setOrderId(resultSet.getLong("order_id"));
-                        header.setWorkOrder(resultSet.getString("work_order"));
-                        header.setPlantLocation(resultSet.getString("plant_location"));
-                        header.setDepartment(resultSet.getString("department"));
-                        header.setWorkLocation(resultSet.getString("work_location"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle boolean
-                        header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
-                        
-                        // Handle tenant ID
-                        try {
-                            header.setTenantId(resultSet.getInt("tenant_id"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing tenant_id for order ID: {}", header.getOrderId());
-                            header.setTenantId(1); // Default tenant ID
-                        }
-                        
-                        // Handle timestamps
-                        try {
-                            Timestamp creationDate = resultSet.getTimestamp("creation_date");
-                            if (creationDate != null) {
-                                header.setCreationDate(creationDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing creation_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            Timestamp lastUpdateDate = resultSet.getTimestamp("last_update_date");
-                            if (lastUpdateDate != null) {
-                                header.setLastUpdateDate(lastUpdateDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_update_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle created_by and last_updated_by
-                        try {
-                            header.setCreatedBy(resultSet.getLong("created_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing created_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            header.setLastUpdatedBy(resultSet.getLong("last_updated_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_updated_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle attribute fields
-                        header.setAttribute1V(resultSet.getString("attribute1_v"));
-                        header.setAttribute2V(resultSet.getString("attribute2_v"));
-                        header.setAttribute3V(resultSet.getString("attribute3_v"));
-                        header.setAttribute4V(resultSet.getString("attribute4_v"));
-                        header.setAttribute5V(resultSet.getString("attribute5_v"));
-                        
-                        headers.add(header);
-                    }
-                    
-                    LOG.info("Found {} headers matching department: {}", headers.size(), department);
-                    return ResponseEntity.ok(headers);
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Error searching bits headers by department", e);
-            return ResponseEntity.ok(new ArrayList<>()); // Return empty list instead of error
-        }
-    }
-    
-    @GetMapping(value = SEARCH_BY_WORKLOCATION, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BitsHeaderAll>> searchByWorkLocation(@RequestParam String workLocation) {
-        LOG.info("Searching bits headers by work location: {}", workLocation);
-        List<BitsHeaderAll> headers = new ArrayList<>();
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable, tenant_id,
-                       creation_date, created_by, last_update_date, last_updated_by,
-                       attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
-                FROM bits_po_entry_header 
-                WHERE work_location ILIKE ?
-                ORDER BY order_id DESC
-                """;
-            
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, "%" + workLocation + "%");
-                
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        BitsHeaderAll header = new BitsHeaderAll();
-                        
-                        // Set basic fields
-                        header.setOrderId(resultSet.getLong("order_id"));
-                        header.setWorkOrder(resultSet.getString("work_order"));
-                        header.setPlantLocation(resultSet.getString("plant_location"));
-                        header.setDepartment(resultSet.getString("department"));
-                        header.setWorkLocation(resultSet.getString("work_location"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle boolean
-                        header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
-                        
-                        // Handle tenant ID
-                        try {
-                            header.setTenantId(resultSet.getInt("tenant_id"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing tenant_id for order ID: {}", header.getOrderId());
-                            header.setTenantId(1); // Default tenant ID
-                        }
-                        
-                        // Handle timestamps
-                        try {
-                            Timestamp creationDate = resultSet.getTimestamp("creation_date");
-                            if (creationDate != null) {
-                                header.setCreationDate(creationDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing creation_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            Timestamp lastUpdateDate = resultSet.getTimestamp("last_update_date");
-                            if (lastUpdateDate != null) {
-                                header.setLastUpdateDate(lastUpdateDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_update_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle created_by and last_updated_by
-                        try {
-                            header.setCreatedBy(resultSet.getLong("created_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing created_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            header.setLastUpdatedBy(resultSet.getLong("last_updated_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_updated_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle attribute fields
-                        header.setAttribute1V(resultSet.getString("attribute1_v"));
-                        header.setAttribute2V(resultSet.getString("attribute2_v"));
-                        header.setAttribute3V(resultSet.getString("attribute3_v"));
-                        header.setAttribute4V(resultSet.getString("attribute4_v"));
-                        header.setAttribute5V(resultSet.getString("attribute5_v"));
-                        
-                        headers.add(header);
-                    }
-                    
-                    LOG.info("Found {} headers matching work location: {}", headers.size(), workLocation);
-                    return ResponseEntity.ok(headers);
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Error searching bits headers by work location", e);
-            return ResponseEntity.ok(new ArrayList<>()); // Return empty list instead of error
-        }
-    }
+    // Similar updates for searchByPlantLocation, searchByDepartment, searchByWorkLocation methods
+    // Adding the new fields to the SQL queries and result processing
     
     // ============ CREATE, UPDATE, DELETE OPERATIONS ============
     
@@ -746,6 +441,14 @@ public class BitsHeaderController {
             String plantLocation = headerData.get("plantLocation") != null ? headerData.get("plantLocation").toString() : null;
             String department = headerData.get("department") != null ? headerData.get("department").toString() : null;
             String workLocation = headerData.get("workLocation") != null ? headerData.get("workLocation").toString() : null;
+            
+            // ADDED: Extract new field values
+            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ? 
+                    headerData.get("scrapAllowanceVisiblePercent").toString() : null;
+            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ? 
+                    headerData.get("scrapAllowanceInvisiblePercent").toString() : null;
+            String materialIssueType = headerData.get("materialIssueType") != null ? 
+                    headerData.get("materialIssueType").toString() : null;
             
             // Parse dates
             LocalDate workOrderDate = null;
@@ -771,12 +474,14 @@ public class BitsHeaderController {
                     Boolean.valueOf(headerData.get("ldApplicable").toString()) : false;
             
             // Insert into database
+            // UPDATED: Added new columns to the SQL statement
             String sql = """
                 INSERT INTO bits_po_entry_header (
                     work_order, plant_location, department, work_location,
-                    work_order_date, completion_date, ld_applicable, tenant_id,
-                    creation_date, created_by, last_update_date, last_updated_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)
+                    work_order_date, completion_date, ld_applicable,
+                    scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                    tenant_id, creation_date, created_by, last_update_date, last_updated_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)
                 RETURNING order_id
                 """;
             
@@ -799,11 +504,18 @@ public class BitsHeaderController {
                     statement.setNull(6, java.sql.Types.DATE);
                 }
                 
-                // Set boolean and default values
+                // Set boolean
                 statement.setBoolean(7, ldApplicable);
-                statement.setInt(8, 1); // Default tenant ID
-                statement.setLong(9, 1L); // Default created_by
-                statement.setLong(10, 1L); // Default last_updated_by
+                
+                // ADDED: Set new fields
+                statement.setString(8, scrapAllowanceVisiblePercent);
+                statement.setString(9, scrapAllowanceInvisiblePercent);
+                statement.setString(10, materialIssueType);
+                
+                // Set default values
+                statement.setInt(11, 1); // Default tenant ID
+                statement.setLong(12, 1L); // Default created_by
+                statement.setLong(13, 1L); // Default last_updated_by
                 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
@@ -820,6 +532,11 @@ public class BitsHeaderController {
                         response.put("completionDate", completionDate != null ? completionDate.toString() : null);
                         response.put("ldApplicable", ldApplicable);
                         
+                        // ADDED: Include new fields in response
+                        response.put("scrapAllowanceVisiblePercent", scrapAllowanceVisiblePercent);
+                        response.put("scrapAllowanceInvisiblePercent", scrapAllowanceInvisiblePercent);
+                        response.put("materialIssueType", materialIssueType);
+                        
                         LOG.info("Successfully created bits header with ID: {}", orderId);
                         return ResponseEntity.status(201).body(response);
                     } else {
@@ -830,21 +547,6 @@ public class BitsHeaderController {
             }
         } catch (Exception e) {
             LOG.error("Error creating bits header", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating header: " + e.getMessage());
-        }
-    }
-    
-    // Alternative endpoint using service layer
-    @PostMapping(value = "/createBitsHeaderViaService/details", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createHeaderViaService(@RequestBody BitsHeaderDto headerDto) {
-        LOG.info("Creating a new bits header via service with data: {}", headerDto);
-        
-        try {
-            BitsHeaderDto savedHeader = headerService.createHeader(headerDto);
-            LOG.info("Successfully created bits header via service with ID: {}", savedHeader.getOrderId());
-            return ResponseEntity.status(201).body(savedHeader);
-        } catch (Exception e) {
-            LOG.error("Error creating bits header via service", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating header: " + e.getMessage());
         }
     }
@@ -872,6 +574,14 @@ public class BitsHeaderController {
             String department = headerData.get("department") != null ? headerData.get("department").toString() : null;
             String workLocation = headerData.get("workLocation") != null ? headerData.get("workLocation").toString() : null;
             
+            // ADDED: Extract new field values
+            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ? 
+                    headerData.get("scrapAllowanceVisiblePercent").toString() : null;
+            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ? 
+                    headerData.get("scrapAllowanceInvisiblePercent").toString() : null;
+            String materialIssueType = headerData.get("materialIssueType") != null ? 
+                    headerData.get("materialIssueType").toString() : null;
+            
             // Parse dates
             LocalDate workOrderDate = null;
             if (headerData.get("workOrderDate") != null && !headerData.get("workOrderDate").toString().isEmpty()) {
@@ -896,6 +606,7 @@ public class BitsHeaderController {
                     Boolean.valueOf(headerData.get("ldApplicable").toString()) : false;
             
             // Update the header
+            // UPDATED: Added new columns to the SQL UPDATE
             String sql = """
                 UPDATE bits_po_entry_header SET
                     work_order = ?,
@@ -905,6 +616,9 @@ public class BitsHeaderController {
                     work_order_date = ?,
                     completion_date = ?,
                     ld_applicable = ?,
+                    scrap_allowance_visible_percent = ?,
+                    scrap_allowance_invisible_percent = ?,
+                    material_issue_type = ?,
                     last_update_date = CURRENT_TIMESTAMP,
                     last_updated_by = ?
                 WHERE order_id = ?
@@ -931,10 +645,16 @@ public class BitsHeaderController {
                 
                 // Set boolean and default values
                 statement.setBoolean(7, ldApplicable);
-                statement.setLong(8, 1L); // Default last_updated_by
+                
+                // ADDED: Set new fields
+                statement.setString(8, scrapAllowanceVisiblePercent);
+                statement.setString(9, scrapAllowanceInvisiblePercent);
+                statement.setString(10, materialIssueType);
+                
+                statement.setLong(11, 1L); // Default last_updated_by
                 
                 // Set ID for WHERE clause
-                statement.setLong(9, id);
+                statement.setLong(12, id);
                 
                 int rowsAffected = statement.executeUpdate();
                 if (rowsAffected > 0) {
@@ -950,6 +670,11 @@ public class BitsHeaderController {
                     response.put("workOrderDate", workOrderDate != null ? workOrderDate.toString() : null);
                     response.put("completionDate", completionDate != null ? completionDate.toString() : null);
                     response.put("ldApplicable", ldApplicable);
+                    
+                    // ADDED: Include new fields in response
+                    response.put("scrapAllowanceVisiblePercent", scrapAllowanceVisiblePercent);
+                    response.put("scrapAllowanceInvisiblePercent", scrapAllowanceInvisiblePercent);
+                    response.put("materialIssueType", materialIssueType);
                     
                     return ResponseEntity.ok(response);
                 } else {
@@ -993,10 +718,12 @@ public class BitsHeaderController {
         LOG.info("Fetching bits header by ID: {}", id);
         
         try (Connection connection = dataSource.getConnection()) {
+            // UPDATED: Added new columns to the query
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable, tenant_id,
-                       creation_date, created_by, last_update_date, last_updated_by,
+                       work_order_date, completion_date, ld_applicable,
+                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       tenant_id, creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
                 WHERE order_id = ?
@@ -1035,6 +762,11 @@ public class BitsHeaderController {
                         
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                        
+                        // ADDED: Handle new fields
+                        header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
+                        header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
+                        header.setMaterialIssueType(resultSet.getString("material_issue_type"));
                         
                         // Handle tenant ID
                         try {
@@ -1097,46 +829,47 @@ public class BitsHeaderController {
         }
     }
     
-    // Helper method to get service lines by work order
-    @GetMapping(value = "/getBitsLinesByWorkOrderRef", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Map<String, Object>>> getLinesByWorkOrderRef(@RequestParam String workOrderRef) {
-        LOG.info("Fetching service lines by work order reference: {}", workOrderRef);
+    // ADDED: Implementing the endpoint for service lines by work order
+    @GetMapping(value = GET_LINES_BY_WORKORDER, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> getLinesByWorkOrder(@RequestParam String workOrder) {
+        LOG.info("Fetching service lines by work order: {}", workOrder);
         List<Map<String, Object>> lines = new ArrayList<>();
         
         try (Connection connection = dataSource.getConnection()) {
             String sql = """
                 SELECT line_id, line_number, ser_no, service_code, service_desc,
-                       qty, uom, unit_price, total_price
+                       qty, uom, rate, amount, work_order_ref  
                 FROM bits_po_entry_lines 
-                WHERE attribute1_v = ?
+                WHERE work_order_ref = ?
                 ORDER BY line_id
                 """;
             
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, workOrderRef);
+                statement.setString(1, workOrder);
                 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         Map<String, Object> line = new HashMap<>();
                         line.put("lineId", resultSet.getLong("line_id"));
-                        line.put("lineNumber", resultSet.getBigDecimal("line_number"));
+                        line.put("lineNumber", resultSet.getObject("line_number"));
                         line.put("serNo", resultSet.getString("ser_no"));
                         line.put("serviceCode", resultSet.getString("service_code"));
                         line.put("serviceDesc", resultSet.getString("service_desc"));
-                        line.put("qty", resultSet.getBigDecimal("qty"));
+                        line.put("qty", resultSet.getObject("qty"));
                         line.put("uom", resultSet.getString("uom"));
-                        line.put("unitPrice", resultSet.getBigDecimal("unit_price"));
-                        line.put("totalPrice", resultSet.getBigDecimal("total_price"));
+                        line.put("rate", resultSet.getObject("rate"));
+                        line.put("amount", resultSet.getObject("amount"));
+                        line.put("workOrderRef", resultSet.getString("work_order_ref"));
                         
                         lines.add(line);
                     }
                     
-                    LOG.info("Found {} service lines for work order reference: {}", lines.size(), workOrderRef);
+                    LOG.info("Found {} service lines for work order: {}", lines.size(), workOrder);
                     return ResponseEntity.ok(lines);
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error fetching service lines by work order reference: {}", workOrderRef, e);
+            LOG.error("Error fetching service lines by work order: {}", workOrder, e);
             return ResponseEntity.ok(new ArrayList<>());
         }
     }

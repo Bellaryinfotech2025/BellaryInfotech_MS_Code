@@ -35,6 +35,16 @@ public class BitsHeaderAll {
     @Column(name = "ld_applicable")
     private Boolean ldApplicable;
     
+    // New columns
+    @Column(name = "scrap_allowance_visible_percent")
+    private String scrapAllowanceVisiblePercent;
+    
+    @Column(name = "scrap_allowance_invisible_percent")
+    private String scrapAllowanceInvisiblePercent;
+    
+    @Column(name = "material_issue_type")
+    private String materialIssueType;
+    
     @Column(name = "tenant_id")
     private Integer tenantId;
     
@@ -162,6 +172,31 @@ public class BitsHeaderAll {
     public void setLdApplicable(Boolean ldApplicable) {
         this.ldApplicable = ldApplicable;
     }
+    
+    // New getters and setters for the new fields
+    public String getScrapAllowanceVisiblePercent() {
+        return scrapAllowanceVisiblePercent;
+    }
+
+    public void setScrapAllowanceVisiblePercent(String scrapAllowanceVisiblePercent) {
+        this.scrapAllowanceVisiblePercent = scrapAllowanceVisiblePercent;
+    }
+
+    public String getScrapAllowanceInvisiblePercent() {
+        return scrapAllowanceInvisiblePercent;
+    }
+
+    public void setScrapAllowanceInvisiblePercent(String scrapAllowanceInvisiblePercent) {
+        this.scrapAllowanceInvisiblePercent = scrapAllowanceInvisiblePercent;
+    }
+
+    public String getMaterialIssueType() {
+        return materialIssueType;
+    }
+
+    public void setMaterialIssueType(String materialIssueType) {
+        this.materialIssueType = materialIssueType;
+    }
 
     public Integer getTenantId() {
         return tenantId;
@@ -179,11 +214,6 @@ public class BitsHeaderAll {
         this.creationDate = creationDate;
     }
 
-    // Remove this conflicting method
-    // public void setCreationDate(LocalDateTime localDateTime) {
-    //     // This method is causing the conflict
-    // }
-
     public Long getCreatedBy() {
         return createdBy;
     }
@@ -199,11 +229,6 @@ public class BitsHeaderAll {
     public void setLastUpdateDate(Timestamp lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
-
-    // Remove this conflicting method
-    // public void setLastUpdatingDate(LocalDateTime localDateTime) {
-    //     // This method is causing the conflict
-    // }
 
     public Long getLastUpdatedBy() {
         return lastUpdatedBy;
