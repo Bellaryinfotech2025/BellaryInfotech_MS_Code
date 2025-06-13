@@ -52,6 +52,10 @@ public class ErectionDrawingEntryDto {
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
 
+    // NEW FIELD: Total Item Weight
+    @JsonProperty("totalItemWeight")
+    private BigDecimal totalItemWeight;
+
     @JsonProperty("tenantId")
     private String tenantId;
 
@@ -263,6 +267,15 @@ public class ErectionDrawingEntryDto {
 
     public void setItemWeight(BigDecimal itemWeight) {
         this.itemWeight = itemWeight;
+    }
+
+    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
+    public BigDecimal getTotalItemWeight() {
+        return totalItemWeight;
+    }
+
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
     }
 
     public String getTenantId() {
@@ -518,6 +531,7 @@ public class ErectionDrawingEntryDto {
                 ", totalMarkedWgt=" + totalMarkedWgt +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
+                ", totalItemWeight=" + totalItemWeight +
                 ", status='" + status + '\'' +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +

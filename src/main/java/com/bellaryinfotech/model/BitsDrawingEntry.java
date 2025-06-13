@@ -50,6 +50,10 @@ public class BitsDrawingEntry {
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
 
+    // NEW COLUMN: Total Item Weight
+    @Column(name = "total_item_weight", precision = 19, scale = 4)
+    private BigDecimal totalItemWeight;
+
     @Column(name = "tenant_id")
     private String tenantId;
 
@@ -125,7 +129,7 @@ public class BitsDrawingEntry {
     @Column(name = "target_date")
     private LocalDate targetDate;
 
-    // NEW FABRICATION STAGE FIELDS
+    // FABRICATION STAGE FIELDS
     @Column(name = "cutting_stage", length = 1)
     private String cuttingStage = "N";
 
@@ -254,6 +258,15 @@ public class BitsDrawingEntry {
 
     public void setItemWeight(BigDecimal itemWeight) {
         this.itemWeight = itemWeight;
+    }
+
+    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
+    public BigDecimal getTotalItemWeight() {
+        return totalItemWeight;
+    }
+
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
     }
 
     public String getTenantId() {
@@ -456,7 +469,7 @@ public class BitsDrawingEntry {
         this.targetDate = targetDate;
     }
 
-    // NEW GETTERS AND SETTERS FOR FABRICATION STAGES
+    // GETTERS AND SETTERS FOR FABRICATION STAGES
     public String getCuttingStage() {
         return cuttingStage;
     }
@@ -524,6 +537,7 @@ public class BitsDrawingEntry {
                 ", length=" + length +
                 ", itemQty=" + itemQty +
                 ", itemWeight=" + itemWeight +
+                ", totalItemWeight=" + totalItemWeight +
                 ", tenantId='" + tenantId + '\'' +
                 ", creationDate=" + creationDate +
                 ", createdBy='" + createdBy + '\'' +

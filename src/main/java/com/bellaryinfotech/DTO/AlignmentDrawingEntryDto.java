@@ -51,6 +51,9 @@ public class AlignmentDrawingEntryDto {
 
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
+    // NEW FIELD: Total Item Weight
+    @JsonProperty("totalItemWeight")
+    private BigDecimal totalItemWeight;
 
     @JsonProperty("tenantId")
     private String tenantId;
@@ -265,7 +268,15 @@ public class AlignmentDrawingEntryDto {
         this.itemWeight = itemWeight;
     }
 
-    public String getTenantId() {
+    public BigDecimal getTotalItemWeight() {
+		return totalItemWeight;
+	}
+
+	public void setTotalItemWeight(BigDecimal totalItemWeight) {
+		this.totalItemWeight = totalItemWeight;
+	}
+
+	public String getTenantId() {
         return tenantId;
     }
 
@@ -518,6 +529,7 @@ public class AlignmentDrawingEntryDto {
                 ", totalMarkedWgt=" + totalMarkedWgt +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
+                ", totalItemWeight=" + totalItemWeight +
                 ", status='" + status + '\'' +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +

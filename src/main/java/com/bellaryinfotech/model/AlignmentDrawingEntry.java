@@ -49,6 +49,9 @@ public class AlignmentDrawingEntry {
 
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
+ // NEW COLUMN: Total Item Weight
+    @Column(name = "total_item_weight", precision = 19, scale = 4)
+    private BigDecimal totalItemWeight;
 
     @Column(name = "tenant_id")
     private String tenantId;
@@ -141,8 +144,17 @@ public class AlignmentDrawingEntry {
 
     @Column(name = "finishing_stage", length = 1)
     private String finishingStage = "N";
+    
+    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
+    public BigDecimal getTotalItemWeight() {
+        return totalItemWeight;
+    }
 
-    // Default constructor
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
+    }
+
+	// Default constructor
     public AlignmentDrawingEntry() {}
 
     // Constructor with essential fields
@@ -533,6 +545,7 @@ public class AlignmentDrawingEntry {
                 ", totalMarkedWgt=" + totalMarkedWgt +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
+                 ", totalItemWeight=" + totalItemWeight +
                 ", status='" + status + '\'' +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +

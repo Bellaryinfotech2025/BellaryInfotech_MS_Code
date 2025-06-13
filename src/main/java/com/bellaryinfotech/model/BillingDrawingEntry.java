@@ -49,6 +49,10 @@ public class BillingDrawingEntry {
 
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
+    
+ // NEW COLUMN: Total Item Weight
+    @Column(name = "total_item_weight", precision = 19, scale = 4)
+    private BigDecimal totalItemWeight;
 
     @Column(name = "tenant_id")
     private String tenantId;
@@ -292,8 +296,18 @@ public class BillingDrawingEntry {
 
     public String getFinishingStage() { return finishingStage; }
     public void setFinishingStage(String finishingStage) { this.finishingStage = finishingStage; }
+    
+    
 
-    @Override
+    public BigDecimal getTotalItemWeight() {
+		return totalItemWeight;
+	}
+
+	public void setTotalItemWeight(BigDecimal totalItemWeight) {
+		this.totalItemWeight = totalItemWeight;
+	}
+
+	@Override
     public String toString() {
         return "BillingDrawingEntry{" +
                 "lineId='" + lineId + '\'' +
@@ -303,6 +317,7 @@ public class BillingDrawingEntry {
                 ", markedQty=" + markedQty +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +
+                 ", totalItemWeight=" + totalItemWeight +
                 ", cuttingStage='" + cuttingStage + '\'' +
                 ", fitUpStage='" + fitUpStage + '\'' +
                 ", weldingStage='" + weldingStage + '\'' +

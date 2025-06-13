@@ -592,6 +592,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
+        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         entity.setTenantId(dto.getTenantId());
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
@@ -652,6 +653,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
+        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
@@ -706,6 +708,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         if (dto.getTenantId() != null) entity.setTenantId(dto.getTenantId());
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());

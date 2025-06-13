@@ -57,6 +57,10 @@ public class BitsDrawingEntryDto {
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
 
+    // NEW FIELD: Total Item Weight
+    @JsonProperty("totalItemWeight")
+    private BigDecimal totalItemWeight;
+
     @JsonProperty("tenantId")
     private String tenantId;
 
@@ -141,7 +145,7 @@ public class BitsDrawingEntryDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate targetDate;
 
-    // NEW FABRICATION STAGE FIELDS
+    // FABRICATION STAGE FIELDS
     @JsonProperty("cuttingStage")
     private String cuttingStage = "N";
 
@@ -267,6 +271,15 @@ public class BitsDrawingEntryDto {
 
     public void setItemWeight(BigDecimal itemWeight) {
         this.itemWeight = itemWeight;
+    }
+
+    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
+    public BigDecimal getTotalItemWeight() {
+        return totalItemWeight;
+    }
+
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
     }
 
     public String getTenantId() {
@@ -469,7 +482,7 @@ public class BitsDrawingEntryDto {
         this.targetDate = targetDate;
     }
 
-    // NEW GETTERS AND SETTERS FOR FABRICATION STAGES
+    // GETTERS AND SETTERS FOR FABRICATION STAGES
     public String getCuttingStage() {
         return cuttingStage;
     }

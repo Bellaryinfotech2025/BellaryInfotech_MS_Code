@@ -54,8 +54,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             for (int i = 0; i < markedQtyInt; i++) {
                 BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
                 
-                // Generate sequential line ID
-                entry.setLineId(generateSequentialLineId());
+                // Generate sequential line ID using simple timestamp approach to avoid database query
+                entry.setLineId(generateSimpleLineId());
                 
                 // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
@@ -108,7 +108,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
                     BitsDrawingEntry entry = convertDtoToEntity(dto);
                     
                     // Generate sequential line ID
-                    entry.setLineId(generateSequentialLineId());
+                    entry.setLineId(generateSimpleLineId());
                     
                     // Set creation metadata
                     entry.setCreationDate(LocalDateTime.now());
@@ -518,6 +518,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
+        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         
         // Set default tenant if not provided
         String tenantId = dto.getTenantId();
@@ -584,6 +585,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
+        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
@@ -637,6 +639,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         
         // Handle tenant ID with default
         if (dto.getTenantId() != null) {
@@ -682,51 +685,11 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     }
 
     /**
-     * Generate a sequential line ID in format 1.1, 1.2, 1.3, etc.
-     * This ensures unique, sequential serial numbers
+     * Generate a simple line ID using timestamp to avoid database queries
      */
-    private synchronized String generateSequentialLineId() {
-        // Get the current maximum line ID from database
-        long maxId = getMaxLineIdNumber();
-        long nextId = Math.max(maxId + 1, lineIdCounter.get());
-        
-        // Update the counter
-        lineIdCounter.set(nextId + 1);
-        
-        // Generate format like 1.1, 1.2, etc.
-        long major = (nextId - 1) / 10 + 1;
-        long minor = (nextId - 1) % 10 + 1;
-        
-        return major + "." + minor;
-    }
-    
-    /**
-     * Get the maximum line ID number from existing records
-     */
-    private long getMaxLineIdNumber() {
-        try {
-            List<BitsDrawingEntry> allEntries = bitsDrawingEntryRepository.findAll();
-            long maxNumber = 0;
-            
-            for (BitsDrawingEntry entry : allEntries) {
-                String lineId = entry.getLineId();
-                if (lineId != null && lineId.matches("\\d+\\.\\d+")) {
-                    try {
-                        String[] parts = lineId.split("\\.");
-                        long major = Long.parseLong(parts[0]);
-                        long minor = Long.parseLong(parts[1]);
-                        long number = (major - 1) * 10 + minor;
-                        maxNumber = Math.max(maxNumber, number);
-                    } catch (NumberFormatException e) {
-                        // Skip invalid format
-                    }
-                }
-            }
-            
-            return maxNumber;
-        } catch (Exception e) {
-            logger.warn("Error getting max line ID number, starting from 0", e);
-            return 0;
-        }
+    private synchronized String generateSimpleLineId() {
+        long timestamp = System.currentTimeMillis();
+        long counter = lineIdCounter.incrementAndGet();
+        return "LINE_" + timestamp + "_" + counter;
     }
 }

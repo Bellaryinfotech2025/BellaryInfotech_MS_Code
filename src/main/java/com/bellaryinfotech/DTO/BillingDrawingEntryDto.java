@@ -2,6 +2,9 @@ package com.bellaryinfotech.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDate;
 
 public class BillingDrawingEntryDto {
@@ -20,6 +23,9 @@ public class BillingDrawingEntryDto {
     private BigDecimal itemQty;
     private BigDecimal itemWeight;
     private String tenantId;
+ // NEW FIELD: Total Item Weight
+    @JsonProperty("totalItemWeight")
+    private BigDecimal totalItemWeight;
     private LocalDateTime creationDate;
     private String createdBy;
     private LocalDateTime lastUpdatingDate;
@@ -202,8 +208,18 @@ public class BillingDrawingEntryDto {
 
     public String getFinishingStage() { return finishingStage; }
     public void setFinishingStage(String finishingStage) { this.finishingStage = finishingStage; }
+    
+    
 
-    @Override
+    public BigDecimal getTotalItemWeight() {
+		return totalItemWeight;
+	}
+
+	public void setTotalItemWeight(BigDecimal totalItemWeight) {
+		this.totalItemWeight = totalItemWeight;
+	}
+
+	@Override
     public String toString() {
         return "BillingDrawingEntryDto{" +
                 "lineId='" + lineId + '\'' +
@@ -212,6 +228,7 @@ public class BillingDrawingEntryDto {
                 ", markedQty=" + markedQty +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +
+                 ", totalItemWeight=" + totalItemWeight +
                 ", cuttingStage='" + cuttingStage + '\'' +
                 ", fitUpStage='" + fitUpStage + '\'' +
                 ", weldingStage='" + weldingStage + '\'' +

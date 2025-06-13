@@ -609,12 +609,25 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
+        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         entity.setTenantId(dto.getTenantId());
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatingDate(dto.getLastUpdatingDate());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
         entity.setStatus(dto.getStatus());
+        
+        // Set new fields
+        entity.setDrawingWeight(dto.getDrawingWeight());
+        entity.setMarkWeight(dto.getMarkWeight());
+        entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        entity.setTargetDate(dto.getTargetDate());
+        
+        // Set fabrication stages
+        entity.setCuttingStage(dto.getCuttingStage());
+        entity.setFitUpStage(dto.getFitUpStage());
+        entity.setWeldingStage(dto.getWeldingStage());
+        entity.setFinishingStage(dto.getFinishingStage());
         
         // Set PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) {
@@ -630,7 +643,7 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         if (dto.getAttribute1N() != null) entity.setAttribute1N(dto.getAttribute1N());
         if (dto.getAttribute2N() != null) entity.setAttribute2N(dto.getAttribute2N());
         if (dto.getAttribute3N() != null) entity.setAttribute3N(dto.getAttribute3N());
-        if (dto.getAttribute4N() != null) entity.setAttribute4N(dto.getAttribute5N());
+        if (dto.getAttribute4N() != null) entity.setAttribute4N(dto.getAttribute4N());
         if (dto.getAttribute5N() != null) entity.setAttribute5N(dto.getAttribute5N());
         if (dto.getAttribute1D() != null) entity.setAttribute1D(dto.getAttribute1D());
         if (dto.getAttribute2D() != null) entity.setAttribute2D(dto.getAttribute2D());
@@ -657,12 +670,25 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
+        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setLastUpdatingDate(entity.getLastUpdatingDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
         dto.setStatus(entity.getStatus());
+        
+        // Set new fields
+        dto.setDrawingWeight(entity.getDrawingWeight());
+        dto.setMarkWeight(entity.getMarkWeight());
+        dto.setDrawingReceivedDate(entity.getDrawingReceivedDate());
+        dto.setTargetDate(entity.getTargetDate());
+        
+        // Set fabrication stages
+        dto.setCuttingStage(entity.getCuttingStage());
+        dto.setFitUpStage(entity.getFitUpStage());
+        dto.setWeldingStage(entity.getWeldingStage());
+        dto.setFinishingStage(entity.getFinishingStage());
         
         // Set PO Line Reference ID if available
         dto.setPoLineReferenceId(entity.getPoLineReferenceId());
@@ -699,10 +725,23 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
         if (dto.getTenantId() != null) entity.setTenantId(dto.getTenantId());
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
         if (dto.getStatus() != null) entity.setStatus(dto.getStatus());
+        
+        // Update new fields
+        if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
+        if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
+        if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
+        if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
+        
+        // Update fabrication stages
+        if (dto.getCuttingStage() != null) entity.setCuttingStage(dto.getCuttingStage());
+        if (dto.getFitUpStage() != null) entity.setFitUpStage(dto.getFitUpStage());
+        if (dto.getWeldingStage() != null) entity.setWeldingStage(dto.getWeldingStage());
+        if (dto.getFinishingStage() != null) entity.setFinishingStage(dto.getFinishingStage());
         
         // Update PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());
