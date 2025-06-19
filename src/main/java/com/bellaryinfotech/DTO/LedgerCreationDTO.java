@@ -1,5 +1,4 @@
 package com.bellaryinfotech.DTO;
- 
 
 import jakarta.validation.constraints.*;
 
@@ -19,28 +18,29 @@ public class LedgerCreationDTO {
     private String district;
     private String state;
     
-    @Pattern(regexp = "^[0-9]{6}$", message = "Pin code must be 6 digits")
+    @Pattern(regexp = "^$|^[0-9]{6}$", message = "Pin code must be 6 digits or empty")
     private String pinCode;
     
     private String contactPersonName;
     
-    @Pattern(regexp = "^[0-9]{10,15}$", message = "Mobile number must be 10-15 digits")
+    @Pattern(regexp = "^$|^[0-9]{10,15}$", message = "Mobile number must be 10-15 digits or empty")
     private String mobileNo;
     
-    @Email(message = "Please enter a valid email address")
+    @Pattern(regexp = "^$|^[\\w._%+-]+@[\\w.-]+\\.[A-Z]{2,}$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Please enter a valid email address or leave empty")
     private String email;
     
     private String website;
     
-    @Pattern(regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Please enter a valid GSTIN (15 characters)")
+    @Pattern(regexp = "^$|^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Please enter a valid GSTIN (15 characters) or leave empty")
     private String gstin;
     
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Please enter a valid PAN (10 characters)")
+    @Pattern(regexp = "^$|^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Please enter a valid PAN (10 characters) or leave empty")
     private String pan;
     
     private String bankAccountNo;
     
-    @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Please enter a valid IFSC code (11 characters)")
+    // Fixed IFSC validation - allows empty string or valid IFSC format
+    @Pattern(regexp = "^$|^[A-Z]{4}0[A-Z0-9]{6}$", message = "Please enter a valid IFSC code (11 characters) or leave empty")
     private String ifscCode;
     
     private String branchName;
