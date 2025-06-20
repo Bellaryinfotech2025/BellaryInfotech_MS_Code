@@ -38,16 +38,16 @@ public class VendorProfileDTO {
     @Size(max = 255, message = "State must not exceed 255 characters")
     private String state;
     
-    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    @Pattern(regexp = "^$|^[0-9]{6}$", message = "PIN code must be 6 digits or empty")
     private String pinCode;
     
     @Size(max = 255, message = "Contact person must not exceed 255 characters")
     private String contactPerson;
     
-    @Pattern(regexp = "^[0-9+\\-\\s()]*$", message = "Invalid contact number format")
+    @Pattern(regexp = "^$|^[0-9+\\-\\s()]*$", message = "Invalid contact number format or empty")
     private String contactNumber;
     
-    @Email(message = "Invalid email format")
+    @Pattern(regexp = "^$|^[\\w._%+-]+@[\\w.-]+\\.[A-Z]{2,}$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Invalid email format or empty")
     private String email;
     
     // Logo information (not the actual data for DTO)
@@ -63,16 +63,16 @@ public class VendorProfileDTO {
     @Size(max = 50, message = "Bank account must not exceed 50 characters")
     private String bankAccount;
     
-    @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code format")
+    @Pattern(regexp = "^$|^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code format or empty")
     private String ifscCode;
     
     @Size(max = 255, message = "Branch name must not exceed 255 characters")
     private String branchName;
     
-    @Pattern(regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST format")
+    @Pattern(regexp = "^$|^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST format or empty")
     private String gstNo;
     
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format")
+    @Pattern(regexp = "^$|^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format or empty")
     private String panNo;
     
     private String status;

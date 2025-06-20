@@ -58,7 +58,7 @@ public class VendorProfile {
     private String state;
     
     @Column(name = "pin_code")
-    @Pattern(regexp = "^[0-9]{6}$", message = "PIN code must be 6 digits")
+    @Pattern(regexp = "^$|^[0-9]{6}$", message = "PIN code must be 6 digits or empty")
     private String pinCode;
     
     // Contact Information
@@ -67,16 +67,15 @@ public class VendorProfile {
     private String contactPerson;
     
     @Column(name = "contact_number")
-    @Pattern(regexp = "^[0-9+\\-\\s()]*$", message = "Invalid contact number format")
+    @Pattern(regexp = "^$|^[0-9+\\-\\s()]*$", message = "Invalid contact number format or empty")
     private String contactNumber;
     
     @Column(name = "email")
-    @Email(message = "Invalid email format")
+    @Pattern(regexp = "^$|^[\\w._%+-]+@[\\w.-]+\\.[A-Z]{2,}$", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Invalid email format or empty")
     private String email;
     
-    // Logo and Letter Head
-    @Lob
-    @Column(name = "logo_data", columnDefinition = "bytea")
+    // Logo and Letter Head - FIXED for PostgreSQL
+    @Column(name = "logo_data")
     private byte[] logoData;
     
     @Column(name = "logo_filename")
@@ -85,8 +84,7 @@ public class VendorProfile {
     @Column(name = "logo_content_type")
     private String logoContentType;
     
-    @Lob
-    @Column(name = "letter_head_data", columnDefinition = "bytea")
+    @Column(name = "letter_head_data")
     private byte[] letterHeadData;
     
     @Column(name = "letter_head_filename")
@@ -101,7 +99,7 @@ public class VendorProfile {
     private String bankAccount;
     
     @Column(name = "ifsc_code")
-    @Pattern(regexp = "^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code format")
+    @Pattern(regexp = "^$|^[A-Z]{4}0[A-Z0-9]{6}$", message = "Invalid IFSC code format or empty")
     private String ifscCode;
     
     @Column(name = "branch_name")
@@ -110,11 +108,11 @@ public class VendorProfile {
     
     // Standard Information
     @Column(name = "gst_no")
-    @Pattern(regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST format")
+    @Pattern(regexp = "^$|^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", message = "Invalid GST format or empty")
     private String gstNo;
     
     @Column(name = "pan_no")
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format")
+    @Pattern(regexp = "^$|^[A-Z]{5}[0-9]{4}[A-Z]{1}$", message = "Invalid PAN format or empty")
     private String panNo;
     
     // Audit Fields
