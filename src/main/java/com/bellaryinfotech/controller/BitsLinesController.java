@@ -21,6 +21,7 @@ public class BitsLinesController {
     @Autowired
     private BitsLinesService linesService;
 
+    // Existing endpoint constants
     public static final String GET_ALL_LINES = "/getAllBitsLines/details";
     public static final String GET_LINE_BY_ID = "/getBitsLineById/details";
     public static final String CREATE_LINE = "/createBitsLine/details";
@@ -29,12 +30,13 @@ public class BitsLinesController {
     public static final String SEARCH_BY_SERNO = "/searchBitsLinesBySerNo/details";
     public static final String SEARCH_BY_SERVICECODE = "/searchBitsLinesByServiceCode/details";
     public static final String SEARCH_BY_SERVICEDESC = "/searchBitsLinesByServiceDesc/details";
-    
-    // New endpoint to get service orders by work order
     public static final String GET_LINES_BY_WORK_ORDER = "/getBitsLinesByWorkOrder/details";
-    
-    // Debug endpoint
     public static final String DEBUG_LINES = "/debugBitsLines/details";
+    
+    // NEW: Enhanced endpoints using proper foreign key relationships
+    public static final String CREATE_LINE_WITH_ORDER = "/createBitsLineWithOrder/details";
+    public static final String GET_LINES_BY_ORDER_ID = "/getBitsLinesByOrderId/details";
+    public static final String CREATE_MULTIPLE_LINES = "/createMultipleBitsLines/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsLinesController.class);
 
@@ -53,6 +55,7 @@ public class BitsLinesController {
                    .orElse(ResponseEntity.notFound().build());
     }
 
+    // Legacy create method (maintains backward compatibility)
     @PostMapping(value = CREATE_LINE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createLine(@RequestBody BitsLinesDto lineDto) {
         LOG.info("Creating a new bits line with data: {}", lineDto);
@@ -62,7 +65,35 @@ public class BitsLinesController {
             return ResponseEntity.status(201).body(createdLine);
         } catch (Exception e) {
             LOG.error("Error creating bits line", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error creating line: " + e.getMessage());
+        }
+    }
+
+    // NEW: Enhanced create method with explicit order ID
+    @PostMapping(value = CREATE_LINE_WITH_ORDER, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createLineWithOrder(@RequestParam Long orderId, @RequestBody BitsLinesDto lineDto) {
+        LOG.info("Creating a new bits line for orderId: {} with data: {}", orderId, lineDto);
+        try {
+            BitsLinesDto createdLine = linesService.createLine(lineDto, orderId);
+            LOG.info("Created bits line: {}", createdLine);
+            return ResponseEntity.status(201).body(createdLine);
+        } catch (Exception e) {
+            LOG.error("Error creating bits line for orderId: {}", orderId, e);
+            return ResponseEntity.badRequest().body("Error creating line: " + e.getMessage());
+        }
+    }
+
+    // NEW: Bulk create method
+    @PostMapping(value = CREATE_MULTIPLE_LINES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createMultipleLines(@RequestParam Long orderId, @RequestBody List<BitsLinesDto> lineDtos) {
+        LOG.info("Creating {} bits lines for orderId: {}", lineDtos.size(), orderId);
+        try {
+            List<BitsLinesDto> createdLines = linesService.createMultipleLines(lineDtos, orderId);
+            LOG.info("Created {} bits lines", createdLines.size());
+            return ResponseEntity.status(201).body(createdLines);
+        } catch (Exception e) {
+            LOG.error("Error creating multiple bits lines for orderId: {}", orderId, e);
+            return ResponseEntity.badRequest().body("Error creating lines: " + e.getMessage());
         }
     }
 
@@ -77,7 +108,7 @@ public class BitsLinesController {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             LOG.error("Error updating bits line", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error updating line: " + e.getMessage());
         }
     }
 
@@ -114,7 +145,7 @@ public class BitsLinesController {
         return ResponseEntity.ok(lines);
     }
 
-    // New endpoint to get service orders by work order
+    // Enhanced endpoint to get service orders by work order number
     @RequestMapping(value = GET_LINES_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getLinesByWorkOrder(@RequestParam String workOrder) {
         LOG.info("Fetching bits lines by work order: {}", workOrder);
@@ -124,25 +155,35 @@ public class BitsLinesController {
             return ResponseEntity.ok(lines);
         } catch (Exception e) {
             LOG.error("Error fetching bits lines by work order: {}", workOrder, e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error fetching lines: " + e.getMessage());
         }
     }
     
-    // Debug endpoint to see all lines with their attribute values
+    // NEW: Get lines by order ID (proper foreign key relationship)
+    @RequestMapping(value = GET_LINES_BY_ORDER_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getLinesByOrderId(@RequestParam Long orderId) {
+        LOG.info("Fetching bits lines by orderId: {}", orderId);
+        try {
+            List<BitsLinesDto> lines = linesService.getLinesByOrderId(orderId);
+            LOG.info("Found {} lines for orderId: {}", lines.size(), orderId);
+            return ResponseEntity.ok(lines);
+        } catch (Exception e) {
+            LOG.error("Error fetching bits lines by orderId: {}", orderId, e);
+            return ResponseEntity.badRequest().body("Error fetching lines: " + e.getMessage());
+        }
+    }
+    
+    // Debug endpoint
     @RequestMapping(value = DEBUG_LINES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> debugLines() {
         LOG.info("Debug: Fetching all bits lines with attributes");
         try {
             List<BitsLinesDto> lines = linesService.getAllLinesWithAttributes();
             LOG.info("Debug: Found {} total lines", lines.size());
-            for (BitsLinesDto line : lines) {
-                LOG.info("Debug: Line ID: {}, SerNo: {}, ServiceCode: {}, WorkOrder Ref: {}", 
-                    line.getLineId(), line.getSerNo(), line.getServiceCode(), line.getWorkOrderRef());
-            }
             return ResponseEntity.ok(lines);
         } catch (Exception e) {
             LOG.error("Error in debug endpoint", e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Error in debug: " + e.getMessage());
         }
     }
 }

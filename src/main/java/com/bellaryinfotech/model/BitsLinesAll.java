@@ -14,7 +14,12 @@ public class BitsLinesAll {
     @Column(name = "line_id")
     private Long lineId;
     
-    @Column(name = "line_number")
+    // NEW: Foreign key reference to bits_po_entry_header
+    @Column(name = "order_id", nullable = false)
+    private Long orderId;
+    
+    // NEW: Sequential line number within each work order
+    @Column(name = "line_number", nullable = false)
     private BigDecimal lineNumber;
     
     @Column(name = "ser_no")
@@ -101,6 +106,12 @@ public class BitsLinesAll {
     // Default constructor
     public BitsLinesAll() {}
 
+    // NEW: Constructor with orderId and lineNumber
+    public BitsLinesAll(Long orderId, BigDecimal lineNumber) {
+        this.orderId = orderId;
+        this.lineNumber = lineNumber;
+    }
+
     // Getters and Setters
     public Long getLineId() {
         return lineId;
@@ -108,6 +119,15 @@ public class BitsLinesAll {
 
     public void setLineId(Long lineId) {
         this.lineId = lineId;
+    }
+
+    // NEW: Order ID getter/setter
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public BigDecimal getLineNumber() {
