@@ -145,6 +145,9 @@ public class BitsDrawingEntry {
 
     @Column(name = "finishing_stage", length = 1)
     private String finishingStage = "N";
+    
+    @Column(name = "ra_no")
+    private String raNo;
 
     // Default constructor
     public BitsDrawingEntry() {}
@@ -512,8 +515,17 @@ public class BitsDrawingEntry {
     public void setFinishingStage(String finishingStage) {
         this.finishingStage = finishingStage != null ? finishingStage : "N";
     }
+    
 
-    @PrePersist
+    public String getRaNo() {
+		return raNo;
+	}
+
+	public void setRaNo(String raNo) {
+		this.raNo = raNo;
+	}
+
+	@PrePersist
     protected void onCreate() {
         if (creationDate == null) {
             creationDate = LocalDateTime.now();
