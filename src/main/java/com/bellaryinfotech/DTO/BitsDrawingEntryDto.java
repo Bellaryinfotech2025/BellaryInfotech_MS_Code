@@ -15,10 +15,13 @@ import java.time.LocalDateTime;
 public class BitsDrawingEntryDto {
 
     @JsonProperty("lineId")
-    private String lineId;
+    private Long lineId; // Changed from String to Long
 
     @JsonProperty("version")
     private Long version;
+
+    @JsonProperty("orderId") // NEW FIELD
+    private Long orderId;
 
     @JsonProperty("drawingNo")
     @NotBlank(message = "Drawing number is required")
@@ -57,7 +60,6 @@ public class BitsDrawingEntryDto {
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
 
-    // NEW FIELD: Total Item Weight
     @JsonProperty("totalItemWeight")
     private BigDecimal totalItemWeight;
 
@@ -169,12 +171,21 @@ public class BitsDrawingEntryDto {
     }
 
     // Getters and Setters
-    public String getLineId() {
+    public Long getLineId() { // Changed return type to Long
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) { // Changed parameter type to Long
         this.lineId = lineId;
+    }
+
+    // NEW GETTER AND SETTER FOR ORDER_ID
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public Long getVersion() {
@@ -273,7 +284,6 @@ public class BitsDrawingEntryDto {
         this.itemWeight = itemWeight;
     }
 
-    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
     public BigDecimal getTotalItemWeight() {
         return totalItemWeight;
     }

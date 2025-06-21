@@ -24,7 +24,7 @@ public interface BitsDrawingEntryDao {
     /**
      * Find drawing entry by line ID
      */
-    Optional<BitsDrawingEntry> findById(String lineId);
+    Optional<BitsDrawingEntry> findById(Long lineId); // Changed from String to Long
 
     /**
      * Find all drawing entries with pagination
@@ -106,7 +106,7 @@ public interface BitsDrawingEntryDao {
     /**
      * Check if entry exists by ID
      */
-    boolean existsById(String lineId);
+    boolean existsById(Long lineId); // Changed from String to Long
 
     /**
      * Check if entry exists by drawing number and mark number
@@ -121,7 +121,7 @@ public interface BitsDrawingEntryDao {
     /**
      * Delete drawing entry by ID
      */
-    void deleteById(String lineId);
+    void deleteById(Long lineId); // Changed from String to Long
 
     /**
      * Delete drawing entry

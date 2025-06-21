@@ -10,12 +10,17 @@ import java.time.LocalDateTime;
 public class BitsDrawingEntry {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "line_id", nullable = false)
-    private String lineId;
+    private Long lineId; // Changed from String to Long
 
     @Version
     @Column(name = "version", nullable = false)
     private Long version = 0L;
+
+    // NEW COLUMN: Order ID from bits_po_entry_header
+    @Column(name = "order_id")
+    private Long orderId;
 
     @Column(name = "drawing_no")
     private String drawingNo;
@@ -50,7 +55,6 @@ public class BitsDrawingEntry {
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
 
-    // NEW COLUMN: Total Item Weight
     @Column(name = "total_item_weight", precision = 19, scale = 4)
     private BigDecimal totalItemWeight;
 
@@ -146,8 +150,7 @@ public class BitsDrawingEntry {
     public BitsDrawingEntry() {}
 
     // Constructor with essential fields
-    public BitsDrawingEntry(String lineId, String drawingNo, String markNo, BigDecimal markedQty) {
-        this.lineId = lineId;
+    public BitsDrawingEntry(String drawingNo, String markNo, BigDecimal markedQty) {
         this.drawingNo = drawingNo;
         this.markNo = markNo;
         this.markedQty = markedQty;
@@ -156,12 +159,21 @@ public class BitsDrawingEntry {
     }
 
     // Getters and Setters
-    public String getLineId() {
+    public Long getLineId() { // Changed return type to Long
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) { // Changed parameter type to Long
         this.lineId = lineId;
+    }
+
+    // NEW GETTER AND SETTER FOR ORDER_ID
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 
     public Long getVersion() {
@@ -260,7 +272,6 @@ public class BitsDrawingEntry {
         this.itemWeight = itemWeight;
     }
 
-    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
     public BigDecimal getTotalItemWeight() {
         return totalItemWeight;
     }
@@ -524,8 +535,9 @@ public class BitsDrawingEntry {
     @Override
     public String toString() {
         return "BitsDrawingEntry{" +
-                "lineId='" + lineId + '\'' +
+                "lineId=" + lineId +
                 ", version=" + version +
+                ", orderId=" + orderId +
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +

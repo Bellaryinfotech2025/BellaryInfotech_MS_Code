@@ -5,6 +5,8 @@ import com.bellaryinfotech.DTO.BitsDrawingEntryStatsDto;
 import com.bellaryinfotech.DAO.BitsDrawingEntryDao;
 import com.bellaryinfotech.model.BitsDrawingEntry;
 import com.bellaryinfotech.repo.BitsDrawingEntryRepository;
+import com.bellaryinfotech.repo.BitsHeaderRepository;
+import com.bellaryinfotech.model.BitsHeaderAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +35,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     @Autowired
     private BitsDrawingEntryRepository bitsDrawingEntryRepository;
 
-    // Counter for sequential line IDs
-    private static final AtomicLong lineIdCounter = new AtomicLong(1);
+    @Autowired
+    private BitsHeaderRepository bitsHeaderRepository;
 
     @Override
     public List<BitsDrawingEntryDto> createDrawingEntry(BitsDrawingEntryDto drawingEntryDto) {
@@ -54,8 +55,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             for (int i = 0; i < markedQtyInt; i++) {
                 BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
                 
-                // Generate sequential line ID using simple timestamp approach to avoid database query
-                entry.setLineId(generateSimpleLineId());
+                // DO NOT SET lineId - let it auto-generate
+                entry.setLineId(null);
                 
                 // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
@@ -107,8 +108,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
                 for (int i = 0; i < markedQtyInt; i++) {
                     BitsDrawingEntry entry = convertDtoToEntity(dto);
                     
-                    // Generate sequential line ID
-                    entry.setLineId(generateSimpleLineId());
+                    // DO NOT SET lineId - let it auto-generate
+                    entry.setLineId(null);
                     
                     // Set creation metadata
                     entry.setCreationDate(LocalDateTime.now());
@@ -146,8 +147,13 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public Optional<BitsDrawingEntryDto> getDrawingEntryById(String lineId) {
         try {
             logger.info("Fetching drawing entry by line ID: {}", lineId);
-            Optional<BitsDrawingEntry> entity = bitsDrawingEntryRepository.findById(lineId);
+            // Convert String to Long for the new ID type
+            Long id = Long.parseLong(lineId);
+            Optional<BitsDrawingEntry> entity = bitsDrawingEntryRepository.findById(id);
             return entity.map(this::convertEntityToDto);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId, e);
+            throw new RuntimeException("Invalid line ID format: " + lineId, e);
         } catch (Exception e) {
             logger.error("Error fetching drawing entry by ID: {}", lineId, e);
             throw new RuntimeException("Failed to fetch drawing entry: " + e.getMessage(), e);
@@ -244,7 +250,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public Page<BitsDrawingEntryDto> searchDrawingEntries(String drawingNo, String markNo, String sessionCode, String tenantId, Pageable pageable) {
         try {
             logger.info("Searching drawing entries with criteria");
-            Page<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByMultipleCriteria(drawingNo, markNo, sessionCode, tenantId, pageable);
+            Page<BitsDrawingEntry> entities = bitsDrawingEntryRepository.findByMultipleCriteria(drawingNo, markNo, sessionCode, tenantId, null, pageable);
             List<BitsDrawingEntryDto> dtos = entities.getContent().stream()
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
@@ -293,7 +299,9 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
                 throw new IllegalArgumentException("Line ID cannot be null or empty");
             }
             
-            Optional<BitsDrawingEntry> existingEntityOpt = bitsDrawingEntryRepository.findById(lineId);
+            // Convert String to Long for the new ID type
+            Long id = Long.parseLong(lineId);
+            Optional<BitsDrawingEntry> existingEntityOpt = bitsDrawingEntryRepository.findById(id);
             if (!existingEntityOpt.isPresent()) {
                 throw new RuntimeException("Drawing entry not found with line ID: " + lineId);
             }
@@ -311,6 +319,9 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             BitsDrawingEntry savedEntity = bitsDrawingEntryRepository.save(existingEntity);
             logger.info("Successfully updated drawing entry with line ID: {}", lineId);
             return convertEntityToDto(savedEntity);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId, e);
+            throw new RuntimeException("Invalid line ID format: " + lineId, e);
         } catch (IllegalArgumentException e) {
             logger.error("Invalid argument for updating drawing entry: {}", e.getMessage());
             throw e;
@@ -324,10 +335,15 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public void deleteDrawingEntry(String lineId) {
         try {
             logger.info("Deleting drawing entry with line ID: {}", lineId);
-            if (!bitsDrawingEntryRepository.existsById(lineId)) {
+            // Convert String to Long for the new ID type
+            Long id = Long.parseLong(lineId);
+            if (!bitsDrawingEntryRepository.existsById(id)) {
                 throw new RuntimeException("Drawing entry not found with line ID: " + lineId);
             }
-            bitsDrawingEntryRepository.deleteById(lineId);
+            bitsDrawingEntryRepository.deleteById(id);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId, e);
+            throw new RuntimeException("Invalid line ID format: " + lineId, e);
         } catch (Exception e) {
             logger.error("Error deleting drawing entry: {}", lineId, e);
             throw new RuntimeException("Failed to delete drawing entry: " + e.getMessage(), e);
@@ -419,7 +435,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     @Override
     public boolean existsById(String lineId) {
         try {
-            return bitsDrawingEntryRepository.existsById(lineId);
+            // Convert String to Long for the new ID type
+            Long id = Long.parseLong(lineId);
+            return bitsDrawingEntryRepository.existsById(id);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId, e);
+            return false;
         } catch (Exception e) {
             logger.error("Error checking existence by line ID: {}", lineId, e);
             throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
@@ -472,7 +493,14 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public void bulkDeleteDrawingEntries(List<String> lineIds) {
         try {
             logger.info("Bulk deleting {} drawing entries", lineIds.size());
-            bitsDrawingEntryRepository.deleteAllById(lineIds);
+            // Convert String IDs to Long IDs
+            List<Long> longIds = lineIds.stream()
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+            bitsDrawingEntryRepository.deleteAllById(longIds);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format in bulk delete", e);
+            throw new RuntimeException("Invalid line ID format in bulk delete", e);
         } catch (Exception e) {
             logger.error("Error bulk deleting drawing entries", e);
             throw new RuntimeException("Failed to bulk delete drawing entries: " + e.getMessage(), e);
@@ -505,8 +533,11 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     private BitsDrawingEntry convertDtoToEntity(BitsDrawingEntryDto dto) {
         BitsDrawingEntry entity = new BitsDrawingEntry();
         
-        entity.setLineId(dto.getLineId());
+        // DO NOT SET lineId from DTO - let it auto-generate
+        // entity.setLineId(dto.getLineId()); // REMOVED THIS LINE
+        
         entity.setVersion(dto.getVersion());
+        entity.setOrderId(dto.getOrderId()); // NEW FIELD
         entity.setDrawingNo(dto.getDrawingNo());
         entity.setMarkNo(dto.getMarkNo());
         entity.setMarkedQty(dto.getMarkedQty());
@@ -518,7 +549,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
-        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        entity.setTotalItemWeight(dto.getTotalItemWeight());
         
         // Set default tenant if not provided
         String tenantId = dto.getTenantId();
@@ -574,6 +605,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         
         dto.setLineId(entity.getLineId());
         dto.setVersion(entity.getVersion());
+        dto.setOrderId(entity.getOrderId()); // NEW FIELD
         dto.setDrawingNo(entity.getDrawingNo());
         dto.setMarkNo(entity.getMarkNo());
         dto.setMarkedQty(entity.getMarkedQty());
@@ -585,7 +617,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
-        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
+        dto.setTotalItemWeight(entity.getTotalItemWeight());
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
@@ -639,7 +671,8 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
-        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight());
+        if (dto.getOrderId() != null) entity.setOrderId(dto.getOrderId()); // NEW FIELD
         
         // Handle tenant ID with default
         if (dto.getTenantId() != null) {
@@ -684,12 +717,23 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
     }
 
-    /**
-     * Generate a simple line ID using timestamp to avoid database queries
-     */
-    private synchronized String generateSimpleLineId() {
-        long timestamp = System.currentTimeMillis();
-        long counter = lineIdCounter.incrementAndGet();
-        return "LINE_" + timestamp + "_" + counter;
+    // NEW METHOD: Get order ID from work order
+    private Long getOrderIdFromWorkOrder(String workOrder) {
+        try {
+            if (workOrder == null || workOrder.trim().isEmpty()) {
+                return null;
+            }
+            
+            Optional<BitsHeaderAll> headerOpt = bitsHeaderRepository.findByWorkOrder(workOrder);
+            if (headerOpt.isPresent()) {
+                return headerOpt.get().getOrderId();
+            }
+            
+            logger.warn("No order found for work order: {}", workOrder);
+            return null;
+        } catch (Exception e) {
+            logger.error("Error getting order ID for work order: {}", workOrder, e);
+            return null;
+        }
     }
 }

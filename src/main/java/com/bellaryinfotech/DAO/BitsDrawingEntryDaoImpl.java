@@ -52,7 +52,7 @@ public class BitsDrawingEntryDaoImpl implements BitsDrawingEntryDao {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<BitsDrawingEntry> findById(String lineId) {
+    public Optional<BitsDrawingEntry> findById(Long lineId) { // Changed from String to Long
         try {
             logger.debug("Finding drawing entry by line ID: {}", lineId);
             Optional<BitsDrawingEntry> entry = bitsDrawingEntryRepository.findById(lineId);
@@ -160,7 +160,7 @@ public class BitsDrawingEntryDaoImpl implements BitsDrawingEntryDao {
         try {
             logger.debug("Finding drawing entries by multiple criteria");
             Page<BitsDrawingEntry> entries = bitsDrawingEntryRepository.findByMultipleCriteria(
-                    drawingNo, markNo, sessionCode, tenantId, pageable);
+                    drawingNo, markNo, sessionCode, tenantId, null, pageable);
             logger.debug("Found {} drawing entries for multiple criteria", entries.getTotalElements());
             return entries;
         } catch (Exception e) {
@@ -283,7 +283,7 @@ public class BitsDrawingEntryDaoImpl implements BitsDrawingEntryDao {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsById(String lineId) {
+    public boolean existsById(Long lineId) { // Changed from String to Long
         try {
             logger.debug("Checking if drawing entry exists by line ID: {}", lineId);
             boolean exists = bitsDrawingEntryRepository.existsById(lineId);
@@ -323,7 +323,7 @@ public class BitsDrawingEntryDaoImpl implements BitsDrawingEntryDao {
     }
 
     @Override
-    public void deleteById(String lineId) {
+    public void deleteById(Long lineId) { // Changed from String to Long
         try {
             logger.info("Deleting drawing entry by line ID: {}", lineId);
             bitsDrawingEntryRepository.deleteById(lineId);

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEntry, String> {
+public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEntry, Long> { // Changed from String to Long
 
     /**
      * Find all entries by drawing number
@@ -40,6 +40,11 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      * Find all entries by tenant ID
      */
     Page<BitsDrawingEntry> findByTenantIdOrderByCreationDateDesc(String tenantId, Pageable pageable);
+
+    /**
+     * Find all entries by order ID
+     */
+    List<BitsDrawingEntry> findByOrderIdOrderByCreationDateDesc(Long orderId);
 
     /**
      * Find all entries created by a specific user
@@ -69,13 +74,15 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
            "(:drawingNo IS NULL OR bde.drawingNo LIKE %:drawingNo%) AND " +
            "(:markNo IS NULL OR bde.markNo LIKE %:markNo%) AND " +
            "(:sessionCode IS NULL OR bde.sessionCode = :sessionCode) AND " +
-           "(:tenantId IS NULL OR bde.tenantId = :tenantId) " +
+           "(:tenantId IS NULL OR bde.tenantId = :tenantId) AND " +
+           "(:orderId IS NULL OR bde.orderId = :orderId) " +
            "ORDER BY bde.creationDate DESC")
     Page<BitsDrawingEntry> findByMultipleCriteria(
             @Param("drawingNo") String drawingNo,
             @Param("markNo") String markNo,
             @Param("sessionCode") String sessionCode,
             @Param("tenantId") String tenantId,
+            @Param("orderId") Long orderId,
             Pageable pageable);
 
     /**
@@ -83,6 +90,12 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      */
     @Query("SELECT COUNT(bde) FROM BitsDrawingEntry bde WHERE bde.drawingNo = :drawingNo")
     Long countByDrawingNo(@Param("drawingNo") String drawingNo);
+
+    /**
+     * Get total count of entries by order ID
+     */
+    @Query("SELECT COUNT(bde) FROM BitsDrawingEntry bde WHERE bde.orderId = :orderId")
+    Long countByOrderId(@Param("orderId") Long orderId);
 
     /**
      * Get sum of marked quantities by drawing number
@@ -95,6 +108,12 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      */
     @Query("SELECT SUM(bde.totalMarkedWgt) FROM BitsDrawingEntry bde WHERE bde.drawingNo = :drawingNo")
     BigDecimal sumTotalMarkedWgtByDrawingNo(@Param("drawingNo") String drawingNo);
+
+    /**
+     * Get sum of marked quantities by order ID
+     */
+    @Query("SELECT SUM(bde.markedQty) FROM BitsDrawingEntry bde WHERE bde.orderId = :orderId")
+    BigDecimal sumMarkedQtyByOrderId(@Param("orderId") Long orderId);
 
     /**
      * Find distinct drawing numbers
@@ -120,6 +139,11 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
     boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
 
     /**
+     * Check if entry exists by order ID
+     */
+    boolean existsByOrderId(Long orderId);
+
+    /**
      * Delete all entries by drawing number
      */
     void deleteByDrawingNo(String drawingNo);
@@ -128,6 +152,11 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      * Delete all entries by mark number
      */
     void deleteByMarkNo(String markNo);
+
+    /**
+     * Delete all entries by order ID
+     */
+    void deleteByOrderId(Long orderId);
 
     /**
      * Find entries with null or empty session code
@@ -144,4 +173,9 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      * Find latest entry by mark number
      */
     Optional<BitsDrawingEntry> findTopByMarkNoOrderByCreationDateDesc(String markNo);
+
+    /**
+     * Find latest entry by order ID
+     */
+    Optional<BitsDrawingEntry> findTopByOrderIdOrderByCreationDateDesc(Long orderId);
 }
