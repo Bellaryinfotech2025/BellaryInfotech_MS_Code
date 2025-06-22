@@ -10,8 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import com.bellaryinfotech.DTO.BitsLinesDto;
 import com.bellaryinfotech.service.BitsLinesService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -37,6 +40,8 @@ public class BitsLinesController {
     public static final String CREATE_LINE_WITH_ORDER = "/createBitsLineWithOrder/details";
     public static final String GET_LINES_BY_ORDER_ID = "/getBitsLinesByOrderId/details";
     public static final String CREATE_MULTIPLE_LINES = "/createMultipleBitsLines/details";
+    // to get the lines detaisl for invoice
+    public static final String GET_INVOICE_DATA = "/getInvoiceData/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsLinesController.class);
 
@@ -186,4 +191,43 @@ public class BitsLinesController {
             return ResponseEntity.badRequest().body("Error in debug: " + e.getMessage());
         }
     }
+    
+    
+    //New get api to get the lines related for invoice
+    @RequestMapping(value = GET_INVOICE_DATA, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getInvoiceData(@RequestParam Long orderId) {
+        LOG.info("Fetching invoice data for orderId: {}", orderId);
+        
+        try {
+            // Use the existing service method to get lines by order ID
+            List<BitsLinesDto> lines = linesService.getLinesByOrderId(orderId);
+            
+            // Transform the data to include only the fields needed for invoice
+            List<Map<String, Object>> invoiceData = lines.stream()
+                    .map(line -> {
+                        Map<String, Object> invoiceItem = new HashMap<>();
+                        invoiceItem.put("lineId", line.getLineId());
+                        invoiceItem.put("serNo", line.getSerNo());
+                        invoiceItem.put("serviceCode", line.getServiceCode());
+                        invoiceItem.put("serviceDesc", line.getServiceDesc());
+                        invoiceItem.put("qty", line.getQty());
+                        invoiceItem.put("uom", line.getUom());
+                        invoiceItem.put("unitPrice", line.getUnitPrice());
+                        invoiceItem.put("totalPrice", line.getTotalPrice());
+                        return invoiceItem;
+                    })
+                    .collect(Collectors.toList());
+            
+            LOG.info("Found {} invoice items for orderId: {}", invoiceData.size(), orderId);
+            return ResponseEntity.ok(invoiceData);
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching invoice data for orderId: {}", orderId, e);
+            return ResponseEntity.badRequest().body("Error fetching invoice data: " + e.getMessage());
+        }
+    }
+
+    
+    
+    
 }
