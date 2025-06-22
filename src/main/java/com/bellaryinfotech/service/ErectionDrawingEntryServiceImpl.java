@@ -54,8 +54,10 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
             for (int i = 0; i < markedQtyInt; i++) {
                 ErectionDrawingEntry entry = convertDtoToEntity(erectionEntryDto);
                 
-                // Generate sequential line ID
-                entry.setLineId(generateSequentialLineId());
+                // Generate sequential line ID or use provided one
+                if (entry.getLineId() == null) {
+                    entry.setLineId(generateSequentialLineId());
+                }
                 
                 // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
@@ -87,10 +89,9 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     @Override
     public List<ErectionDrawingEntryDto> createErectionEntries(List<ErectionDrawingEntryDto> erectionEntryDtos) {
         try {
-            logger.info("Creating {} erection entries with duplicate checking", erectionEntryDtos.size());
+            logger.info("Creating {} erection entries WITHOUT duplicate checking", erectionEntryDtos.size());
         
             List<ErectionDrawingEntry> allEntriesToSave = new ArrayList<>();
-            List<String> skippedDuplicates = new ArrayList<>();
             List<String> successfulEntries = new ArrayList<>();
         
             for (ErectionDrawingEntryDto dto : erectionEntryDtos) {
@@ -99,19 +100,10 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
                     throw new IllegalArgumentException("Marked quantity must be greater than zero for drawing: " + dto.getDrawingNo());
                 }
 
-                // Check if this drawing+mark combination already exists in erection table
-                boolean exists = erectionDrawingEntryRepository.existsByDrawingNoAndMarkNo(dto.getDrawingNo(), dto.getMarkNo());
-            
-                if (exists) {
-                    logger.info("Skipping duplicate entry for Drawing: {}, Mark: {}", dto.getDrawingNo(), dto.getMarkNo());
-                    skippedDuplicates.add(dto.getDrawingNo() + " - " + dto.getMarkNo());
-                    continue; // Skip this entry as it already exists
-                }
-
-                // Create only one entry per mark number (no duplicates based on markedQty)
+                // NO DUPLICATE CHECKING - Create entry directly
                 ErectionDrawingEntry entry = convertDtoToEntity(dto);
             
-                // Generate sequential line ID
+                // Generate new unique line_id for each entry to avoid conflicts
                 entry.setLineId(generateSequentialLineId());
             
                 // Set creation metadata
@@ -119,26 +111,22 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
                 entry.setLastUpdatingDate(LocalDateTime.now());
                 entry.setStatus("erection");
             
-                // Keep the original marked quantity (don't split into multiple entries)
+                // Keep the original marked quantity
                 entry.setMarkedQty(dto.getMarkedQty());
             
                 allEntriesToSave.add(entry);
-                successfulEntries.add(dto.getDrawingNo() + " - " + dto.getMarkNo());
+                successfulEntries.add(dto.getDrawingNo() + " - " + dto.getMarkNo() + " (Line ID: " + entry.getLineId() + ")");
             }
 
-            // Save all unique entries
+            // Save ALL entries without any filtering
             List<ErectionDrawingEntry> savedEntries = new ArrayList<>();
             if (!allEntriesToSave.isEmpty()) {
                 savedEntries = erectionDrawingEntryRepository.saveAll(allEntriesToSave);
             }
         
-            logger.info("Successfully created {} erection entries, skipped {} duplicates", 
-                       savedEntries.size(), skippedDuplicates.size());
+            logger.info("Successfully created {} erection entries, skipped 0 duplicates", savedEntries.size());
         
             // Log details about what was processed
-            if (!skippedDuplicates.isEmpty()) {
-                logger.info("Skipped duplicates: {}", String.join(", ", skippedDuplicates));
-            }
             if (!successfulEntries.isEmpty()) {
                 logger.info("Successfully created: {}", String.join(", ", successfulEntries));
             }
@@ -148,12 +136,7 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
         
-            // Add metadata about the operation to the first DTO if available
-            if (!result.isEmpty() && (!skippedDuplicates.isEmpty() || !successfulEntries.isEmpty())) {
-                // You could add this info to a response wrapper or log it
-                logger.info("Operation summary - Created: {}, Skipped: {}", 
-                           successfulEntries.size(), skippedDuplicates.size());
-            }
+            logger.info("Operation summary - Created: {}, Skipped: 0", result.size());
         
             return result;
                 
@@ -167,8 +150,12 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     public Optional<ErectionDrawingEntryDto> getErectionEntryById(String lineId) {
         try {
             logger.info("Fetching erection entry by line ID: {}", lineId);
-            Optional<ErectionDrawingEntry> entity = erectionDrawingEntryRepository.findById(lineId);
+            Long longLineId = Long.parseLong(lineId);
+            Optional<ErectionDrawingEntry> entity = erectionDrawingEntryRepository.findById(longLineId);
             return entity.map(this::convertEntityToDto);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId);
+            return Optional.empty();
         } catch (Exception e) {
             logger.error("Error fetching erection entry by ID: {}", lineId, e);
             throw new RuntimeException("Failed to fetch erection entry: " + e.getMessage(), e);
@@ -296,7 +283,7 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         try {
             logger.info("Searching erection entries with criteria");
             Page<ErectionDrawingEntry> entities = erectionDrawingEntryRepository.findByMultipleCriteria(
-                    drawingNo, markNo, sessionCode, tenantId, status, pageable);
+                    drawingNo, markNo, sessionCode, tenantId, status, null, null, pageable);
             List<ErectionDrawingEntryDto> dtos = entities.getContent().stream()
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
@@ -340,7 +327,8 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         try {
             logger.info("Updating erection entry with line ID: {}", lineId);
             
-            Optional<ErectionDrawingEntry> existingEntityOpt = erectionDrawingEntryRepository.findById(lineId);
+            Long longLineId = Long.parseLong(lineId);
+            Optional<ErectionDrawingEntry> existingEntityOpt = erectionDrawingEntryRepository.findById(longLineId);
             if (!existingEntityOpt.isPresent()) {
                 throw new RuntimeException("Erection entry not found with line ID: " + lineId);
             }
@@ -351,6 +339,9 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
             
             ErectionDrawingEntry savedEntity = erectionDrawingEntryRepository.save(existingEntity);
             return convertEntityToDto(savedEntity);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId);
+            throw new RuntimeException("Invalid line ID format: " + lineId);
         } catch (Exception e) {
             logger.error("Error updating erection entry: {}", lineId, e);
             throw new RuntimeException("Failed to update erection entry: " + e.getMessage(), e);
@@ -361,10 +352,14 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     public void deleteErectionEntry(String lineId) {
         try {
             logger.info("Deleting erection entry with line ID: {}", lineId);
-            if (!erectionDrawingEntryRepository.existsById(lineId)) {
+            Long longLineId = Long.parseLong(lineId);
+            if (!erectionDrawingEntryRepository.existsById(longLineId)) {
                 throw new RuntimeException("Erection entry not found with line ID: " + lineId);
             }
-            erectionDrawingEntryRepository.deleteById(lineId);
+            erectionDrawingEntryRepository.deleteById(longLineId);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId);
+            throw new RuntimeException("Invalid line ID format: " + lineId);
         } catch (Exception e) {
             logger.error("Error deleting erection entry: {}", lineId, e);
             throw new RuntimeException("Failed to delete erection entry: " + e.getMessage(), e);
@@ -408,7 +403,10 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     public void bulkDeleteErectionEntries(List<String> lineIds) {
         try {
             logger.info("Bulk deleting {} erection entries", lineIds.size());
-            erectionDrawingEntryRepository.deleteAllById(lineIds);
+            List<Long> longLineIds = lineIds.stream()
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+            erectionDrawingEntryRepository.deleteAllById(longLineIds);
         } catch (Exception e) {
             logger.error("Error bulk deleting erection entries", e);
             throw new RuntimeException("Failed to bulk delete erection entries: " + e.getMessage(), e);
@@ -518,7 +516,11 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     @Override
     public boolean existsById(String lineId) {
         try {
-            return erectionDrawingEntryRepository.existsById(lineId);
+            Long longLineId = Long.parseLong(lineId);
+            return erectionDrawingEntryRepository.existsById(longLineId);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid line ID format: {}", lineId);
+            return false;
         } catch (Exception e) {
             logger.error("Error checking existence by line ID: {}", lineId, e);
             throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
@@ -609,7 +611,12 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
-        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        entity.setTotalItemWeight(dto.getTotalItemWeight());
+        
+        // NEW FIELDS
+        entity.setOrderId(dto.getOrderId());
+        entity.setRaNo(dto.getRaNo());
+        
         entity.setTenantId(dto.getTenantId());
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
@@ -670,7 +677,12 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
-        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
+        dto.setTotalItemWeight(entity.getTotalItemWeight());
+        
+        // NEW FIELDS
+        dto.setOrderId(entity.getOrderId());
+        dto.setRaNo(entity.getRaNo());
+        
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
@@ -725,7 +737,12 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
-        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight());
+        
+        // NEW FIELDS
+        if (dto.getOrderId() != null) entity.setOrderId(dto.getOrderId());
+        if (dto.getRaNo() != null) entity.setRaNo(dto.getRaNo());
+        
         if (dto.getTenantId() != null) entity.setTenantId(dto.getTenantId());
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
@@ -765,51 +782,21 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
     }
 
     /**
-     * Generate a sequential line ID in format 1.1, 1.2, 1.3, etc.
+     * Generate a sequential line ID as Long integer
      * This ensures unique, sequential serial numbers for erection entries
      */
-    private synchronized String generateSequentialLineId() {
+    private synchronized Long generateSequentialLineId() {
         // Get the current maximum line ID from database
-        long maxId = getMaxLineIdNumber();
+        Long maxId = erectionDrawingEntryRepository.findMaxLineId();
+        if (maxId == null) {
+            maxId = 0L;
+        }
+        
         long nextId = Math.max(maxId + 1, lineIdCounter.get());
         
         // Update the counter
         lineIdCounter.set(nextId + 1);
         
-        // Generate format like E1.1, E1.2, etc. (E for Erection)
-        long major = (nextId - 1) / 10 + 1;
-        long minor = (nextId - 1) % 10 + 1;
-        
-        return "E" + major + "." + minor;
-    }
-    
-    /**
-     * Get the maximum line ID number from existing records
-     */
-    private long getMaxLineIdNumber() {
-        try {
-            List<ErectionDrawingEntry> allEntries = erectionDrawingEntryRepository.findAll();
-            long maxNumber = 0;
-            
-            for (ErectionDrawingEntry entry : allEntries) {
-                String lineId = entry.getLineId();
-                if (lineId != null && lineId.matches("E\\d+\\.\\d+")) {
-                    try {
-                        String[] parts = lineId.substring(1).split("\\.");
-                        long major = Long.parseLong(parts[0]);
-                        long minor = Long.parseLong(parts[1]);
-                        long number = (major - 1) * 10 + minor;
-                        maxNumber = Math.max(maxNumber, number);
-                    } catch (NumberFormatException e) {
-                        // Skip invalid format
-                    }
-                }
-            }
-            
-            return maxNumber;
-        } catch (Exception e) {
-            logger.warn("Error getting max line ID number, starting from 0", e);
-            return 0;
-        }
+        return nextId;
     }
 }

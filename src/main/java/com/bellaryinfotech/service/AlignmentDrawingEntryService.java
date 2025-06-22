@@ -16,7 +16,7 @@ public interface AlignmentDrawingEntryService {
     List<AlignmentDrawingEntryDto> createAlignmentEntries(List<AlignmentDrawingEntryDto> alignmentEntryDtos);
 
     // Read operations
-    Optional<AlignmentDrawingEntryDto> getAlignmentEntryById(String lineId);
+    Optional<AlignmentDrawingEntryDto> getAlignmentEntryById(Long lineId); // CHANGED TO LONG
     Page<AlignmentDrawingEntryDto> getAllAlignmentEntries(Pageable pageable);
     List<AlignmentDrawingEntryDto> getAllAlignmentEntries();
     List<AlignmentDrawingEntryDto> getAlignmentEntriesByDrawingNo(String drawingNo);
@@ -33,14 +33,14 @@ public interface AlignmentDrawingEntryService {
     List<AlignmentDrawingEntryDto> getAlignmentEntriesByMarkedQtyGreaterThan(BigDecimal markedQty);
 
     // Update operations
-    AlignmentDrawingEntryDto updateAlignmentEntry(String lineId, AlignmentDrawingEntryDto alignmentEntryDto);
+    AlignmentDrawingEntryDto updateAlignmentEntry(Long lineId, AlignmentDrawingEntryDto alignmentEntryDto); // CHANGED TO LONG
 
     // Delete operations
-    void deleteAlignmentEntry(String lineId);
+    void deleteAlignmentEntry(Long lineId); // CHANGED TO LONG
     void deleteAlignmentEntriesByDrawingNo(String drawingNo);
     void deleteAlignmentEntriesByMarkNo(String markNo);
     void deleteAlignmentEntriesByStatus(String status);
-    void bulkDeleteAlignmentEntries(List<String> lineIds);
+    void bulkDeleteAlignmentEntries(List<Long> lineIds); // CHANGED TO LONG
 
     // Count operations
     Long getCountByDrawingNo(String drawingNo);
@@ -59,9 +59,10 @@ public interface AlignmentDrawingEntryService {
     List<String> getDistinctStatuses();
 
     // Existence checks
-    boolean existsById(String lineId);
-    boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
-    boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status);
+    boolean existsById(Long lineId); // CHANGED TO LONG
+    // REMOVED DUPLICATE CHECKING METHODS
+    // boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
+    // boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status);
 
     // Latest entries
     Optional<AlignmentDrawingEntryDto> getLatestByDrawingNo(String drawingNo);
@@ -70,4 +71,9 @@ public interface AlignmentDrawingEntryService {
 
     // Unique combinations
     List<AlignmentDrawingEntryDto> getUniqueDrawingMarkCombinations();
+
+    // NEW METHODS FOR ORDER_ID AND RA_NO
+    List<AlignmentDrawingEntryDto> getAlignmentEntriesByOrderId(Long orderId);
+    List<AlignmentDrawingEntryDto> getAlignmentEntriesByRaNo(String raNo);
+    List<AlignmentDrawingEntryDto> getAlignmentEntriesByOrderIdAndRaNo(Long orderId, String raNo);
 }

@@ -12,7 +12,7 @@ public class BitsDrawingEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "line_id", nullable = false)
-    private Long lineId; // Changed from String to Long
+    private Long lineId;  
 
     @Version
     @Column(name = "version", nullable = false)

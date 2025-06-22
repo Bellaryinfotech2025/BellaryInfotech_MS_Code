@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class AlignmentDrawingEntryDto {
 
     @JsonProperty("lineId")
-    private String lineId;
+    private Long lineId; // CHANGED TO LONG - INTEGER VALUES ONLY
 
     @JsonProperty("version")
     private Long version;
@@ -51,7 +51,7 @@ public class AlignmentDrawingEntryDto {
 
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
-    // NEW FIELD: Total Item Weight
+
     @JsonProperty("totalItemWeight")
     private BigDecimal totalItemWeight;
 
@@ -123,7 +123,6 @@ public class AlignmentDrawingEntryDto {
     @JsonProperty("status")
     private String status;
 
-    // NEW FIELDS - EXACTLY LIKE ERECTION
     @JsonProperty("drawingWeight")
     private BigDecimal drawingWeight;
 
@@ -138,7 +137,6 @@ public class AlignmentDrawingEntryDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate targetDate;
 
-    // FABRICATION STAGE FIELDS - EXACTLY LIKE ERECTION
     @JsonProperty("cuttingStage")
     private String cuttingStage = "N";
 
@@ -151,11 +149,18 @@ public class AlignmentDrawingEntryDto {
     @JsonProperty("finishingStage")
     private String finishingStage = "N";
 
+    // NEW FIELDS - ORDER_ID AND RA_NO
+    @JsonProperty("orderId")
+    private Long orderId; // SAME AS ERECTION - LONG TYPE
+
+    @JsonProperty("raNo")
+    private String raNo; // SAME AS ERECTION - STRING TYPE
+
     // Default constructor
     public AlignmentDrawingEntryDto() {}
 
     // Constructor with essential fields
-    public AlignmentDrawingEntryDto(String lineId, String drawingNo, String markNo, BigDecimal markedQty) {
+    public AlignmentDrawingEntryDto(Long lineId, String drawingNo, String markNo, BigDecimal markedQty) {
         this.lineId = lineId;
         this.drawingNo = drawingNo;
         this.markNo = markNo;
@@ -163,12 +168,13 @@ public class AlignmentDrawingEntryDto {
         this.status = "alignment";
     }
 
-    // Getters and Setters for existing fields
-    public String getLineId() {
+    // GETTERS AND SETTERS
+
+    public Long getLineId() {
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) {
         this.lineId = lineId;
     }
 
@@ -269,14 +275,14 @@ public class AlignmentDrawingEntryDto {
     }
 
     public BigDecimal getTotalItemWeight() {
-		return totalItemWeight;
-	}
+        return totalItemWeight;
+    }
 
-	public void setTotalItemWeight(BigDecimal totalItemWeight) {
-		this.totalItemWeight = totalItemWeight;
-	}
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
+    }
 
-	public String getTenantId() {
+    public String getTenantId() {
         return tenantId;
     }
 
@@ -452,7 +458,6 @@ public class AlignmentDrawingEntryDto {
         this.status = status;
     }
 
-    // NEW GETTERS AND SETTERS - EXACTLY LIKE ERECTION
     public BigDecimal getDrawingWeight() {
         return drawingWeight;
     }
@@ -485,7 +490,6 @@ public class AlignmentDrawingEntryDto {
         this.targetDate = targetDate;
     }
 
-    // FABRICATION STAGE GETTERS AND SETTERS - EXACTLY LIKE ERECTION
     public String getCuttingStage() {
         return cuttingStage;
     }
@@ -518,10 +522,27 @@ public class AlignmentDrawingEntryDto {
         this.finishingStage = finishingStage != null ? finishingStage : "N";
     }
 
+    // NEW GETTERS AND SETTERS FOR ORDER_ID AND RA_NO
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getRaNo() {
+        return raNo;
+    }
+
+    public void setRaNo(String raNo) {
+        this.raNo = raNo;
+    }
+
     @Override
     public String toString() {
         return "AlignmentDrawingEntryDto{" +
-                "lineId='" + lineId + '\'' +
+                "lineId=" + lineId +
                 ", version=" + version +
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
@@ -537,6 +558,8 @@ public class AlignmentDrawingEntryDto {
                 ", fitUpStage='" + fitUpStage + '\'' +
                 ", weldingStage='" + weldingStage + '\'' +
                 ", finishingStage='" + finishingStage + '\'' +
+                ", orderId=" + orderId +
+                ", raNo='" + raNo + '\'' +
                 '}';
     }
 }

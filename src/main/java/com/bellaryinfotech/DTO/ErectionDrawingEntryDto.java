@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class ErectionDrawingEntryDto {
 
     @JsonProperty("lineId")
-    private String lineId;
+    private Long lineId; // Changed from String to Long
 
     @JsonProperty("version")
     private Long version;
@@ -52,9 +52,15 @@ public class ErectionDrawingEntryDto {
     @JsonProperty("itemWeight")
     private BigDecimal itemWeight;
 
-    // NEW FIELD: Total Item Weight
     @JsonProperty("totalItemWeight")
     private BigDecimal totalItemWeight;
+
+    // NEW FIELDS
+    @JsonProperty("orderId")
+    private Long orderId;
+
+    @JsonProperty("raNo")
+    private String raNo;
 
     @JsonProperty("tenantId")
     private String tenantId;
@@ -124,7 +130,6 @@ public class ErectionDrawingEntryDto {
     @JsonProperty("status")
     private String status;
 
-    // NEW FIELDS
     @JsonProperty("drawingWeight")
     private BigDecimal drawingWeight;
 
@@ -156,7 +161,7 @@ public class ErectionDrawingEntryDto {
     public ErectionDrawingEntryDto() {}
 
     // Constructor with essential fields
-    public ErectionDrawingEntryDto(String lineId, String drawingNo, String markNo, BigDecimal markedQty) {
+    public ErectionDrawingEntryDto(Long lineId, String drawingNo, String markNo, BigDecimal markedQty) {
         this.lineId = lineId;
         this.drawingNo = drawingNo;
         this.markNo = markNo;
@@ -164,12 +169,12 @@ public class ErectionDrawingEntryDto {
         this.status = "erection";
     }
 
-    // Getters and Setters for existing fields
-    public String getLineId() {
+    // Getters and Setters
+    public Long getLineId() {
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) {
         this.lineId = lineId;
     }
 
@@ -269,13 +274,29 @@ public class ErectionDrawingEntryDto {
         this.itemWeight = itemWeight;
     }
 
-    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
     public BigDecimal getTotalItemWeight() {
         return totalItemWeight;
     }
 
     public void setTotalItemWeight(BigDecimal totalItemWeight) {
         this.totalItemWeight = totalItemWeight;
+    }
+
+    // NEW GETTERS AND SETTERS
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getRaNo() {
+        return raNo;
+    }
+
+    public void setRaNo(String raNo) {
+        this.raNo = raNo;
     }
 
     public String getTenantId() {
@@ -454,7 +475,6 @@ public class ErectionDrawingEntryDto {
         this.status = status;
     }
 
-    // NEW GETTERS AND SETTERS
     public BigDecimal getDrawingWeight() {
         return drawingWeight;
     }
@@ -523,12 +543,14 @@ public class ErectionDrawingEntryDto {
     @Override
     public String toString() {
         return "ErectionDrawingEntryDto{" +
-                "lineId='" + lineId + '\'' +
+                "lineId=" + lineId +
                 ", version=" + version +
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +
                 ", totalMarkedWgt=" + totalMarkedWgt +
+                ", orderId=" + orderId +
+                ", raNo='" + raNo + '\'' +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
                 ", totalItemWeight=" + totalItemWeight +

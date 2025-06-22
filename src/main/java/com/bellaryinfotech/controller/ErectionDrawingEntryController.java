@@ -4,6 +4,7 @@ import com.bellaryinfotech.DTO.ErectionDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.service.ErectionDrawingEntryService;
 import com.bellaryinfotech.service.BitsDrawingEntryService;
+import com.bellaryinfotech.service.BitsHeaderService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -39,6 +41,9 @@ public class ErectionDrawingEntryController {
 
     @Autowired
     private BitsDrawingEntryService bitsDrawingEntryService;
+
+    @Autowired
+    private BitsHeaderService bitsHeaderService;
 
     // API endpoint constants
     public static final String GET_ALL_ERECTION_ENTRIES = "/getAllErectionDrawingEntries/details";
@@ -80,7 +85,65 @@ public class ErectionDrawingEntryController {
     // NEW ENDPOINT FOR ENHANCED DATA WITH FABRICATION STAGES
     public static final String GET_ENHANCED_ERECTION_ENTRIES = "/getEnhancedErectionDrawingEntries/details";
 
+    // NEW ENDPOINTS FOR WORK ORDER AND PLANT LOCATION DROPDOWNS
+    public static final String GET_DISTINCT_WORK_ORDERS = "/getDistinctErectionWorkOrders/details";
+    public static final String GET_DISTINCT_PLANT_LOCATIONS = "/getDistinctErectionPlantLocations/details";
+
     private static final Logger LOG = LoggerFactory.getLogger(ErectionDrawingEntryController.class);
+
+    /**
+     * Get distinct work orders from erection entries only
+     */
+    @RequestMapping(value = GET_DISTINCT_WORK_ORDERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getDistinctWorkOrders() {
+        try {
+            LOG.info("Fetching distinct work orders from erection entries");
+        
+            // Get all erection entries and extract unique work orders from attribute1V
+            List<ErectionDrawingEntryDto> allEntries = erectionDrawingEntryService.getAllErectionEntries();
+            List<String> workOrders = allEntries.stream()
+                .map(ErectionDrawingEntryDto::getAttribute1V)
+                .filter(workOrder -> workOrder != null && !workOrder.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        
+            LOG.info("Found {} distinct work orders from erection entries", workOrders.size());
+            return ResponseEntity.ok(workOrders);
+        
+        } catch (Exception e) {
+            LOG.error("Error getting distinct work orders from erection entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get distinct work orders: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get distinct plant locations from erection entries only
+     */
+    @RequestMapping(value = GET_DISTINCT_PLANT_LOCATIONS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getDistinctPlantLocations() {
+        try {
+            LOG.info("Fetching distinct plant locations from erection entries");
+        
+            // Get all erection entries and extract unique plant locations from attribute2V
+            List<ErectionDrawingEntryDto> allEntries = erectionDrawingEntryService.getAllErectionEntries();
+            List<String> plantLocations = allEntries.stream()
+                .map(ErectionDrawingEntryDto::getAttribute2V)
+                .filter(location -> location != null && !location.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+        
+            LOG.info("Found {} distinct plant locations from erection entries", plantLocations.size());
+            return ResponseEntity.ok(plantLocations);
+        
+        } catch (Exception e) {
+            LOG.error("Error getting distinct plant locations from erection entries", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get distinct plant locations: " + e.getMessage());
+        }
+    }
 
     /**
      * NEW: Get enhanced erection entries with fabrication stage data synchronized
@@ -125,6 +188,9 @@ public class ErectionDrawingEntryController {
                         }
                         if (fabEntry.getTargetDate() != null) {
                             erectionEntry.setTargetDate(fabEntry.getTargetDate());
+                        }
+                        if (fabEntry.getRaNo() != null) {
+                            erectionEntry.setRaNo(fabEntry.getRaNo());
                         }
                         
                         LOG.debug("Synchronized fabrication data for Drawing: {}, Mark: {}", 
@@ -443,57 +509,37 @@ public class ErectionDrawingEntryController {
         }
     }
     
+    /**
+     * FIXED: Create bulk erection entries WITHOUT any duplicate checking - Store ALL entries
+     */
     @PostMapping("/createBulkErectionDrawingEntriesWithDuplicateCheck/details")
     public ResponseEntity<?> createBulkErectionDrawingEntriesWithDuplicateCheck(@RequestBody List<ErectionDrawingEntryDto> erectionEntryDtos) {
         try {
-            logger.info("Creating bulk erection entries with duplicate checking for {} entries", erectionEntryDtos.size());
+            logger.info("Creating bulk erection entries WITHOUT duplicate checking for {} entries", erectionEntryDtos.size());
 
             if (erectionEntryDtos == null || erectionEntryDtos.isEmpty()) {
                 return ResponseEntity.badRequest().body("Request body cannot be null or empty");
             }
 
-            // Track what happens to each entry
-            List<ErectionDrawingEntryDto> createdEntries = new ArrayList<>();
-            List<String> skippedDuplicates = new ArrayList<>();
+            // DIRECTLY USE THE SERVICE METHOD THAT DOESN'T CHECK DUPLICATES
+            List<ErectionDrawingEntryDto> createdEntries = erectionDrawingEntryService.createErectionEntries(erectionEntryDtos);
 
-            for (ErectionDrawingEntryDto dto : erectionEntryDtos) {
-                try {
-                    // Check if this combination already exists
-                    boolean exists = erectionDrawingEntryService.existsByDrawingNoAndMarkNo(dto.getDrawingNo(), dto.getMarkNo());
-
-                    if (exists) {
-                        skippedDuplicates.add(dto.getDrawingNo() + " - " + dto.getMarkNo());
-                        logger.info("Skipped duplicate: Drawing {} - Mark {}", dto.getDrawingNo(), dto.getMarkNo());
-                    } else {
-                        // Create single entry (not multiple based on quantity)
-                        List<ErectionDrawingEntryDto> singleEntryList = Arrays.asList(dto);
-                        List<ErectionDrawingEntryDto> created = erectionDrawingEntryService.createErectionEntries(singleEntryList);
-                        createdEntries.addAll(created);
-                        logger.info("Created entry: Drawing {} - Mark {}", dto.getDrawingNo(), dto.getMarkNo());
-                    }
-                } catch (Exception e) {
-                    logger.error("Error processing entry for Drawing {} - Mark {}: {}",
-                            dto.getDrawingNo(), dto.getMarkNo(), e.getMessage());
-                    // Continue with other entries
-                }
-            }
-
-            // Create response with summary
+            // Create response with summary - ALL ENTRIES CREATED
             Map<String, Object> response = new HashMap<>();
             response.put("createdEntries", createdEntries);
             response.put("createdCount", createdEntries.size());
-            response.put("skippedDuplicates", skippedDuplicates);
-            response.put("skippedCount", skippedDuplicates.size());
+            response.put("skippedDuplicates", new ArrayList<>()); // Empty list - no duplicates skipped
+            response.put("skippedCount", 0); // Zero skipped
             response.put("totalProcessed", erectionEntryDtos.size());
-            response.put("message", String.format("Processed %d entries: %d created, %d skipped as duplicates",
-                    erectionEntryDtos.size(), createdEntries.size(), skippedDuplicates.size()));
+            response.put("message", String.format("Successfully processed %d entries: %d created, 0 skipped - ALL ENTRIES STORED",
+                    erectionEntryDtos.size(), createdEntries.size()));
 
-            logger.info("Bulk creation completed - Created: {}, Skipped: {}", createdEntries.size(), skippedDuplicates.size());
+            logger.info("Bulk creation completed - Created: {}, Skipped: 0 (ALL ENTRIES STORED)", createdEntries.size());
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            logger.error("Error in bulk creation with duplicate checking", e);
+            logger.error("Error in bulk creation", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error creating erection entries: " + e.getMessage());
         }

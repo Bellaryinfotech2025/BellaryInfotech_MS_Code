@@ -41,6 +41,7 @@ public class AlignmentDrawingEntryController {
     public static final String GET_ALIGNMENT_ENTRY_BY_ID = "/getAlignmentDrawingEntryById/details";
     public static final String CREATE_ALIGNMENT_ENTRY = "/createAlignmentDrawingEntry/details";
     public static final String CREATE_BULK_ALIGNMENT_ENTRIES = "/createBulkAlignmentDrawingEntries/details";
+    public static final String CREATE_ALIGNMENT_ENTRIES_FROM_ERECTION = "/createAlignmentEntriesFromErection/details"; // NEW ENDPOINT
     public static final String UPDATE_ALIGNMENT_ENTRY = "/updateAlignmentDrawingEntry/details";
     public static final String DELETE_ALIGNMENT_ENTRY = "/deleteAlignmentDrawingEntry/details";
     public static final String DELETE_ALIGNMENT_ENTRIES_BY_DRAWING_NO = "/deleteAlignmentDrawingEntriesByDrawingNo/details";
@@ -65,8 +66,6 @@ public class AlignmentDrawingEntryController {
     public static final String GET_DISTINCT_SESSION_CODES = "/getDistinctAlignmentDrawingEntrySessionCodes/details";
     public static final String GET_DISTINCT_STATUSES = "/getDistinctAlignmentDrawingEntryStatuses/details";
     public static final String CHECK_EXISTS_BY_ID = "/checkAlignmentDrawingEntryExistsById/details";
-    public static final String CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO = "/checkAlignmentDrawingEntryExistsByDrawingNoAndMarkNo/details";
-    public static final String CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO_AND_STATUS = "/checkAlignmentDrawingEntryExistsByDrawingNoAndMarkNoAndStatus/details";
     public static final String GET_TOTAL_COUNT = "/getAlignmentDrawingEntryTotalCount/details";
     public static final String GET_LATEST_BY_DRAWING_NO = "/getLatestAlignmentDrawingEntryByDrawingNo/details";
     public static final String GET_LATEST_BY_MARK_NO = "/getLatestAlignmentDrawingEntryByMarkNo/details";
@@ -119,7 +118,7 @@ public class AlignmentDrawingEntryController {
      * Get alignment entry by line ID
      */
     @RequestMapping(value = GET_ALIGNMENT_ENTRY_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> getAlignmentEntryById(@RequestParam String lineId) {
+    public ResponseEntity<?> getAlignmentEntryById(@RequestParam Long lineId) { // CHANGED TO LONG
         try {
             LOG.info("Fetching alignment entry by line ID: {}", lineId);
             Optional<AlignmentDrawingEntryDto> alignmentEntry = alignmentDrawingEntryService.getAlignmentEntryById(lineId);
@@ -157,7 +156,7 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Create multiple alignment entries - NEW ENDPOINT FOR BULK CREATION FROM ERECTION
+     * Create multiple alignment entries - REGULAR BULK CREATION
      */
     @RequestMapping(value = CREATE_BULK_ALIGNMENT_ENTRIES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
     public ResponseEntity<?> createAlignmentEntries(@RequestBody List<AlignmentDrawingEntryDto> alignmentEntryDtos) {
@@ -177,11 +176,43 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
+     * Create alignment entries from erection data - NO DUPLICATE CHECKING
+     */
+    @RequestMapping(value = CREATE_ALIGNMENT_ENTRIES_FROM_ERECTION, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    public ResponseEntity<?> createAlignmentEntriesFromErection(@RequestBody List<AlignmentDrawingEntryDto> alignmentEntryDtos) {
+        try {
+            LOG.info("Creating {} alignment entries from erection data - NO DUPLICATE CHECKING", alignmentEntryDtos.size());
+        
+            // Call service to create ALL entries (no duplicate checking)
+            List<AlignmentDrawingEntryDto> createdEntries = alignmentDrawingEntryService.createAlignmentEntries(alignmentEntryDtos);
+        
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", String.format("Successfully processed %d entries: %d created, 0 skipped - ALL ENTRIES STORED", 
+                                            alignmentEntryDtos.size(), createdEntries.size()));
+            response.put("totalProcessed", alignmentEntryDtos.size());
+            response.put("createdCount", createdEntries.size());
+            response.put("skippedCount", 0);
+            response.put("createdEntries", createdEntries);
+        
+            LOG.info("Successfully created {} total alignment entries from erection", createdEntries.size());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Invalid input for creating alignment entries from erection: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid input: " + e.getMessage());
+        } catch (Exception e) {
+            LOG.error("Error creating alignment entries from erection", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to create alignment entries: " + e.getMessage());
+        }
+    }
+
+    /**
      * Update alignment entry
      */
     @RequestMapping(value = UPDATE_ALIGNMENT_ENTRY, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PUT)
     public ResponseEntity<?> updateAlignmentEntry(
-            @RequestParam String lineId,
+            @RequestParam Long lineId, // CHANGED TO LONG
             @Valid @RequestBody AlignmentDrawingEntryDto alignmentEntryDto) {
         try {
             LOG.info("Updating alignment entry with line ID: {}", lineId);
@@ -208,7 +239,7 @@ public class AlignmentDrawingEntryController {
      * Delete alignment entry by line ID
      */
     @RequestMapping(value = DELETE_ALIGNMENT_ENTRY, method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteAlignmentEntry(@RequestParam String lineId) {
+    public ResponseEntity<?> deleteAlignmentEntry(@RequestParam Long lineId) { // CHANGED TO LONG
         try {
             LOG.info("Deleting alignment entry with line ID: {}", lineId);
             alignmentDrawingEntryService.deleteAlignmentEntry(lineId);
@@ -365,15 +396,13 @@ public class AlignmentDrawingEntryController {
     }
 
     /**
-     * Check if entry exists by drawing and mark number
+     * Check if entry exists by line ID
      */
-    @RequestMapping(value = CHECK_EXISTS_BY_DRAWING_NO_AND_MARK_NO, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
-    public ResponseEntity<?> existsByDrawingNoAndMarkNo(
-            @RequestParam String drawingNo,
-            @RequestParam String markNo) {
+    @RequestMapping(value = CHECK_EXISTS_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> existsById(@RequestParam Long lineId) { // CHANGED TO LONG
         try {
-            LOG.info("Checking if alignment entry exists for drawing: {} and mark: {}", drawingNo, markNo);
-            boolean exists = alignmentDrawingEntryService.existsByDrawingNoAndMarkNo(drawingNo, markNo);
+            LOG.info("Checking if alignment entry exists for line ID: {}", lineId);
+            boolean exists = alignmentDrawingEntryService.existsById(lineId);
             return ResponseEntity.ok(exists);
         } catch (Exception e) {
             LOG.error("Error checking if entry exists", e);
@@ -425,6 +454,35 @@ public class AlignmentDrawingEntryController {
             return ResponseEntity.ok(alignmentEntries);
         } catch (Exception e) {
             LOG.error("Error getting alignment entries by mark number: {}", markNo, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get alignment entries: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW ENDPOINTS FOR ORDER_ID AND RA_NO
+     */
+    @RequestMapping(value = "/getAlignmentEntriesByOrderId/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getAlignmentEntriesByOrderId(@RequestParam Long orderId) {
+        try {
+            LOG.info("Fetching alignment entries by order ID: {}", orderId);
+            List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByOrderId(orderId);
+            return ResponseEntity.ok(alignmentEntries);
+        } catch (Exception e) {
+            LOG.error("Error getting alignment entries by order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get alignment entries: " + e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/getAlignmentEntriesByRaNo/details", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getAlignmentEntriesByRaNo(@RequestParam String raNo) {
+        try {
+            LOG.info("Fetching alignment entries by RA NO: {}", raNo);
+            List<AlignmentDrawingEntryDto> alignmentEntries = alignmentDrawingEntryService.getAlignmentEntriesByRaNo(raNo);
+            return ResponseEntity.ok(alignmentEntries);
+        } catch (Exception e) {
+            LOG.error("Error getting alignment entries by RA NO: {}", raNo, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to get alignment entries: " + e.getMessage());
         }

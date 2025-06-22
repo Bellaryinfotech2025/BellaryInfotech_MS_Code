@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AlignmentDrawingEntryRepository extends JpaRepository<AlignmentDrawingEntry, String> {
+public interface AlignmentDrawingEntryRepository extends JpaRepository<AlignmentDrawingEntry, Long> { // CHANGED TO LONG
 
     // Find by drawing number
     List<AlignmentDrawingEntry> findByDrawingNoOrderByCreationDateDesc(String drawingNo);
@@ -93,9 +93,9 @@ public interface AlignmentDrawingEntryRepository extends JpaRepository<Alignment
     @Query("SELECT DISTINCT a.status FROM AlignmentDrawingEntry a WHERE a.status IS NOT NULL ORDER BY a.status")
     List<String> findDistinctStatuses();
 
-    // Existence checks
-    boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
-    boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status);
+    // Existence checks - REMOVED FOR NO DUPLICATE CHECKING
+    // boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
+    // boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status);
 
     // Latest entries
     Optional<AlignmentDrawingEntry> findTopByDrawingNoOrderByCreationDateDesc(String drawingNo);
@@ -118,4 +118,9 @@ public interface AlignmentDrawingEntryRepository extends JpaRepository<Alignment
 
     // Find all entries with specific status
     Page<AlignmentDrawingEntry> findByStatusOrderByCreationDateDesc(String status, Pageable pageable);
+
+    // NEW QUERIES FOR ORDER_ID AND RA_NO
+    List<AlignmentDrawingEntry> findByOrderIdOrderByCreationDateDesc(Long orderId);
+    List<AlignmentDrawingEntry> findByRaNoOrderByCreationDateDesc(String raNo);
+    List<AlignmentDrawingEntry> findByOrderIdAndRaNoOrderByCreationDateDesc(Long orderId, String raNo);
 }

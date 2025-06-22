@@ -89,6 +89,17 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
                .collect(Collectors.toList());
    }
 
+   // NEW METHODS - ADDED FOR DROPDOWN FUNCTIONALITY
+   @Override
+   public List<String> getDistinctWorkOrders() {
+       return headerRepository.findDistinctWorkOrders();
+   }
+
+   @Override
+   public List<String> getDistinctPlantLocations() {
+       return headerRepository.findDistinctPlantLocations();
+   }
+
    private BitsHeaderDto convertToDto(BitsHeaderAll entity) {
        BitsHeaderDto dto = new BitsHeaderDto();
        dto.setOrderId(entity.getOrderId());

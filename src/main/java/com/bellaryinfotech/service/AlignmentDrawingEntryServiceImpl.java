@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,20 +28,15 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     @Autowired
     private AlignmentDrawingEntryRepository alignmentDrawingEntryRepository;
 
-    // Counter for sequential line IDs
-    private static final AtomicLong lineIdCounter = new AtomicLong(1);
-
     @Override
     public List<AlignmentDrawingEntryDto> createAlignmentEntry(AlignmentDrawingEntryDto alignmentEntryDto) {
         try {
             logger.info("Creating alignment entry with marked quantity: {}", alignmentEntryDto.getMarkedQty());
             
-            // Set default marked quantity if null
             if (alignmentEntryDto.getMarkedQty() == null) {
                 alignmentEntryDto.setMarkedQty(BigDecimal.ONE);
             }
             
-            // Validate input - allow any positive value
             if (alignmentEntryDto.getMarkedQty().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException("Marked quantity must be greater than zero");
             }
@@ -50,30 +44,25 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
             List<AlignmentDrawingEntry> entriesToSave = new ArrayList<>();
             int markedQtyInt = alignmentEntryDto.getMarkedQty().intValue();
 
-            // Create entries based on marked quantity
             for (int i = 0; i < markedQtyInt; i++) {
                 AlignmentDrawingEntry entry = convertDtoToEntity(alignmentEntryDto);
                 
-                // Generate sequential line ID
-                entry.setLineId(generateSequentialLineId());
+                // DON'T SET LINE_ID - LET DATABASE AUTO-GENERATE IT
+                entry.setLineId(null);
                 
-                // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
                 entry.setLastUpdatingDate(LocalDateTime.now());
                 entry.setStatus("alignment");
                 
-                // Set marked quantity to 1 for each individual entry
                 entry.setMarkedQty(BigDecimal.ONE);
                 
                 entriesToSave.add(entry);
             }
 
-            // Save all entries
             List<AlignmentDrawingEntry> savedEntries = alignmentDrawingEntryRepository.saveAll(entriesToSave);
             
             logger.info("Successfully created {} alignment entries", savedEntries.size());
             
-            // Convert back to DTOs
             return savedEntries.stream()
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
@@ -87,55 +76,35 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     @Override
     public List<AlignmentDrawingEntryDto> createAlignmentEntries(List<AlignmentDrawingEntryDto> alignmentEntryDtos) {
         try {
-            logger.info("Creating {} alignment entries with duplicate checking", alignmentEntryDtos.size());
+            logger.info("Creating {} alignment entries - NO DUPLICATE CHECKING", alignmentEntryDtos.size());
         
             List<AlignmentDrawingEntry> allEntriesToSave = new ArrayList<>();
-            List<String> skippedDuplicates = new ArrayList<>();
-            List<String> successfulEntries = new ArrayList<>();
         
             for (AlignmentDrawingEntryDto dto : alignmentEntryDtos) {
-                // Validate input
                 if (dto.getMarkedQty() == null || dto.getMarkedQty().compareTo(BigDecimal.ZERO) <= 0) {
                     throw new IllegalArgumentException("Marked quantity must be greater than zero for drawing: " + dto.getDrawingNo());
                 }
 
-                // Check if this drawing+mark combination already exists in alignment table
-                boolean exists = alignmentDrawingEntryRepository.existsByDrawingNoAndMarkNo(dto.getDrawingNo(), dto.getMarkNo());
-            
-                if (exists) {
-                    logger.info("Skipping duplicate entry for Drawing: {}, Mark: {}", dto.getDrawingNo(), dto.getMarkNo());
-                    skippedDuplicates.add(dto.getDrawingNo() + " - " + dto.getMarkNo());
-                    continue; // Skip this entry as it already exists
-                }
-
-                // Create only one entry per mark number (no duplicates based on markedQty)
+                // NO DUPLICATE CHECKING - CREATE ALL ENTRIES
                 AlignmentDrawingEntry entry = convertDtoToEntity(dto);
             
-                // Generate sequential line ID
-                entry.setLineId(generateSequentialLineId());
+                // DON'T SET LINE_ID - LET DATABASE AUTO-GENERATE IT
+                entry.setLineId(null);
             
-                // Set creation metadata
                 entry.setCreationDate(LocalDateTime.now());
                 entry.setLastUpdatingDate(LocalDateTime.now());
                 entry.setStatus("alignment");
             
-                // Keep the original marked quantity (don't split into multiple entries)
                 entry.setMarkedQty(dto.getMarkedQty());
             
                 allEntriesToSave.add(entry);
-                successfulEntries.add(dto.getDrawingNo() + " - " + dto.getMarkNo());
             }
 
-            // Save all unique entries
-            List<AlignmentDrawingEntry> savedEntries = new ArrayList<>();
-            if (!allEntriesToSave.isEmpty()) {
-                savedEntries = alignmentDrawingEntryRepository.saveAll(allEntriesToSave);
-            }
+            // SAVE ALL ENTRIES - NO FILTERING
+            List<AlignmentDrawingEntry> savedEntries = alignmentDrawingEntryRepository.saveAll(allEntriesToSave);
         
-            logger.info("Successfully created {} alignment entries, skipped {} duplicates", 
-                       savedEntries.size(), skippedDuplicates.size());
+            logger.info("Successfully created {} alignment entries - ALL ENTRIES STORED", savedEntries.size());
         
-            // Convert back to DTOs
             return savedEntries.stream()
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
@@ -147,7 +116,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     }
 
     @Override
-    public Optional<AlignmentDrawingEntryDto> getAlignmentEntryById(String lineId) {
+    public Optional<AlignmentDrawingEntryDto> getAlignmentEntryById(Long lineId) {
         try {
             logger.info("Fetching alignment entry by line ID: {}", lineId);
             Optional<AlignmentDrawingEntry> entity = alignmentDrawingEntryRepository.findById(lineId);
@@ -319,7 +288,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     }
 
     @Override
-    public AlignmentDrawingEntryDto updateAlignmentEntry(String lineId, AlignmentDrawingEntryDto alignmentEntryDto) {
+    public AlignmentDrawingEntryDto updateAlignmentEntry(Long lineId, AlignmentDrawingEntryDto alignmentEntryDto) {
         try {
             logger.info("Updating alignment entry with line ID: {}", lineId);
             
@@ -341,7 +310,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     }
 
     @Override
-    public void deleteAlignmentEntry(String lineId) {
+    public void deleteAlignmentEntry(Long lineId) {
         try {
             logger.info("Deleting alignment entry with line ID: {}", lineId);
             if (!alignmentDrawingEntryRepository.existsById(lineId)) {
@@ -388,7 +357,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     }
 
     @Override
-    public void bulkDeleteAlignmentEntries(List<String> lineIds) {
+    public void bulkDeleteAlignmentEntries(List<Long> lineIds) {
         try {
             logger.info("Bulk deleting {} alignment entries", lineIds.size());
             alignmentDrawingEntryRepository.deleteAllById(lineIds);
@@ -499,31 +468,11 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     }
 
     @Override
-    public boolean existsById(String lineId) {
+    public boolean existsById(Long lineId) {
         try {
             return alignmentDrawingEntryRepository.existsById(lineId);
         } catch (Exception e) {
             logger.error("Error checking existence by line ID: {}", lineId, e);
-            throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo) {
-        try {
-            return alignmentDrawingEntryRepository.existsByDrawingNoAndMarkNo(drawingNo, markNo);
-        } catch (Exception e) {
-            logger.error("Error checking existence by drawing and mark number", e);
-            throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status) {
-        try {
-            return alignmentDrawingEntryRepository.existsByDrawingNoAndMarkNoAndStatus(drawingNo, markNo, status);
-        } catch (Exception e) {
-            logger.error("Error checking existence by drawing, mark number and status", e);
             throw new RuntimeException("Failed to check existence: " + e.getMessage(), e);
         }
     }
@@ -575,11 +524,54 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         }
     }
 
+    // NEW METHODS FOR ORDER_ID AND RA_NO
+    @Override
+    public List<AlignmentDrawingEntryDto> getAlignmentEntriesByOrderId(Long orderId) {
+        try {
+            logger.info("Fetching alignment entries by order ID: {}", orderId);
+            List<AlignmentDrawingEntry> entities = alignmentDrawingEntryRepository.findByOrderIdOrderByCreationDateDesc(orderId);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching alignment entries by order ID: {}", orderId, e);
+            throw new RuntimeException("Failed to fetch alignment entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<AlignmentDrawingEntryDto> getAlignmentEntriesByRaNo(String raNo) {
+        try {
+            logger.info("Fetching alignment entries by RA NO: {}", raNo);
+            List<AlignmentDrawingEntry> entities = alignmentDrawingEntryRepository.findByRaNoOrderByCreationDateDesc(raNo);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching alignment entries by RA NO: {}", raNo, e);
+            throw new RuntimeException("Failed to fetch alignment entries: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<AlignmentDrawingEntryDto> getAlignmentEntriesByOrderIdAndRaNo(Long orderId, String raNo) {
+        try {
+            logger.info("Fetching alignment entries by order ID: {} and RA NO: {}", orderId, raNo);
+            List<AlignmentDrawingEntry> entities = alignmentDrawingEntryRepository.findByOrderIdAndRaNoOrderByCreationDateDesc(orderId, raNo);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching alignment entries by order ID and RA NO", e);
+            throw new RuntimeException("Failed to fetch alignment entries: " + e.getMessage(), e);
+        }
+    }
+
     // Helper methods for conversion between Entity and DTO
     private AlignmentDrawingEntry convertDtoToEntity(AlignmentDrawingEntryDto dto) {
         AlignmentDrawingEntry entity = new AlignmentDrawingEntry();
         
-        entity.setLineId(dto.getLineId());
+        entity.setLineId(dto.getLineId()); // LONG TYPE
         entity.setVersion(dto.getVersion());
         entity.setDrawingNo(dto.getDrawingNo());
         entity.setMarkNo(dto.getMarkNo());
@@ -592,7 +584,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         entity.setLength(dto.getLength());
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
-        entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        entity.setTotalItemWeight(dto.getTotalItemWeight());
         entity.setTenantId(dto.getTenantId());
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
@@ -622,17 +614,21 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         if (dto.getAttribute4D() != null) entity.setAttribute4D(dto.getAttribute4D());
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
         
-        // NEW FIELDS - Set the new fields for enhanced data
+        // Set the new fields for enhanced data
         if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
         if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
         if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
         if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
         
-        // NEW FIELDS - Set fabrication stage fields with default "N" if null
+        // Set fabrication stage fields with default "N" if null
         entity.setCuttingStage(dto.getCuttingStage() != null ? dto.getCuttingStage() : "N");
         entity.setFitUpStage(dto.getFitUpStage() != null ? dto.getFitUpStage() : "N");
         entity.setWeldingStage(dto.getWeldingStage() != null ? dto.getWeldingStage() : "N");
         entity.setFinishingStage(dto.getFinishingStage() != null ? dto.getFinishingStage() : "N");
+        
+        // SET ORDER_ID AND RA_NO FROM DTO
+        entity.setOrderId(dto.getOrderId());
+        entity.setRaNo(dto.getRaNo());
         
         return entity;
     }
@@ -640,7 +636,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
     private AlignmentDrawingEntryDto convertEntityToDto(AlignmentDrawingEntry entity) {
         AlignmentDrawingEntryDto dto = new AlignmentDrawingEntryDto();
         
-        dto.setLineId(entity.getLineId());
+        dto.setLineId(entity.getLineId()); // LONG TYPE
         dto.setVersion(entity.getVersion());
         dto.setDrawingNo(entity.getDrawingNo());
         dto.setMarkNo(entity.getMarkNo());
@@ -653,7 +649,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         dto.setLength(entity.getLength());
         dto.setItemQty(entity.getItemQty());
         dto.setItemWeight(entity.getItemWeight());
-        dto.setTotalItemWeight(entity.getTotalItemWeight()); // NEW FIELD
+        dto.setTotalItemWeight(entity.getTotalItemWeight());
         dto.setTenantId(entity.getTenantId());
         dto.setCreationDate(entity.getCreationDate());
         dto.setCreatedBy(entity.getCreatedBy());
@@ -681,17 +677,21 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
         
-        // NEW FIELDS - Get the new fields for enhanced data
+        // Get the new fields for enhanced data
         dto.setDrawingWeight(entity.getDrawingWeight());
         dto.setMarkWeight(entity.getMarkWeight());
         dto.setDrawingReceivedDate(entity.getDrawingReceivedDate());
         dto.setTargetDate(entity.getTargetDate());
         
-        // NEW FIELDS - Get fabrication stage fields
+        // Get fabrication stage fields
         dto.setCuttingStage(entity.getCuttingStage());
         dto.setFitUpStage(entity.getFitUpStage());
         dto.setWeldingStage(entity.getWeldingStage());
         dto.setFinishingStage(entity.getFinishingStage());
+        
+        // GET ORDER_ID AND RA_NO FROM ENTITY
+        dto.setOrderId(entity.getOrderId());
+        dto.setRaNo(entity.getRaNo());
         
         return dto;
     }
@@ -708,7 +708,7 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         if (dto.getLength() != null) entity.setLength(dto.getLength());
         if (dto.getItemQty() != null) entity.setItemQty(dto.getItemQty());
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
-        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight()); // NEW FIELD
+        if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight());
         if (dto.getTenantId() != null) entity.setTenantId(dto.getTenantId());
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
@@ -734,65 +734,20 @@ public class AlignmentDrawingEntryServiceImpl implements AlignmentDrawingEntrySe
         if (dto.getAttribute4D() != null) entity.setAttribute4D(dto.getAttribute4D());
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
         
-        // NEW FIELDS - Update the new fields for enhanced data
+        // Update the new fields for enhanced data
         if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
         if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
         if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
         if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
         
-        // NEW FIELDS - Update fabrication stage fields
+        // Update fabrication stage fields
         if (dto.getCuttingStage() != null) entity.setCuttingStage(dto.getCuttingStage());
         if (dto.getFitUpStage() != null) entity.setFitUpStage(dto.getFitUpStage());
         if (dto.getWeldingStage() != null) entity.setWeldingStage(dto.getWeldingStage());
         if (dto.getFinishingStage() != null) entity.setFinishingStage(dto.getFinishingStage());
-    }
-
-    /**
-     * Generate a sequential line ID in format A1.1, A1.2, A1.3, etc.
-     * This ensures unique, sequential serial numbers for alignment entries
-     */
-    private synchronized String generateSequentialLineId() {
-        // Get the current maximum line ID from database
-        long maxId = getMaxLineIdNumber();
-        long nextId = Math.max(maxId + 1, lineIdCounter.get());
         
-        // Update the counter
-        lineIdCounter.set(nextId + 1);
-        
-        // Generate format like A1.1, A1.2, etc. (A for Alignment)
-        long major = (nextId - 1) / 10 + 1;
-        long minor = (nextId - 1) % 10 + 1;
-        
-        return "A" + major + "." + minor;
-    }
-    
-    /**
-     * Get the maximum line ID number from existing records
-     */
-    private long getMaxLineIdNumber() {
-        try {
-            List<AlignmentDrawingEntry> allEntries = alignmentDrawingEntryRepository.findAll();
-            long maxNumber = 0;
-            
-            for (AlignmentDrawingEntry entry : allEntries) {
-                String lineId = entry.getLineId();
-                if (lineId != null && lineId.matches("A\\d+\\.\\d+")) {
-                    try {
-                        String[] parts = lineId.substring(1).split("\\.");
-                        long major = Long.parseLong(parts[0]);
-                        long minor = Long.parseLong(parts[1]);
-                        long number = (major - 1) * 10 + minor;
-                        maxNumber = Math.max(maxNumber, number);
-                    } catch (NumberFormatException e) {
-                        // Skip invalid format
-                    }
-                }
-            }
-            
-            return maxNumber;
-        } catch (Exception e) {
-            logger.warn("Error getting max line ID number, starting from 0", e);
-            return 0;
-        }
+        // UPDATE ORDER_ID AND RA_NO
+        if (dto.getOrderId() != null) entity.setOrderId(dto.getOrderId());
+        if (dto.getRaNo() != null) entity.setRaNo(dto.getRaNo());
     }
 }

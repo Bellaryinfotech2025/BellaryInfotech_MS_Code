@@ -29,6 +29,9 @@ public interface BitsHeaderRepository extends JpaRepository<BitsHeaderAll, Long>
     @Query("SELECT DISTINCT bh.workOrder FROM BitsHeaderAll bh WHERE bh.workOrder IS NOT NULL ORDER BY bh.workOrder")
     List<String> findDistinctWorkOrders();
     
+    @Query("SELECT DISTINCT bh.plantLocation FROM BitsHeaderAll bh WHERE bh.plantLocation IS NOT NULL ORDER BY bh.plantLocation")
+    List<String> findDistinctPlantLocations();
+    
     @Query("SELECT bh FROM BitsHeaderAll bh WHERE " +
            "(:workOrder IS NULL OR bh.workOrder LIKE %:workOrder%) AND " +
            "(:plantLocation IS NULL OR bh.plantLocation LIKE %:plantLocation%) AND " +

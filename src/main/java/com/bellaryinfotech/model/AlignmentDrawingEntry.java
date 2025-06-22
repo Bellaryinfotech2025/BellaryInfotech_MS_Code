@@ -10,8 +10,9 @@ import java.time.LocalDate;
 public class AlignmentDrawingEntry {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "line_id", nullable = false)
-    private String lineId;
+    private Long lineId; // CHANGED TO LONG - INTEGER VALUES ONLY
 
     @Version
     @Column(name = "version", nullable = false)
@@ -49,7 +50,7 @@ public class AlignmentDrawingEntry {
 
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
- // NEW COLUMN: Total Item Weight
+
     @Column(name = "total_item_weight", precision = 19, scale = 4)
     private BigDecimal totalItemWeight;
 
@@ -119,7 +120,6 @@ public class AlignmentDrawingEntry {
     @Column(name = "status", length = 50)
     private String status;
 
-    // NEW FIELDS FOR ENHANCED FUNCTIONALITY - EXACTLY LIKE ERECTION
     @Column(name = "drawing_weight", precision = 19, scale = 4)
     private BigDecimal drawingWeight;
 
@@ -132,7 +132,6 @@ public class AlignmentDrawingEntry {
     @Column(name = "target_date")
     private LocalDate targetDate;
 
-    // FABRICATION STAGE FIELDS (synchronized from fabrication/erection tables)
     @Column(name = "cutting_stage", length = 1)
     private String cuttingStage = "N";
 
@@ -144,21 +143,19 @@ public class AlignmentDrawingEntry {
 
     @Column(name = "finishing_stage", length = 1)
     private String finishingStage = "N";
-    
-    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
-    public BigDecimal getTotalItemWeight() {
-        return totalItemWeight;
-    }
 
-    public void setTotalItemWeight(BigDecimal totalItemWeight) {
-        this.totalItemWeight = totalItemWeight;
-    }
+    // NEW FIELDS - ORDER_ID AND RA_NO
+    @Column(name = "order_id")
+    private Long orderId; // SAME AS ERECTION - LONG TYPE
 
-	// Default constructor
+    @Column(name = "ra_no", length = 100)
+    private String raNo; // SAME AS ERECTION - STRING TYPE
+
+    // Default constructor
     public AlignmentDrawingEntry() {}
 
     // Constructor with essential fields
-    public AlignmentDrawingEntry(String lineId, String drawingNo, String markNo, BigDecimal markedQty) {
+    public AlignmentDrawingEntry(Long lineId, String drawingNo, String markNo, BigDecimal markedQty) {
         this.lineId = lineId;
         this.drawingNo = drawingNo;
         this.markNo = markNo;
@@ -168,12 +165,13 @@ public class AlignmentDrawingEntry {
         this.status = "alignment";
     }
 
-    // Getters and Setters for existing fields
-    public String getLineId() {
+    // GETTERS AND SETTERS
+
+    public Long getLineId() {
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) {
         this.lineId = lineId;
     }
 
@@ -271,6 +269,14 @@ public class AlignmentDrawingEntry {
 
     public void setItemWeight(BigDecimal itemWeight) {
         this.itemWeight = itemWeight;
+    }
+
+    public BigDecimal getTotalItemWeight() {
+        return totalItemWeight;
+    }
+
+    public void setTotalItemWeight(BigDecimal totalItemWeight) {
+        this.totalItemWeight = totalItemWeight;
     }
 
     public String getTenantId() {
@@ -449,7 +455,6 @@ public class AlignmentDrawingEntry {
         this.status = status;
     }
 
-    // NEW GETTERS AND SETTERS - EXACTLY LIKE ERECTION
     public BigDecimal getDrawingWeight() {
         return drawingWeight;
     }
@@ -482,7 +487,6 @@ public class AlignmentDrawingEntry {
         this.targetDate = targetDate;
     }
 
-    // FABRICATION STAGE GETTERS AND SETTERS - EXACTLY LIKE ERECTION
     public String getCuttingStage() {
         return cuttingStage;
     }
@@ -515,6 +519,23 @@ public class AlignmentDrawingEntry {
         this.finishingStage = finishingStage != null ? finishingStage : "N";
     }
 
+    // NEW GETTERS AND SETTERS FOR ORDER_ID AND RA_NO
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getRaNo() {
+        return raNo;
+    }
+
+    public void setRaNo(String raNo) {
+        this.raNo = raNo;
+    }
+
     @PrePersist
     protected void onCreate() {
         if (creationDate == null) {
@@ -522,7 +543,6 @@ public class AlignmentDrawingEntry {
         }
         lastUpdatingDate = LocalDateTime.now();
         
-        // Ensure fabrication stages have default values
         if (cuttingStage == null) cuttingStage = "N";
         if (fitUpStage == null) fitUpStage = "N";
         if (weldingStage == null) weldingStage = "N";
@@ -537,7 +557,7 @@ public class AlignmentDrawingEntry {
     @Override
     public String toString() {
         return "AlignmentDrawingEntry{" +
-                "lineId='" + lineId + '\'' +
+                "lineId=" + lineId +
                 ", version=" + version +
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
@@ -545,7 +565,7 @@ public class AlignmentDrawingEntry {
                 ", totalMarkedWgt=" + totalMarkedWgt +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
-                 ", totalItemWeight=" + totalItemWeight +
+                ", totalItemWeight=" + totalItemWeight +
                 ", status='" + status + '\'' +
                 ", drawingWeight=" + drawingWeight +
                 ", markWeight=" + markWeight +
@@ -553,6 +573,8 @@ public class AlignmentDrawingEntry {
                 ", fitUpStage='" + fitUpStage + '\'' +
                 ", weldingStage='" + weldingStage + '\'' +
                 ", finishingStage='" + finishingStage + '\'' +
+                ", orderId=" + orderId +
+                ", raNo='" + raNo + '\'' +
                 '}';
     }
 }

@@ -11,7 +11,7 @@ public class ErectionDrawingEntry {
 
     @Id
     @Column(name = "line_id", nullable = false)
-    private String lineId;
+    private Long lineId; // Changed from String to Long (BIGINT)
 
     @Version
     @Column(name = "version", nullable = false)
@@ -50,9 +50,16 @@ public class ErectionDrawingEntry {
     @Column(name = "item_weight", precision = 19, scale = 4)
     private BigDecimal itemWeight;
 
-    // NEW COLUMN: Total Item Weight
     @Column(name = "total_item_weight", precision = 19, scale = 4)
     private BigDecimal totalItemWeight;
+
+    // NEW FIELD: Order ID
+    @Column(name = "order_id")
+    private Long orderId;
+
+    // NEW FIELD: RA NO
+    @Column(name = "ra_no")
+    private String raNo;
 
     @Column(name = "tenant_id")
     private String tenantId;
@@ -120,7 +127,6 @@ public class ErectionDrawingEntry {
     @Column(name = "status", length = 50)
     private String status;
 
-    // NEW FIELDS FOR ENHANCED FUNCTIONALITY
     @Column(name = "drawing_weight", precision = 19, scale = 4)
     private BigDecimal drawingWeight;
 
@@ -150,7 +156,7 @@ public class ErectionDrawingEntry {
     public ErectionDrawingEntry() {}
 
     // Constructor with essential fields
-    public ErectionDrawingEntry(String lineId, String drawingNo, String markNo, BigDecimal markedQty) {
+    public ErectionDrawingEntry(Long lineId, String drawingNo, String markNo, BigDecimal markedQty) {
         this.lineId = lineId;
         this.drawingNo = drawingNo;
         this.markNo = markNo;
@@ -160,12 +166,12 @@ public class ErectionDrawingEntry {
         this.status = "erection";
     }
 
-    // Getters and Setters for existing fields
-    public String getLineId() {
+    // Getters and Setters
+    public Long getLineId() {
         return lineId;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(Long lineId) {
         this.lineId = lineId;
     }
 
@@ -265,13 +271,29 @@ public class ErectionDrawingEntry {
         this.itemWeight = itemWeight;
     }
 
-    // NEW GETTER AND SETTER FOR TOTAL ITEM WEIGHT
     public BigDecimal getTotalItemWeight() {
         return totalItemWeight;
     }
 
     public void setTotalItemWeight(BigDecimal totalItemWeight) {
         this.totalItemWeight = totalItemWeight;
+    }
+
+    // NEW GETTERS AND SETTERS
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getRaNo() {
+        return raNo;
+    }
+
+    public void setRaNo(String raNo) {
+        this.raNo = raNo;
     }
 
     public String getTenantId() {
@@ -450,7 +472,6 @@ public class ErectionDrawingEntry {
         this.status = status;
     }
 
-    // NEW GETTERS AND SETTERS
     public BigDecimal getDrawingWeight() {
         return drawingWeight;
     }
@@ -538,12 +559,14 @@ public class ErectionDrawingEntry {
     @Override
     public String toString() {
         return "ErectionDrawingEntry{" +
-                "lineId='" + lineId + '\'' +
+                "lineId=" + lineId +
                 ", version=" + version +
                 ", drawingNo='" + drawingNo + '\'' +
                 ", markNo='" + markNo + '\'' +
                 ", markedQty=" + markedQty +
                 ", totalMarkedWgt=" + totalMarkedWgt +
+                ", orderId=" + orderId +
+                ", raNo='" + raNo + '\'' +
                 ", sessionCode='" + sessionCode + '\'' +
                 ", sessionName='" + sessionName + '\'' +
                 ", totalItemWeight=" + totalItemWeight +

@@ -1,12 +1,9 @@
 package com.bellaryinfotech.service;
 
-
 import java.util.List;
 import java.util.Optional;
 
 import com.bellaryinfotech.DTO.BitsHeaderDto;
-
- 
 
 public interface BitsHeaderService {
     
@@ -19,6 +16,10 @@ public interface BitsHeaderService {
     List<BitsHeaderDto> searchByPlantLocation(String plantLocation);
     List<BitsHeaderDto> searchByDepartment(String department);
     List<BitsHeaderDto> searchByWorkLocation(String workLocation);
+
+    // Add these methods to the existing interface
+    List<String> getDistinctWorkOrders();
+    List<String> getDistinctPlantLocations();
 }
 
 

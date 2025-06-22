@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDrawingEntry, String> {
+public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDrawingEntry, Long> { // Changed from String to Long
 
     // Find by drawing number
     List<ErectionDrawingEntry> findByDrawingNoOrderByCreationDateDesc(String drawingNo);
@@ -33,19 +33,29 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
     // Find by status
     List<ErectionDrawingEntry> findByStatusOrderByCreationDateDesc(String status);
 
+    // Find by order ID
+    List<ErectionDrawingEntry> findByOrderIdOrderByCreationDateDesc(Long orderId);
+
+    // Find by RA NO
+    List<ErectionDrawingEntry> findByRaNoOrderByCreationDateDesc(String raNo);
+
     // Find by multiple criteria with pagination
     @Query("SELECT e FROM ErectionDrawingEntry e WHERE " +
            "(:drawingNo IS NULL OR e.drawingNo = :drawingNo) AND " +
            "(:markNo IS NULL OR e.markNo = :markNo) AND " +
            "(:sessionCode IS NULL OR e.sessionCode = :sessionCode) AND " +
            "(:tenantId IS NULL OR e.tenantId = :tenantId) AND " +
-           "(:status IS NULL OR e.status = :status)")
+           "(:status IS NULL OR e.status = :status) AND " +
+           "(:orderId IS NULL OR e.orderId = :orderId) AND " +
+           "(:raNo IS NULL OR e.raNo = :raNo)")
     Page<ErectionDrawingEntry> findByMultipleCriteria(
             @Param("drawingNo") String drawingNo,
             @Param("markNo") String markNo,
             @Param("sessionCode") String sessionCode,
             @Param("tenantId") String tenantId,
             @Param("status") String status,
+            @Param("orderId") Long orderId,
+            @Param("raNo") String raNo,
             Pageable pageable);
 
     // Find by date range
@@ -68,12 +78,20 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
     @Transactional
     void deleteByStatus(String status);
 
+    @Modifying
+    @Transactional
+    void deleteByOrderId(Long orderId);
+
     // Count operations
     Long countByDrawingNo(String drawingNo);
 
     Long countByMarkNo(String markNo);
 
     Long countByStatus(String status);
+
+    Long countByOrderId(Long orderId);
+
+    Long countByRaNo(String raNo);
 
     // Sum operations
     @Query("SELECT SUM(e.markedQty) FROM ErectionDrawingEntry e WHERE e.drawingNo = :drawingNo")
@@ -95,10 +113,20 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
     @Query("SELECT DISTINCT e.status FROM ErectionDrawingEntry e WHERE e.status IS NOT NULL ORDER BY e.status")
     List<String> findDistinctStatuses();
 
+    @Query("SELECT DISTINCT e.orderId FROM ErectionDrawingEntry e WHERE e.orderId IS NOT NULL ORDER BY e.orderId")
+    List<Long> findDistinctOrderIds();
+
+    @Query("SELECT DISTINCT e.raNo FROM ErectionDrawingEntry e WHERE e.raNo IS NOT NULL ORDER BY e.raNo")
+    List<String> findDistinctRaNos();
+
     // Existence checks
     boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
 
     boolean existsByDrawingNoAndMarkNoAndStatus(String drawingNo, String markNo, String status);
+
+    boolean existsByOrderId(Long orderId);
+
+    boolean existsByRaNo(String raNo);
 
     // Latest entries
     Optional<ErectionDrawingEntry> findTopByDrawingNoOrderByCreationDateDesc(String drawingNo);
@@ -106,6 +134,8 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
     Optional<ErectionDrawingEntry> findTopByMarkNoOrderByCreationDateDesc(String markNo);
 
     Optional<ErectionDrawingEntry> findTopByStatusOrderByCreationDateDesc(String status);
+
+    Optional<ErectionDrawingEntry> findTopByOrderIdOrderByCreationDateDesc(Long orderId);
 
     // Find entries by drawing and mark combination
     List<ErectionDrawingEntry> findByDrawingNoAndMarkNoOrderByCreationDateDesc(String drawingNo, String markNo);
@@ -123,4 +153,10 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
 
     // Find all entries with specific status
     Page<ErectionDrawingEntry> findByStatusOrderByCreationDateDesc(String status, Pageable pageable);
+
+    // Get max line ID for generating sequential IDs
+    @Query("SELECT MAX(e.lineId) FROM ErectionDrawingEntry e")
+    Long findMaxLineId();
+    
+    
 }
