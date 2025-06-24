@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +26,43 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
     @Autowired
     private RawMaterialEntryRepository rawMaterialEntryRepository;
     
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    // NEW: Method to get orderId from bits_po_entry_header by workOrder
+    private Long getOrderIdByWorkOrder(String workOrder) {
+        try {
+            // Call the BitsHeaderController to get header details by work order
+            String url = "http://localhost:5522/api/V2.0/getworkorder/number/" + workOrder;
+            
+            // Assuming the response contains orderId field
+            Object response = restTemplate.getForObject(url, Object.class);
+            
+            if (response != null) {
+                // Parse the response to extract orderId
+                // This assumes the response has an orderId field
+                if (response instanceof java.util.Map) {
+                    java.util.Map<String, Object> responseMap = (java.util.Map<String, Object>) response;
+                    Object orderIdObj = responseMap.get("orderId");
+                    if (orderIdObj != null) {
+                        if (orderIdObj instanceof Number) {
+                            return ((Number) orderIdObj).longValue();
+                        } else if (orderIdObj instanceof String) {
+                            return Long.parseLong((String) orderIdObj);
+                        }
+                    }
+                }
+            }
+            
+            LOG.warn("Could not find orderId for work order: {}", workOrder);
+            return null;
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching orderId for work order: {}", workOrder, e);
+            return null;
+        }
+    }
+    
     @Override
     public List<RawMaterialEntry> saveRawMaterialEntry(RawMaterialEntryDTO rawMaterialEntryDTO) {
         LOG.info("Saving raw material entry with {} work orders and {} service entries", 
@@ -34,11 +72,16 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
         
         // Process each combination of work order and service entry
         for (RawMaterialEntryDTO.WorkOrderDTO workOrderDTO : rawMaterialEntryDTO.getWorkOrders()) {
+            // NEW: Get orderId from bits_po_entry_header
+            Long orderId = getOrderIdByWorkOrder(workOrderDTO.getWorkOrder());
+            
             for (RawMaterialEntryDTO.ServiceEntryDTO serviceEntryDTO : rawMaterialEntryDTO.getServiceEntries()) {
                 RawMaterialEntry entry = new RawMaterialEntry();
                 
                 // Set work order data
                 entry.setWorkOrder(workOrderDTO.getWorkOrder());
+                // NEW: Set the orderId from bits_po_entry_header
+                entry.setOrderId(orderId);
                 
                 // Set service entry data
                 entry.setSection(serviceEntryDTO.getSection());
@@ -82,7 +125,7 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                 RawMaterialEntry savedEntry = rawMaterialEntryRepository.save(entry);
                 savedEntries.add(savedEntry);
                 
-                LOG.info("Saved raw material entry with ID: {}", savedEntry.getId());
+                LOG.info("Saved raw material entry with ID: {} and orderId: {}", savedEntry.getId(), savedEntry.getOrderId());
             }
         }
         
@@ -119,7 +162,6 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
         return entries;
     }
     
-    
     @Override
     public List<RawMaterialEntry> getRawMaterialEntriesBySection(String section) {
         LOG.info("Fetching raw material entries by section: {}", section);
@@ -137,6 +179,12 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
             RawMaterialEntry entry = existingEntry.get();
             
             entry.setWorkOrder(rawMaterialEntry.getWorkOrder());
+            // NEW: Update orderId if workOrder changes
+            if (!entry.getWorkOrder().equals(rawMaterialEntry.getWorkOrder())) {
+                Long newOrderId = getOrderIdByWorkOrder(rawMaterialEntry.getWorkOrder());
+                entry.setOrderId(newOrderId);
+            }
+            
             entry.setSection(rawMaterialEntry.getSection());
             entry.setWidth(rawMaterialEntry.getWidth());
             entry.setLength(rawMaterialEntry.getLength());

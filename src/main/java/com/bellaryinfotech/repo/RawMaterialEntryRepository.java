@@ -13,13 +13,14 @@ public interface RawMaterialEntryRepository extends JpaRepository<RawMaterialEnt
     
     List<RawMaterialEntry> findByWorkOrder(String workOrder);
     
+    // NEW: Find by orderId
+    List<RawMaterialEntry> findByOrderId(Long orderId);
     
     List<RawMaterialEntry> findBySection(String section);
     
     List<RawMaterialEntry> findByCreatedBy(String createdBy);
     
     List<RawMaterialEntry> findByTenantId(Integer tenantId);
-    
     
     @Query("SELECT r FROM RawMaterialEntry r WHERE r.totalWeight > :minWeight")
     List<RawMaterialEntry> findByTotalWeightGreaterThan(@Param("minWeight") java.math.BigDecimal minWeight);

@@ -38,12 +38,15 @@ public class RawMaterialEntryDTO {
     public static class WorkOrderDTO {
         private String id;
         private String workOrder;
+        // NEW: Added orderId to map with bits_po_entry_header
+        private Long orderId;
         
         public WorkOrderDTO() {}
         
-        public WorkOrderDTO(String id, String workOrder) {
+        public WorkOrderDTO(String id, String workOrder, Long orderId) {
             this.id = id;
             this.workOrder = workOrder;
+            this.orderId = orderId;
         }
         
         public String getId() { return id; }
@@ -51,10 +54,13 @@ public class RawMaterialEntryDTO {
         
         public String getWorkOrder() { return workOrder; }
         public void setWorkOrder(String workOrder) { this.workOrder = workOrder; }
+        
+        // NEW: Getter and Setter for orderId
+        public Long getOrderId() { return orderId; }
+        public void setOrderId(Long orderId) { this.orderId = orderId; }
     }
     
     public static class ServiceEntryDTO {
-        // REMOVED: serviceNumber field completely
         private String section;
         private String width;
         private String length;
@@ -84,8 +90,6 @@ public class RawMaterialEntryDTO {
         }
         
         // Getters and Setters
-        // REMOVED: serviceNumber getter/setter completely
-        
         public String getSection() { return section; }
         public void setSection(String section) { this.section = section; }
         

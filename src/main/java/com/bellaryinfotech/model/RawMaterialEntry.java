@@ -16,7 +16,9 @@ public class RawMaterialEntry {
     @Column(name = "work_order")
     private String workOrder;
     
-    // REMOVED: service_number column completely
+    // NEW: Added order_id column to map with bits_po_entry_header
+    @Column(name = "order_id")
+    private Long orderId;
     
     @Column(name = "section")
     private String section;
@@ -112,10 +114,11 @@ public class RawMaterialEntry {
     // Constructors
     public RawMaterialEntry() {}
     
-    public RawMaterialEntry(String workOrder, String section, 
+    public RawMaterialEntry(String workOrder, Long orderId, String section, 
                            BigDecimal width, BigDecimal length, BigDecimal qty, String uom, 
                            BigDecimal totalWeight, String createdBy) {
         this.workOrder = workOrder;
+        this.orderId = orderId;
         this.section = section;
         this.width = width;
         this.length = length;
@@ -136,7 +139,9 @@ public class RawMaterialEntry {
     public String getWorkOrder() { return workOrder; }
     public void setWorkOrder(String workOrder) { this.workOrder = workOrder; }
     
-    // REMOVED: serviceNumber getter/setter completely
+    // NEW: Getter and Setter for orderId
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
     
     public String getSection() { return section; }
     public void setSection(String section) { this.section = section; }
