@@ -75,6 +75,39 @@
     <artifactId>lombok</artifactId>
     <optional>true</optional>
 </dependency>
+
+
+
+<!-- Add these dependencies to your pom.xml file -->
+
+<!-- JAXB API for XML binding -->
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.1</version>
+</dependency>
+
+<!-- JAXB Runtime -->
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.3.1</version>
+</dependency>
+
+<!-- JAXB Core -->
+<dependency>
+    <groupId>com.sun.xml.bind</groupId>
+    <artifactId>jaxb-core</artifactId>
+    <version>2.3.0.1</version>
+</dependency>
+
+<!-- JAXB Implementation -->
+<dependency>
+    <groupId>com.sun.xml.bind</groupId>
+    <artifactId>jaxb-impl</artifactId>
+    <version>2.3.1</version>
+</dependency>
+
 		 
 	</dependencies>
 
