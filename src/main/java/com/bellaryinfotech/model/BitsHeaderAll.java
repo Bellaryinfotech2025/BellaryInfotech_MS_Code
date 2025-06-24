@@ -104,6 +104,10 @@ public class BitsHeaderAll {
     
     @Column(name = "attribute5_d")
     private LocalDate attribute5D;
+    
+    // NEW: Customer ID field
+    @Column(name = "customer_id")
+    private Long customerId;
 
     // Default constructor
     public BitsHeaderAll() {}
@@ -357,8 +361,18 @@ public class BitsHeaderAll {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
+    
+    
 
-    // Helper method to convert LocalDateTime to Timestamp
+    public Long getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Long customerId) {
+		this.customerId = customerId;
+	}
+
+	// Helper method to convert LocalDateTime to Timestamp
     public void setCreationDateFromLocalDateTime(LocalDateTime localDateTime) {
         if (localDateTime != null) {
             this.creationDate = Timestamp.valueOf(localDateTime);

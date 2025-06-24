@@ -42,6 +42,8 @@ public class BitsHeaderController {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    
 
     // Constants for endpoints
     public static final String GET_ALL_HEADERS = "/getAllBitsHeaders/details";
@@ -1502,4 +1504,268 @@ public class BitsHeaderController {
             return ResponseEntity.ok(new ArrayList<>());
         }
     }
+    
+    
+    
+    
+    
+    
+ // ADD THESE NEW ENDPOINTS TO YOUR EXISTING BitsHeaderController.java
+
+ // NEW: Update customer for a work order
+ @PutMapping(value = "/updateCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> updateCustomerForWorkOrder(@RequestParam Long orderId, @RequestParam Long customerId) {
+     LOG.info("Updating customer for order ID: {} with customer ID: {}", orderId, customerId);
+     
+     try (Connection connection = dataSource.getConnection()) {
+         // First verify the order exists
+         String checkSql = "SELECT work_order FROM bits_po_entry_header WHERE order_id = ?";
+         try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
+             checkStatement.setLong(1, orderId);
+             try (ResultSet checkResult = checkStatement.executeQuery()) {
+                 if (!checkResult.next()) {
+                     return ResponseEntity.notFound().build();
+                 }
+             }
+         }
+         
+         // Update the customer_id
+         String updateSql = "UPDATE bits_po_entry_header SET customer_id = ?, last_update_date = CURRENT_TIMESTAMP, last_updated_by = 1 WHERE order_id = ?";
+         try (PreparedStatement statement = connection.prepareStatement(updateSql)) {
+             statement.setLong(1, customerId);
+             statement.setLong(2, orderId);
+             
+             int rowsAffected = statement.executeUpdate();
+             if (rowsAffected > 0) {
+                 LOG.info("Successfully updated customer for order ID: {}", orderId);
+                 
+                 Map<String, Object> response = new HashMap<>();
+                 response.put("success", true);
+                 response.put("message", "Customer updated successfully");
+                 response.put("orderId", orderId);
+                 response.put("customerId", customerId);
+                 
+                 return ResponseEntity.ok(response);
+             } else {
+                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                     .body("Failed to update customer");
+             }
+         }
+     } catch (Exception e) {
+         LOG.error("Error updating customer for order ID: {}", orderId, e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+             .body("Error updating customer: " + e.getMessage());
+     }
+ }
+
+ // NEW: Get work order with customer details
+ @GetMapping(value = "/getWorkOrderWithCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getWorkOrderWithCustomer(@RequestParam String workOrder, @RequestParam(required = false) Long customerId) {
+     LOG.info("Fetching work order with customer details: {} and customer ID: {}", workOrder, customerId);
+     
+     try (Connection connection = dataSource.getConnection()) {
+         String sql = """
+             SELECT h.order_id, h.work_order, h.plant_location, h.department, h.work_location,
+                    h.work_order_date, h.completion_date, h.ld_applicable, h.customer_id,
+                    l.ledger_name, l.house_plot_no, l.street, l.village_post, l.mandal_taluq,
+                    l.district, l.state, l.pin_code, l.contact_person_name, l.mobile_no, l.email
+             FROM bits_po_entry_header h
+             LEFT JOIN ledger_creation l ON h.customer_id = l.id
+             WHERE h.work_order = ?
+             """ + (customerId != null ? " AND h.customer_id = ?" : "");
+         
+         try (PreparedStatement statement = connection.prepareStatement(sql)) {
+             statement.setString(1, workOrder);
+             if (customerId != null) {
+                 statement.setLong(2, customerId);
+             }
+             
+             try (ResultSet resultSet = statement.executeQuery()) {
+                 if (resultSet.next()) {
+                     Map<String, Object> response = new HashMap<>();
+                     
+                     // Work order details
+                     response.put("orderId", resultSet.getLong("order_id"));
+                     response.put("workOrder", resultSet.getString("work_order"));
+                     response.put("plantLocation", resultSet.getString("plant_location"));
+                     response.put("department", resultSet.getString("department"));
+                     response.put("workLocation", resultSet.getString("work_location"));
+                     
+                     // Handle dates
+                     try {
+                         if (resultSet.getDate("work_order_date") != null) {
+                             response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                         }
+                     } catch (Exception e) {
+                         LOG.warn("Error parsing work_order_date");
+                     }
+                     
+                     try {
+                         if (resultSet.getDate("completion_date") != null) {
+                             response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                         }
+                     } catch (Exception e) {
+                         LOG.warn("Error parsing completion_date");
+                     }
+                     
+                     response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                     response.put("customerId", resultSet.getObject("customer_id"));
+                     
+                     // Customer details (if available)
+                     if (resultSet.getObject("customer_id") != null) {
+                         Map<String, Object> customerDetails = new HashMap<>();
+                         customerDetails.put("ledgerName", resultSet.getString("ledger_name"));
+                         customerDetails.put("housePlotNo", resultSet.getString("house_plot_no"));
+                         customerDetails.put("street", resultSet.getString("street"));
+                         customerDetails.put("villagePost", resultSet.getString("village_post"));
+                         customerDetails.put("mandalTaluq", resultSet.getString("mandal_taluq"));
+                         customerDetails.put("district", resultSet.getString("district"));
+                         customerDetails.put("state", resultSet.getString("state"));
+                         customerDetails.put("pinCode", resultSet.getString("pin_code"));
+                         customerDetails.put("contactPersonName", resultSet.getString("contact_person_name"));
+                         customerDetails.put("mobileNo", resultSet.getString("mobile_no"));
+                         customerDetails.put("email", resultSet.getString("email"));
+                         
+                         // Format address
+                         StringBuilder address = new StringBuilder();
+                         if (resultSet.getString("house_plot_no") != null) address.append(resultSet.getString("house_plot_no")).append(", ");
+                         if (resultSet.getString("street") != null) address.append(resultSet.getString("street")).append(", ");
+                         if (resultSet.getString("village_post") != null) address.append(resultSet.getString("village_post")).append(", ");
+                         if (resultSet.getString("mandal_taluq") != null) address.append(resultSet.getString("mandal_taluq")).append(", ");
+                         if (resultSet.getString("district") != null) address.append(resultSet.getString("district")).append(", ");
+                         if (resultSet.getString("state") != null) address.append(resultSet.getString("state")).append(" ");
+                         if (resultSet.getString("pin_code") != null) address.append(resultSet.getString("pin_code"));
+                         
+                         customerDetails.put("fullAddress", address.toString().replaceAll(", $", ""));
+                         response.put("customerDetails", customerDetails);
+                     }
+                     
+                     return ResponseEntity.ok(response);
+                 } else {
+                     return ResponseEntity.notFound().build();
+                 }
+             }
+         }
+     } catch (Exception e) {
+         LOG.error("Error fetching work order with customer details", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+             .body("Error fetching data: " + e.getMessage());
+     }
+ }
+
+ // NEW: Get all customers for dropdown
+  
+ 
+ 
+ 
+
+ 
+ ////
+ @GetMapping("/getWorkOrderWithCustomer/details")
+ public ResponseEntity<Map<String, Object>> getWorkOrderWithCustomerDetails(
+         @RequestParam String workOrder,
+         @RequestParam(required = false) Long customerId) {
+
+     Map<String, Object> response = new HashMap<>();
+
+     try {
+         // Updated SQL query
+         String sql = """
+ SELECT h.order_id, h.work_order, h.plant_location, h.department, h.work_location,
+        h.work_order_date, h.completion_date, h.ld_applicable, h.customer_id,
+        l.ledger_name, l.house_plot_no, l.street, l.village_post, l.mandal_taluq,
+        l.district, l.state, l.pin_code, l.gstin, l.pan
+ FROM bits_po_entry_header h
+ LEFT JOIN ledger_creation l ON h.customer_id = l.id
+ WHERE h.work_order = ?
+ """ + (customerId != null ? " AND h.customer_id = ?" : "");
+
+         jdbcTemplate.query(sql, ps -> {
+             ps.setString(1, workOrder);
+             if (customerId != null) {
+                 ps.setLong(2, customerId);
+             }
+         }, resultSet -> {
+             response.put("orderId", resultSet.getLong("order_id"));
+             response.put("workOrder", resultSet.getString("work_order"));
+             response.put("plantLocation", resultSet.getString("plant_location"));
+             response.put("department", resultSet.getString("department"));
+             response.put("workLocation", resultSet.getString("work_location"));
+             response.put("workOrderDate", resultSet.getDate("work_order_date"));
+             response.put("completionDate", resultSet.getDate("completion_date"));
+             response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+             response.put("customerId", resultSet.getObject("customer_id"));
+
+             // Customer details (if available)
+             if (resultSet.getObject("customer_id") != null) {
+                 Map<String, Object> customerDetails = new HashMap<>();
+                 customerDetails.put("ledgerName", resultSet.getString("ledger_name"));
+                 customerDetails.put("gstin", resultSet.getString("gstin"));
+                 customerDetails.put("pan", resultSet.getString("pan"));
+                 customerDetails.put("housePlotNo", resultSet.getString("house_plot_no"));
+                 customerDetails.put("street", resultSet.getString("street"));
+                 customerDetails.put("villagePost", resultSet.getString("village_post"));
+                 customerDetails.put("mandalTaluq", resultSet.getString("mandal_taluq"));
+                 customerDetails.put("district", resultSet.getString("district"));
+                 customerDetails.put("state", resultSet.getString("state"));
+                 customerDetails.put("pinCode", resultSet.getString("pin_code"));
+
+                 // Format address
+                 StringBuilder address = new StringBuilder();
+                 if (resultSet.getString("house_plot_no") != null) address.append(resultSet.getString("house_plot_no")).append(", ");
+                 if (resultSet.getString("street") != null) address.append(resultSet.getString("street")).append(", ");
+                 if (resultSet.getString("village_post") != null) address.append(resultSet.getString("village_post")).append(", ");
+                 if (resultSet.getString("mandal_taluq") != null) address.append(resultSet.getString("mandal_taluq")).append(", ");
+                 if (resultSet.getString("district") != null) address.append(resultSet.getString("district")).append(", ");
+                 if (resultSet.getString("state") != null) address.append(resultSet.getString("state")).append(" ");
+                 if (resultSet.getString("pin_code") != null) address.append(resultSet.getString("pin_code"));
+
+                 customerDetails.put("fullAddress", address.toString().replaceAll(", $", ""));
+                 response.put("customerDetails", customerDetails);
+             }
+         });
+
+         if (response.isEmpty()) {
+             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+         }
+
+         return new ResponseEntity<>(response, HttpStatus.OK);
+
+     } catch (Exception e) {
+         e.printStackTrace();
+         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+     }
+ }
+
+ @GetMapping("/getAllCustomers/details")
+ public ResponseEntity<List<Map<String, Object>>> getAllCustomers() {
+     try {
+         String sql = """
+             SELECT id, ledger_name, gstin, pan, state, district
+             FROM ledger_creation 
+             WHERE status = 'ACTIVE'
+             ORDER BY ledger_name
+             """;
+         
+         // Better approach: Use queryForList with RowMapper
+         List<Map<String, Object>> customers = jdbcTemplate.query(sql, 
+             (resultSet, rowNum) -> {
+                 Map<String, Object> customer = new HashMap<>();
+                 customer.put("id", resultSet.getLong("id"));
+                 customer.put("ledgerName", resultSet.getString("ledger_name"));
+                 customer.put("gstin", resultSet.getString("gstin"));
+                 customer.put("pan", resultSet.getString("pan"));
+                 customer.put("state", resultSet.getString("state"));
+                 customer.put("district", resultSet.getString("district"));
+                 return customer;
+             });
+
+         return ResponseEntity.ok(customers);
+
+     } catch (Exception e) {
+         LOG.error("Error fetching all customers", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+     }
+ }
 }
+ 
