@@ -35,6 +35,9 @@ public interface VendorProfileService {
     
     long getActiveProfileCount();
     
+    // NEW METHOD: Get latest vendor profile
+    VendorProfileDTO getLatestVendorProfile();
+    
     // Image handling methods
     VendorProfileDTO uploadLogo(Long id, MultipartFile logoFile);
     

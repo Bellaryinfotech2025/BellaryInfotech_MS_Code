@@ -97,6 +97,17 @@ public class VendorProfileServiceImpl implements VendorProfileService {
                 .collect(Collectors.toList());
     }
     
+    // NEW METHOD IMPLEMENTATION: Get latest vendor profile
+    @Override
+    @Transactional(readOnly = true)
+    public VendorProfileDTO getLatestVendorProfile() {
+        List<VendorProfile> profiles = profileRepository.findLatestVendorProfile();
+        if (profiles.isEmpty()) {
+            throw new RuntimeException("No active vendor profiles found");
+        }
+        return convertToDTO(profiles.get(0)); // Get the first (latest) profile
+    }
+    
     @Override
     public void deleteProfile(Long id) {
         if (!profileRepository.existsById(id)) {

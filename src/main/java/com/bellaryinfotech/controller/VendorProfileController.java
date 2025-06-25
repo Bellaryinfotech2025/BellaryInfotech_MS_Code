@@ -23,6 +23,17 @@ public class VendorProfileController {
     @Autowired
     private VendorProfileService profileService;
     
+    // NEW ENDPOINT: Get latest vendor profile
+    @GetMapping("/latest")
+    public ResponseEntity<VendorProfileDTO> getLatestVendorProfile() {
+        try {
+            VendorProfileDTO latestProfile = profileService.getLatestVendorProfile();
+            return new ResponseEntity<>(latestProfile, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+    
     @PostMapping
     public ResponseEntity<?> createProfile(@Valid @RequestBody VendorProfileDTO profileDTO) {
         try {

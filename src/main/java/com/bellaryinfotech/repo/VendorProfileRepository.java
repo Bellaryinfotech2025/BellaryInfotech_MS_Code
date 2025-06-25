@@ -41,4 +41,8 @@ public interface VendorProfileRepository extends JpaRepository<VendorProfile, Lo
     
     @Query("SELECT v FROM VendorProfile v WHERE v.companyName LIKE %:searchTerm% OR v.contactPerson LIKE %:searchTerm% OR v.email LIKE %:searchTerm%")
     List<VendorProfile> searchProfiles(@Param("searchTerm") String searchTerm);
+    
+    // NEW METHOD: Find latest vendor profile by creation date
+    @Query("SELECT v FROM VendorProfile v WHERE v.status = 'ACTIVE' ORDER BY v.createdAt DESC")
+    List<VendorProfile> findLatestVendorProfile();
 }
