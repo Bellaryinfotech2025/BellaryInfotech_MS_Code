@@ -2,6 +2,8 @@ package com.bellaryinfotech.controller;
 
 import com.bellaryinfotech.DTO.ErectionDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
+import com.bellaryinfotech.model.ErectionDrawingEntry;
+import com.bellaryinfotech.repo.ErectionDrawingEntryRepository;
 import com.bellaryinfotech.service.ErectionDrawingEntryService;
 import com.bellaryinfotech.service.BitsDrawingEntryService;
 import com.bellaryinfotech.service.BitsHeaderService;
@@ -44,6 +46,9 @@ public class ErectionDrawingEntryController {
 
     @Autowired
     private BitsHeaderService bitsHeaderService;
+
+    @Autowired
+    private ErectionDrawingEntryRepository erectionDrawingEntryRepository;
 
     // API endpoint constants
     public static final String GET_ALL_ERECTION_ENTRIES = "/getAllErectionDrawingEntries/details";
@@ -590,6 +595,48 @@ public class ErectionDrawingEntryController {
             LOG.error("Error getting erection entries by mark number: {}", markNo, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to get erection entries: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Save RA NO for specific erection entry
+     */
+    @PostMapping("/saveErectionRaNo/details")
+    public ResponseEntity<?> saveErectionRaNo(
+            @RequestParam String lineId,
+            @RequestParam String raNo) {
+        try {
+            LOG.info("Saving RA NO for erection entry line ID: {} with value: {}", lineId, raNo);
+
+            Long longLineId = Long.parseLong(lineId);
+            Optional<ErectionDrawingEntry> existingEntityOpt = erectionDrawingEntryRepository.findById(longLineId);
+
+            if (!existingEntityOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            ErectionDrawingEntry existingEntity = existingEntityOpt.get();
+            existingEntity.setRaNo(raNo);
+            existingEntity.setLastUpdatingDate(LocalDateTime.now());
+            existingEntity.setLastUpdatedBy("system");
+
+            ErectionDrawingEntry savedEntity = erectionDrawingEntryRepository.save(existingEntity);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "RA NO saved successfully");
+            response.put("lineId", lineId);
+            response.put("raNo", raNo);
+
+            return ResponseEntity.ok(response);
+
+        } catch (NumberFormatException e) {
+            LOG.error("Invalid line ID format: {}", lineId);
+            return ResponseEntity.badRequest().body("Invalid line ID format: " + lineId);
+        } catch (Exception e) {
+            LOG.error("Error saving RA NO for line ID: {}", lineId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to save RA NO: " + e.getMessage());
         }
     }
 }
