@@ -22,13 +22,16 @@ public interface BitsLinesService {
     List<BitsLinesDto> searchByServiceCode(String serviceCode);
     List<BitsLinesDto> searchByServiceDesc(String serviceDesc);
     
-    // NEW: Enhanced methods using proper foreign key relationship
+    // Enhanced methods using proper foreign key relationship
     List<BitsLinesDto> getLinesByOrderId(Long orderId);
     List<BitsLinesDto> getLinesByWorkOrder(String workOrder);
     
-    // NEW: Bulk operations for better performance
+    // Bulk operations for better performance
     List<BitsLinesDto> createMultipleLines(List<BitsLinesDto> lineDtos, Long orderId);
     
     // Debug method
     List<BitsLinesDto> getAllLinesWithAttributes();
+    
+    // NEW: Method to get distinct serial numbers
+    List<String> getDistinctSerialNumbers();
 }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/V2.0")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class BitsDrawingEntryController {
 
     @Autowired
@@ -38,6 +38,7 @@ public class BitsDrawingEntryController {
     public static final String CREATE_BULK_DRAWING_ENTRIES = "/createBulkBitsDrawingEntries/details";
     public static final String UPDATE_DRAWING_ENTRY = "/updateBitsDrawingEntry/details";
     public static final String UPDATE_FABRICATION_STAGES = "/updateFabricationStages/details";
+    public static final String UPDATE_DRAWING_ENTRY_RA_NO = "/updateDrawingEntryRaNo/details"; // RA NO endpoint
     public static final String DELETE_DRAWING_ENTRY = "/deleteBitsDrawingEntry/details";
     public static final String DELETE_DRAWING_ENTRIES_BY_DRAWING_NO = "/deleteBitsDrawingEntriesByDrawingNo/details";
     public static final String DELETE_DRAWING_ENTRIES_BY_MARK_NO = "/deleteBitsDrawingEntriesByMarkNo/details";
@@ -92,7 +93,7 @@ public class BitsDrawingEntryController {
     }
 
     /**
-     * NEW: Get unique drawing entries (no duplicates based on drawing_no + mark_no)
+     * Get unique drawing entries (no duplicates based on drawing_no + mark_no)
      * This is specifically for the FabricationDatabasesearch frontend
      */
     @RequestMapping(value = GET_UNIQUE_DRAWING_ENTRIES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
@@ -241,7 +242,7 @@ public class BitsDrawingEntryController {
     }
 
     /**
-     * NEW: Update fabrication stages for multiple entries
+     * Update fabrication stages for multiple entries
      */
     @RequestMapping(value = UPDATE_FABRICATION_STAGES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PUT)
     public ResponseEntity<?> updateFabricationStages(@RequestBody Map<String, Object> requestBody) {
@@ -304,6 +305,79 @@ public class BitsDrawingEntryController {
     }
 
     /**
+     * Update RA.NO for a specific drawing entry with proper CORS handling
+     */
+    @RequestMapping(value = UPDATE_DRAWING_ENTRY_RA_NO, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.PUT)
+    public ResponseEntity<?> updateDrawingEntryRaNo(@RequestBody Map<String, Object> requestBody) {
+        try {
+            // FIXED: Safe type conversion to handle both String and Integer values
+            String lineId = String.valueOf(requestBody.get("lineId"));
+            String drawingNo = requestBody.get("drawingNo") != null ? String.valueOf(requestBody.get("drawingNo")) : null;
+            String markNo = requestBody.get("markNo") != null ? String.valueOf(requestBody.get("markNo")) : null;
+            String raNo = requestBody.get("raNo") != null ? String.valueOf(requestBody.get("raNo")) : null;
+        
+            LOG.info("Updating RA.NO for line ID: {}, drawing: {}, mark: {}, RA.NO: {}", lineId, drawingNo, markNo, raNo);
+        
+            // Validate required fields
+            if (lineId == null || lineId.trim().isEmpty() || "null".equals(lineId)) {
+                return ResponseEntity.badRequest().body("Line ID is required");
+            }
+        
+            if (raNo == null || raNo.trim().isEmpty() || "null".equals(raNo)) {
+                return ResponseEntity.badRequest().body("RA.NO value is required");
+            }
+        
+            // Get existing entry
+            Optional<BitsDrawingEntryDto> existingEntryOpt = bitsDrawingEntryService.getDrawingEntryById(lineId);
+            if (!existingEntryOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+        
+            BitsDrawingEntryDto existingEntry = existingEntryOpt.get();
+        
+            // Validate that the drawing no and mark no match (if provided)
+            if (drawingNo != null && !"null".equals(drawingNo) && !drawingNo.equals(existingEntry.getDrawingNo())) {
+                return ResponseEntity.badRequest().body("Drawing number mismatch");
+            }
+        
+            if (markNo != null && !"null".equals(markNo) && !markNo.equals(existingEntry.getMarkNo())) {
+                return ResponseEntity.badRequest().body("Mark number mismatch");
+            }
+        
+            // Update only the RA.NO field
+            existingEntry.setRaNo(raNo.trim());
+            existingEntry.setLastUpdatedBy("ra_no_system");
+        
+            // Save the updated entry
+            BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, existingEntry);
+        
+            LOG.info("Successfully updated RA.NO for line ID: {}", lineId);
+        
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "RA.NO updated successfully");
+            response.put("lineId", lineId);
+            response.put("raNo", raNo.trim());
+            response.put("updatedEntry", updatedEntry);
+        
+            return ResponseEntity.ok(response);
+        
+    } catch (Exception e) {
+        LOG.error("Error updating RA.NO", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to update RA.NO: " + e.getMessage());
+    }
+}
+
+    /**
+     * Handle OPTIONS requests for CORS preflight
+     */
+    @RequestMapping(value = UPDATE_DRAWING_ENTRY_RA_NO, method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> handleOptionsForRaNo() {
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * Delete drawing entry by line ID
      */
     @RequestMapping(value = DELETE_DRAWING_ENTRY, method = RequestMethod.DELETE)
@@ -326,8 +400,6 @@ public class BitsDrawingEntryController {
         }
     }
 
-    // ... (rest of the existing methods remain the same)
-    
     /**
      * Delete drawing entries by drawing number
      */

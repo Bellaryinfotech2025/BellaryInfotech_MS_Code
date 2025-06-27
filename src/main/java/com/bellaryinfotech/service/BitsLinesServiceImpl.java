@@ -43,7 +43,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         return line.map(this::convertToDto);
     }
 
-    // NEW: Enhanced create method with automatic order_id and line_number assignment
+    // Enhanced create method with automatic order_id and line_number assignment
     @Transactional
     public BitsLinesDto createLine(BitsLinesDto lineDto, Long orderId) {
         LOG.info("Creating line with DTO: {} for orderId: {}", lineDto, orderId);
@@ -167,7 +167,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
                 .collect(Collectors.toList());
     }
 
-    // NEW: Get lines by order ID (proper foreign key relationship)
+    // Get lines by order ID (proper foreign key relationship)
     public List<BitsLinesDto> getLinesByOrderId(Long orderId) {
         LOG.info("Fetching lines for orderId: {}", orderId);
         List<BitsLinesAll> lines = linesRepository.findByOrderIdOrderByLineNumber(orderId);
@@ -197,7 +197,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
                 .collect(Collectors.toList());
     }
     
-    // NEW: Bulk create method for better performance
+    // Bulk create method for better performance
     @Transactional
     public List<BitsLinesDto> createMultipleLines(List<BitsLinesDto> lineDtos, Long orderId) {
         LOG.info("Creating {} lines for orderId: {}", lineDtos.size(), orderId);
@@ -262,11 +262,19 @@ public class BitsLinesServiceImpl implements BitsLinesService {
                 .collect(Collectors.toList());
     }
 
+    // NEW: Get distinct serial numbers
+    public List<String> getDistinctSerialNumbers() {
+        LOG.info("Fetching distinct serial numbers from repository");
+        List<String> serialNumbers = linesRepository.findDistinctSerialNumbers();
+        LOG.info("Found {} distinct serial numbers", serialNumbers.size());
+        return serialNumbers;
+    }
+
     private BitsLinesDto convertToDto(BitsLinesAll entity) {
         BitsLinesDto dto = new BitsLinesDto();
         // Core fields
         dto.setLineId(entity.getLineId());
-        dto.setOrderId(entity.getOrderId()); // NEW: Include order ID
+        dto.setOrderId(entity.getOrderId()); // Include order ID
         dto.setLineNumber(entity.getLineNumber());
         dto.setSerNo(entity.getSerNo());
         dto.setServiceCode(entity.getServiceCode());
@@ -299,7 +307,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
     private BitsLinesAll convertToEntity(BitsLinesDto dto) {
         BitsLinesAll entity = new BitsLinesAll();
         // Core fields
-        entity.setOrderId(dto.getOrderId()); // NEW: Set order ID if provided
+        entity.setOrderId(dto.getOrderId()); // Set order ID if provided
         entity.setLineNumber(dto.getLineNumber());
         entity.setSerNo(dto.getSerNo());
         entity.setServiceCode(dto.getServiceCode());
