@@ -64,6 +64,11 @@ public class BitsDrawingEntryController {
     public static final String GET_DRAWING_ENTRY_STATS = "/getBitsDrawingEntryStats/details";
     public static final String GET_DRAWING_NUMBERS = "/getDrawingNumbers";
     public static final String GET_DRAWING_DETAILS = "/getDrawingDetails/{drawingNo}";
+    
+/**
+ * Get distinct RA numbers for dropdown
+ */
+public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEntryRaNumbers/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsDrawingEntryController.class);
 
@@ -824,4 +829,18 @@ public class BitsDrawingEntryController {
                     .body("Failed to get drawing details: " + e.getMessage());
         }
     }
+    
+    @RequestMapping(value = GET_DISTINCT_RA_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getDistinctRaNumbers() {
+        try {
+            LOG.info("Getting distinct RA numbers");
+            List<String> raNumbers = bitsDrawingEntryService.getDistinctRaNumbers();
+            return ResponseEntity.ok(raNumbers);
+        } catch (Exception e) {
+            LOG.error("Error getting distinct RA numbers", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get distinct RA numbers: " + e.getMessage());
+        }
+    }
+
 }

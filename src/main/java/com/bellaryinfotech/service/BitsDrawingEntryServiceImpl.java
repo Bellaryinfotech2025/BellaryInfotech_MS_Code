@@ -745,4 +745,14 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             return null;
         }
     }
+    
+    @Override
+    public List<String> getDistinctRaNumbers() {
+        try {
+            return bitsDrawingEntryRepository.findDistinctRaNumbers();
+        } catch (Exception e) {
+            logger.error("Error getting distinct RA numbers", e);
+            throw new RuntimeException("Failed to get distinct RA numbers: " + e.getMessage(), e);
+        }
+}
 }

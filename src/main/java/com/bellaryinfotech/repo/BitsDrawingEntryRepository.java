@@ -178,4 +178,13 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      * Find latest entry by order ID
      */
     Optional<BitsDrawingEntry> findTopByOrderIdOrderByCreationDateDesc(Long orderId);
+    
+    
+    
+    /**
+     * Find distinct RA numbers
+     */
+    @Query("SELECT DISTINCT bde.raNo FROM BitsDrawingEntry bde WHERE bde.raNo IS NOT NULL AND bde.raNo != '' ORDER BY bde.raNo")
+    List<String> findDistinctRaNumbers();
+
 }

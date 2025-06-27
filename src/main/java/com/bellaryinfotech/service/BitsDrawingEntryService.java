@@ -159,4 +159,11 @@ public interface BitsDrawingEntryService {
      * Get drawing entry statistics by drawing number
      */
     BitsDrawingEntryStatsDto getDrawingEntryStats(String drawingNo);
+    
+    
+    
+    /**
+     * Get distinct RA numbers
+     */
+    List<String> getDistinctRaNumbers();
 }
