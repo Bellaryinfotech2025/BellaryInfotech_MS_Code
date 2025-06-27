@@ -18,9 +18,14 @@ public class User {
 
     @Column(nullable = false)
     private String username;
+    
 
     @Column(nullable = false)
     private String fullname;
+    
+	@Column(nullable = false)
+    private Long PhoneNumber;
+
     public String getFullname() {
 		return fullname;
 	}
@@ -37,9 +42,7 @@ public class User {
 		PhoneNumber = phoneNumber;
 	}
 
-	@Column(nullable = false)
-    private Long PhoneNumber;
-
+ 
     // Getters and Setters
     public Long getId() {
         return id;
