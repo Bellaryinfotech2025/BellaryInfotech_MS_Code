@@ -159,4 +159,21 @@ public interface ErectionDrawingEntryRepository extends JpaRepository<ErectionDr
     Long findMaxLineId();
     
     
+    
+    //newly added requested fields
+    
+ // ADD these new methods to your existing ErectionDrawingEntryRepository.java
+
+    /**
+     * Get distinct attribute3V (Department) filtered by attribute1V and attribute2V
+     */
+    @Query("SELECT DISTINCT e.attribute3V FROM ErectionDrawingEntry e WHERE e.attribute1V = :attribute1V AND e.attribute2V = :attribute2V AND e.attribute3V IS NOT NULL AND e.attribute3V != '' ORDER BY e.attribute3V")
+    List<String> findDistinctAttribute3VByAttribute1VAndAttribute2V(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
+
+    /**
+     * Find entries by work order, building name, and department
+     */
+    @Query("SELECT e FROM ErectionDrawingEntry e WHERE e.attribute1V = :workOrder AND e.attribute2V = :buildingName AND e.attribute3V = :department ORDER BY e.creationDate DESC")
+    List<ErectionDrawingEntry> findByWorkOrderAndBuildingNameAndDepartment(@Param("workOrder") String workOrder, @Param("buildingName") String buildingName, @Param("department") String department);
+    
 }

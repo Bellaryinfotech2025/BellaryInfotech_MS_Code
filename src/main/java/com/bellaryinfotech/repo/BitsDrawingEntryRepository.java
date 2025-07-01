@@ -186,5 +186,53 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      */
     @Query("SELECT DISTINCT bde.raNo FROM BitsDrawingEntry bde WHERE bde.raNo IS NOT NULL AND bde.raNo != '' ORDER BY bde.raNo")
     List<String> findDistinctRaNumbers();
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    //newly functionaity from requested
+ // ADD these new methods to your existing BitsDrawingEntryRepository.java
+
+    /**
+     * Get distinct attribute1V (Work Orders) from bits_drawing_entry
+     */
+    @Query("SELECT DISTINCT bde.attribute1V FROM BitsDrawingEntry bde WHERE bde.attribute1V IS NOT NULL AND bde.attribute1V != '' ORDER BY bde.attribute1V")
+    List<String> findDistinctAttribute1V();
+
+    /**
+     * Get distinct attribute2V (Building Names) filtered by attribute1V
+     */
+    @Query("SELECT DISTINCT bde.attribute2V FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V IS NOT NULL AND bde.attribute2V != '' ORDER BY bde.attribute2V")
+    List<String> findDistinctAttribute2VByAttribute1V(@Param("attribute1V") String attribute1V);
+
+    /**
+     * Get distinct drawing numbers filtered by attribute1V and attribute2V
+     */
+    @Query("SELECT DISTINCT bde.drawingNo FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V = :attribute2V AND bde.drawingNo IS NOT NULL AND bde.drawingNo != '' ORDER BY bde.drawingNo")
+    List<String> findDistinctDrawingNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
+
+    /**
+     * Get distinct mark numbers filtered by attribute1V and attribute2V
+     */
+    @Query("SELECT DISTINCT bde.markNo FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V = :attribute2V AND bde.markNo IS NOT NULL AND bde.markNo != '' ORDER BY bde.markNo")
+    List<String> findDistinctMarkNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 }

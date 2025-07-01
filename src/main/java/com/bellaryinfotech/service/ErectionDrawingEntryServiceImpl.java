@@ -799,4 +799,32 @@ public class ErectionDrawingEntryServiceImpl implements ErectionDrawingEntryServ
         
         return nextId;
     }
+    
+    //newly added requested fields
+    
+ // ADD these new methods to your existing ErectionDrawingEntryServiceImpl.java
+
+    @Override
+    public List<String> getDistinctDepartmentsByWorkOrderAndBuildingName(String workOrder, String buildingName) {
+        try {
+            return erectionDrawingEntryRepository.findDistinctAttribute3VByAttribute1VAndAttribute2V(workOrder, buildingName);
+        } catch (Exception e) {
+            logger.error("Error getting distinct departments by work order and building name", e);
+            throw new RuntimeException("Failed to get distinct departments: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ErectionDrawingEntryDto> getErectionEntriesByWorkOrderAndBuildingNameAndDepartment(String workOrder, String buildingName, String department) {
+        try {
+            logger.info("Fetching erection entries by work order: {}, building name: {}, department: {}", workOrder, buildingName, department);
+            List<ErectionDrawingEntry> entities = erectionDrawingEntryRepository.findByWorkOrderAndBuildingNameAndDepartment(workOrder, buildingName, department);
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching erection entries by work order, building name, and department", e);
+            throw new RuntimeException("Failed to fetch erection entries: " + e.getMessage(), e);
+        }
+    }
 }

@@ -755,4 +755,52 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             throw new RuntimeException("Failed to get distinct RA numbers: " + e.getMessage(), e);
         }
 }
+    
+    
+    
+    //newly added request for new apis
+ // ADD these new methods to your existing BitsDrawingEntryServiceImpl.java
+
+    @Override
+    public List<String> getDistinctWorkOrdersFromDrawingEntry() {
+        try {
+            return bitsDrawingEntryRepository.findDistinctAttribute1V();
+        } catch (Exception e) {
+            logger.error("Error getting distinct work orders from drawing entry", e);
+            throw new RuntimeException("Failed to get distinct work orders: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctBuildingNamesByWorkOrder(String workOrder) {
+        try {
+            return bitsDrawingEntryRepository.findDistinctAttribute2VByAttribute1V(workOrder);
+        } catch (Exception e) {
+            logger.error("Error getting distinct building names by work order: {}", workOrder, e);
+            throw new RuntimeException("Failed to get distinct building names: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctDrawingNumbersByAttributes(String workOrder, String buildingName) {
+        try {
+            return bitsDrawingEntryRepository.findDistinctDrawingNoByAttributes(workOrder, buildingName);
+        } catch (Exception e) {
+            logger.error("Error getting distinct drawing numbers by attributes", e);
+            throw new RuntimeException("Failed to get distinct drawing numbers: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<String> getDistinctMarkNumbersByAttributes(String workOrder, String buildingName) {
+        try {
+            return bitsDrawingEntryRepository.findDistinctMarkNoByAttributes(workOrder, buildingName);
+        } catch (Exception e) {
+            logger.error("Error getting distinct mark numbers by attributes", e);
+            throw new RuntimeException("Failed to get distinct mark numbers: " + e.getMessage(), e);
+        }
+    }
+    
+    
+    
 }

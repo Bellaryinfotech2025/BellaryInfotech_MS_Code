@@ -4,6 +4,8 @@ import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryStatsDto;
 import com.bellaryinfotech.service.BitsDrawingEntryService;
 import jakarta.validation.Valid;
+
+ 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,8 @@ public class BitsDrawingEntryController {
 public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEntryRaNumbers/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsDrawingEntryController.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(BitsDrawingEntryController.class);
 
     /**
      * Get all drawing entries with pagination
@@ -840,6 +844,69 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             LOG.error("Error getting distinct RA numbers", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to get distinct RA numbers: " + e.getMessage());
+        }
+    }
+    
+    
+ // ADD these new endpoints to your existing BitsDrawingEntryController.java
+
+    /**
+     * Get distinct work orders from bits_drawing_entry
+     */
+    @GetMapping("/getDistinctWorkOrdersFromDrawingEntry/details")
+    public ResponseEntity<List<String>> getDistinctWorkOrdersFromDrawingEntry() {
+        try {
+            List<String> workOrders = bitsDrawingEntryService.getDistinctWorkOrdersFromDrawingEntry();
+            return ResponseEntity.ok(workOrders);
+        } catch (Exception e) {
+            logger.error("Error getting distinct work orders from drawing entry", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get distinct building names filtered by work order
+     */
+    @GetMapping("/getDistinctBuildingNamesByWorkOrder/details")
+    public ResponseEntity<List<String>> getDistinctBuildingNamesByWorkOrder(@RequestParam String workOrder) {
+        try {
+            List<String> buildingNames = bitsDrawingEntryService.getDistinctBuildingNamesByWorkOrder(workOrder);
+            return ResponseEntity.ok(buildingNames);
+        } catch (Exception e) {
+            logger.error("Error getting distinct building names by work order: {}", workOrder, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get distinct drawing numbers filtered by work order and building name
+     */
+    @GetMapping("/getDistinctDrawingNumbersByAttributes/details")
+    public ResponseEntity<List<String>> getDistinctDrawingNumbersByAttributes(
+            @RequestParam String workOrder, 
+            @RequestParam String buildingName) {
+        try {
+            List<String> drawingNumbers = bitsDrawingEntryService.getDistinctDrawingNumbersByAttributes(workOrder, buildingName);
+            return ResponseEntity.ok(drawingNumbers);
+        } catch (Exception e) {
+            logger.error("Error getting distinct drawing numbers by attributes", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get distinct mark numbers filtered by work order and building name
+     */
+    @GetMapping("/getDistinctMarkNumbersByAttributes/details")
+    public ResponseEntity<List<String>> getDistinctMarkNumbersByAttributes(
+            @RequestParam String workOrder, 
+            @RequestParam String buildingName) {
+        try {
+            List<String> markNumbers = bitsDrawingEntryService.getDistinctMarkNumbersByAttributes(workOrder, buildingName);
+            return ResponseEntity.ok(markNumbers);
+        } catch (Exception e) {
+            logger.error("Error getting distinct mark numbers by attributes", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

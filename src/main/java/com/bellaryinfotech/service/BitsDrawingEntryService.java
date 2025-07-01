@@ -166,4 +166,31 @@ public interface BitsDrawingEntryService {
      * Get distinct RA numbers
      */
     List<String> getDistinctRaNumbers();
+    
+    
+    
+    
+    //newly added request
+    
+ // ADD these new methods to your existing BitsDrawingEntryService.java interface
+
+    /**
+     * Get distinct work orders (attribute1V) from bits_drawing_entry
+     */
+    List<String> getDistinctWorkOrdersFromDrawingEntry();
+
+    /**
+     * Get distinct building names (attribute2V) filtered by work order
+     */
+    List<String> getDistinctBuildingNamesByWorkOrder(String workOrder);
+
+    /**
+     * Get distinct drawing numbers filtered by work order and building name
+     */
+    List<String> getDistinctDrawingNumbersByAttributes(String workOrder, String buildingName);
+
+    /**
+     * Get distinct mark numbers filtered by work order and building name
+     */
+    List<String> getDistinctMarkNumbersByAttributes(String workOrder, String buildingName);
 }

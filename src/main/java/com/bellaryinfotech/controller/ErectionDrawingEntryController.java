@@ -639,4 +639,41 @@ public class ErectionDrawingEntryController {
                     .body("Failed to save RA NO: " + e.getMessage());
         }
     }
+    
+    //newly added requested apis
+    
+ // ADD these new endpoints to your existing ErectionDrawingEntryController.java
+
+    /**
+     * Get distinct departments filtered by work order and building name
+     */
+    @GetMapping("/getDistinctDepartmentsByWorkOrderAndBuildingName/details")
+    public ResponseEntity<List<String>> getDistinctDepartmentsByWorkOrderAndBuildingName(
+            @RequestParam String workOrder, 
+            @RequestParam String buildingName) {
+        try {
+            List<String> departments = erectionDrawingEntryService.getDistinctDepartmentsByWorkOrderAndBuildingName(workOrder, buildingName);
+            return ResponseEntity.ok(departments);
+        } catch (Exception e) {
+            logger.error("Error getting distinct departments by work order and building name", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Get erection entries by work order, building name, and department
+     */
+    @GetMapping("/getErectionEntriesByWorkOrderAndBuildingNameAndDepartment/details")
+    public ResponseEntity<List<ErectionDrawingEntryDto>> getErectionEntriesByWorkOrderAndBuildingNameAndDepartment(
+            @RequestParam String workOrder,
+            @RequestParam String buildingName,
+            @RequestParam String department) {
+        try {
+            List<ErectionDrawingEntryDto> entries = erectionDrawingEntryService.getErectionEntriesByWorkOrderAndBuildingNameAndDepartment(workOrder, buildingName, department);
+            return ResponseEntity.ok(entries);
+        } catch (Exception e) {
+            logger.error("Error getting erection entries by work order, building name, and department", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

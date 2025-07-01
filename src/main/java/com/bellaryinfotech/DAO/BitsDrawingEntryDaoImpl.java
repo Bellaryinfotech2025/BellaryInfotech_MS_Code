@@ -419,4 +419,6 @@ public class BitsDrawingEntryDaoImpl implements BitsDrawingEntryDao {
             throw new RuntimeException("Failed to find latest drawing entry", e);
         }
     }
+    
+    
 }

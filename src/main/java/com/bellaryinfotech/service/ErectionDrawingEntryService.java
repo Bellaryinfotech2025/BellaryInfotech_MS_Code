@@ -70,4 +70,18 @@ public interface ErectionDrawingEntryService {
 
     // Unique combinations
     List<ErectionDrawingEntryDto> getUniqueDrawingMarkCombinations();
+    
+    
+    //newly added requested fields
+ // ADD these new methods to your existing ErectionDrawingEntryService.java
+
+    /**
+     * Get distinct departments (attribute3V) filtered by work order and building name
+     */
+    List<String> getDistinctDepartmentsByWorkOrderAndBuildingName(String workOrder, String buildingName);
+
+    /**
+     * Get erection entries by work order, building name, and department
+     */
+    List<ErectionDrawingEntryDto> getErectionEntriesByWorkOrderAndBuildingNameAndDepartment(String workOrder, String buildingName, String department);
 }
