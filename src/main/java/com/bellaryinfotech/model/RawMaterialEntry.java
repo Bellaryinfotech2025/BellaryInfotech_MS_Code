@@ -23,6 +23,10 @@ public class RawMaterialEntry {
     @Column(name = "section")
     private String section;
     
+    // NEW: Added material_code column
+    @Column(name = "material_code")
+    private String materialCode;
+    
     @Column(name = "width", precision = 10, scale = 3)
     private BigDecimal width;
     
@@ -37,6 +41,10 @@ public class RawMaterialEntry {
     
     @Column(name = "total_weight", precision = 10, scale = 3)
     private BigDecimal totalWeight;
+    
+    // NEW: Added total_received column
+    @Column(name = "total_received", precision = 10, scale = 3)
+    private BigDecimal totalReceived;
     
     @Column(name = "vehicle_number")
     private String vehicleNumber;
@@ -114,17 +122,19 @@ public class RawMaterialEntry {
     // Constructors
     public RawMaterialEntry() {}
     
-    public RawMaterialEntry(String workOrder, Long orderId, String section, 
-                           BigDecimal width, BigDecimal length, BigDecimal qty, String uom, 
-                           BigDecimal totalWeight, String createdBy) {
+    public RawMaterialEntry(String workOrder, Long orderId, String section, String materialCode,
+                            BigDecimal width, BigDecimal length, BigDecimal qty, String uom,
+                            BigDecimal totalWeight, BigDecimal totalReceived, String createdBy) {
         this.workOrder = workOrder;
         this.orderId = orderId;
         this.section = section;
+        this.materialCode = materialCode;
         this.width = width;
         this.length = length;
         this.qty = qty;
         this.uom = uom;
         this.totalWeight = totalWeight;
+        this.totalReceived = totalReceived;
         this.createdBy = createdBy;
         this.createdDate = LocalDateTime.now();
         this.lastUpdatedBy = createdBy;
@@ -139,12 +149,15 @@ public class RawMaterialEntry {
     public String getWorkOrder() { return workOrder; }
     public void setWorkOrder(String workOrder) { this.workOrder = workOrder; }
     
-    // NEW: Getter and Setter for orderId
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
     
     public String getSection() { return section; }
     public void setSection(String section) { this.section = section; }
+    
+    // NEW: Getter and Setter for materialCode
+    public String getMaterialCode() { return materialCode; }
+    public void setMaterialCode(String materialCode) { this.materialCode = materialCode; }
     
     public BigDecimal getWidth() { return width; }
     public void setWidth(BigDecimal width) { this.width = width; }
@@ -160,6 +173,10 @@ public class RawMaterialEntry {
     
     public BigDecimal getTotalWeight() { return totalWeight; }
     public void setTotalWeight(BigDecimal totalWeight) { this.totalWeight = totalWeight; }
+    
+    // NEW: Getter and Setter for totalReceived
+    public BigDecimal getTotalReceived() { return totalReceived; }
+    public void setTotalReceived(BigDecimal totalReceived) { this.totalReceived = totalReceived; }
     
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }

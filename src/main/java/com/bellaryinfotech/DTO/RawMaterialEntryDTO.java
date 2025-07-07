@@ -13,8 +13,8 @@ public class RawMaterialEntryDTO {
     // Constructors
     public RawMaterialEntryDTO() {}
     
-    public RawMaterialEntryDTO(List<WorkOrderDTO> workOrders, List<ServiceEntryDTO> serviceEntries, 
-                              String createdBy, String createdDate) {
+    public RawMaterialEntryDTO(List<WorkOrderDTO> workOrders, List<ServiceEntryDTO> serviceEntries,
+                               String createdBy, String createdDate) {
         this.workOrders = workOrders;
         this.serviceEntries = serviceEntries;
         this.createdBy = createdBy;
@@ -55,18 +55,19 @@ public class RawMaterialEntryDTO {
         public String getWorkOrder() { return workOrder; }
         public void setWorkOrder(String workOrder) { this.workOrder = workOrder; }
         
-        // NEW: Getter and Setter for orderId
         public Long getOrderId() { return orderId; }
         public void setOrderId(Long orderId) { this.orderId = orderId; }
     }
     
     public static class ServiceEntryDTO {
         private String section;
+        private String materialCode; // NEW: Added materialCode field
         private String width;
         private String length;
         private String qty;
         private String uom;
         private String totalWeight;
+        private String totalReceived; // NEW: Added totalReceived field
         private String vehicleNumber;
         private String documentNo;
         private String documentDate;
@@ -74,15 +75,17 @@ public class RawMaterialEntryDTO {
         
         public ServiceEntryDTO() {}
         
-        public ServiceEntryDTO(String section, String width, 
-                              String length, String qty, String uom, String totalWeight,
+        public ServiceEntryDTO(String section, String materialCode, String width,
+                               String length, String qty, String uom, String totalWeight, String totalReceived,
                               String vehicleNumber, String documentNo, String documentDate, String receivedDate) {
             this.section = section;
+            this.materialCode = materialCode;
             this.width = width;
             this.length = length;
             this.qty = qty;
             this.uom = uom;
             this.totalWeight = totalWeight;
+            this.totalReceived = totalReceived;
             this.vehicleNumber = vehicleNumber;
             this.documentNo = documentNo;
             this.documentDate = documentDate;
@@ -92,6 +95,10 @@ public class RawMaterialEntryDTO {
         // Getters and Setters
         public String getSection() { return section; }
         public void setSection(String section) { this.section = section; }
+        
+        // NEW: Getter and Setter for materialCode
+        public String getMaterialCode() { return materialCode; }
+        public void setMaterialCode(String materialCode) { this.materialCode = materialCode; }
         
         public String getWidth() { return width; }
         public void setWidth(String width) { this.width = width; }
@@ -107,6 +114,10 @@ public class RawMaterialEntryDTO {
         
         public String getTotalWeight() { return totalWeight; }
         public void setTotalWeight(String totalWeight) { this.totalWeight = totalWeight; }
+        
+        // NEW: Getter and Setter for totalReceived
+        public String getTotalReceived() { return totalReceived; }
+        public void setTotalReceived(String totalReceived) { this.totalReceived = totalReceived; }
         
         public String getVehicleNumber() { return vehicleNumber; }
         public void setVehicleNumber(String vehicleNumber) { this.vehicleNumber = vehicleNumber; }

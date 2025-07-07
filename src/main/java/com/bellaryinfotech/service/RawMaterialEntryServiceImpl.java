@@ -65,8 +65,8 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
     
     @Override
     public List<RawMaterialEntry> saveRawMaterialEntry(RawMaterialEntryDTO rawMaterialEntryDTO) {
-        LOG.info("Saving raw material entry with {} work orders and {} service entries", 
-                rawMaterialEntryDTO.getWorkOrders().size(), rawMaterialEntryDTO.getServiceEntries().size());
+        LOG.info("Saving raw material entry with {} work orders and {} service entries",
+                 rawMaterialEntryDTO.getWorkOrders().size(), rawMaterialEntryDTO.getServiceEntries().size());
         
         List<RawMaterialEntry> savedEntries = new ArrayList<>();
         
@@ -85,16 +85,19 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                 
                 // Set service entry data
                 entry.setSection(serviceEntryDTO.getSection());
+                // NEW: Set materialCode
+                entry.setMaterialCode(serviceEntryDTO.getMaterialCode());
                 entry.setWidth(parseBigDecimal(serviceEntryDTO.getWidth()));
                 entry.setLength(parseBigDecimal(serviceEntryDTO.getLength()));
                 entry.setQty(parseBigDecimal(serviceEntryDTO.getQty()));
                 entry.setUom(serviceEntryDTO.getUom());
                 entry.setTotalWeight(parseBigDecimal(serviceEntryDTO.getTotalWeight()));
+                // NEW: Set totalReceived
+                entry.setTotalReceived(parseBigDecimal(serviceEntryDTO.getTotalReceived()));
                 
                 // Set the new fields
                 entry.setVehicleNumber(serviceEntryDTO.getVehicleNumber());
                 entry.setDocumentNo(serviceEntryDTO.getDocumentNo());
-
                 // Parse and set date fields
                 if (serviceEntryDTO.getDocumentDate() != null && !serviceEntryDTO.getDocumentDate().trim().isEmpty()) {
                     try {
@@ -103,7 +106,6 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                         LOG.warn("Error parsing document date: {}", serviceEntryDTO.getDocumentDate());
                     }
                 }
-
                 if (serviceEntryDTO.getReceivedDate() != null && !serviceEntryDTO.getReceivedDate().trim().isEmpty()) {
                     try {
                         entry.setReceivedDate(LocalDate.parse(serviceEntryDTO.getReceivedDate()));
@@ -186,11 +188,19 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
             }
             
             entry.setSection(rawMaterialEntry.getSection());
+            // NEW: Update materialCode
+            entry.setMaterialCode(rawMaterialEntry.getMaterialCode());
             entry.setWidth(rawMaterialEntry.getWidth());
             entry.setLength(rawMaterialEntry.getLength());
             entry.setQty(rawMaterialEntry.getQty());
             entry.setUom(rawMaterialEntry.getUom());
             entry.setTotalWeight(rawMaterialEntry.getTotalWeight());
+            // NEW: Update totalReceived
+            entry.setTotalReceived(rawMaterialEntry.getTotalReceived());
+            entry.setVehicleNumber(rawMaterialEntry.getVehicleNumber());
+            entry.setDocumentNo(rawMaterialEntry.getDocumentNo());
+            entry.setDocumentDate(rawMaterialEntry.getDocumentDate());
+            entry.setReceivedDate(rawMaterialEntry.getReceivedDate());
             entry.setLastUpdatedBy(rawMaterialEntry.getLastUpdatedBy());
             entry.setLastUpdatedDate(LocalDateTime.now());
             
