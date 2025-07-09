@@ -20,11 +20,14 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -1767,5 +1770,366 @@ public class BitsHeaderController {
          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
      }
  }
+ 
+ 
+ 
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ /////////////////////////
+ 
+ 
+//NEW: Method to handle Base64 encoded work orders
+@GetMapping(value = "/getworkorder/base64/{encodedWorkOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> getWorkOrderByBase64(@PathVariable String encodedWorkOrder) {
+  try {
+      // Decode Base64
+      String workOrder = new String(Base64.getDecoder().decode(encodedWorkOrder));
+      LOG.info("Decoded work order from Base64: {}", workOrder);
+      
+      // Use your existing SQL approach to find work order
+      try (Connection connection = dataSource.getConnection()) {
+          String sql = """
+              SELECT order_id, work_order, plant_location, department, work_location,
+                     work_order_date, completion_date, ld_applicable,
+                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                     creation_date, created_by, last_update_date, last_updated_by
+              FROM bits_po_entry_header
+              WHERE work_order = ?
+              LIMIT 1
+              """;
+              
+          try (PreparedStatement statement = connection.prepareStatement(sql)) {
+              statement.setString(1, workOrder);
+              
+              try (ResultSet resultSet = statement.executeQuery()) {
+                  if (resultSet.next()) {
+                      Map<String, Object> response = new HashMap<>();
+                      response.put("orderId", resultSet.getLong("order_id"));
+                      response.put("workOrder", resultSet.getString("work_order"));
+                      response.put("plantLocation", resultSet.getString("plant_location"));
+                      response.put("department", resultSet.getString("department"));
+                      response.put("workLocation", resultSet.getString("work_location"));
+                      
+                      // Handle dates safely
+                      try {
+                          if (resultSet.getDate("work_order_date") != null) {
+                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                      }
+                      
+                      try {
+                          if (resultSet.getDate("completion_date") != null) {
+                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                      }
+                      
+                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                      
+                      LOG.info("Successfully fetched details for Base64 work order: {} with order_id: {}", 
+                              workOrder, resultSet.getLong("order_id"));
+                      return ResponseEntity.ok(response);
+                  } else {
+                      LOG.warn("No work order found with Base64 decoded number: {}", workOrder);
+                      return ResponseEntity.notFound().build();
+                  }
+              }
+          }
+      }
+  } catch (Exception e) {
+      LOG.error("Error decoding Base64 work order: {}", e.getMessage());
+      return ResponseEntity.badRequest().body("Invalid Base64 encoding: " + e.getMessage());
+  }
+}
+
+//NEW: Method to handle POST requests for work orders
+@PostMapping(value = "/getworkorder/number", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> getWorkOrderByPost(@RequestBody Map<String, String> request) {
+  try {
+      String workOrder = request.get("workOrder");
+      LOG.info("Received work order via POST: {}", workOrder);
+      
+      if (workOrder == null || workOrder.trim().isEmpty()) {
+          return ResponseEntity.badRequest().body("Work order is required");
+      }
+      
+      // Use your existing SQL approach to find work order
+      try (Connection connection = dataSource.getConnection()) {
+          String sql = """
+              SELECT order_id, work_order, plant_location, department, work_location,
+                     work_order_date, completion_date, ld_applicable,
+                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                     creation_date, created_by, last_update_date, last_updated_by
+              FROM bits_po_entry_header
+              WHERE work_order = ?
+              LIMIT 1
+              """;
+              
+          try (PreparedStatement statement = connection.prepareStatement(sql)) {
+              statement.setString(1, workOrder);
+              
+              try (ResultSet resultSet = statement.executeQuery()) {
+                  if (resultSet.next()) {
+                      Map<String, Object> response = new HashMap<>();
+                      response.put("orderId", resultSet.getLong("order_id"));
+                      response.put("workOrder", resultSet.getString("work_order"));
+                      response.put("plantLocation", resultSet.getString("plant_location"));
+                      response.put("department", resultSet.getString("department"));
+                      response.put("workLocation", resultSet.getString("work_location"));
+                      
+                      // Handle dates safely
+                      try {
+                          if (resultSet.getDate("work_order_date") != null) {
+                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                      }
+                      
+                      try {
+                          if (resultSet.getDate("completion_date") != null) {
+                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                      }
+                      
+                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                      
+                      LOG.info("Successfully fetched details for POST work order: {} with order_id: {}", 
+                              workOrder, resultSet.getLong("order_id"));
+                      return ResponseEntity.ok(response);
+                  } else {
+                      LOG.warn("No work order found with POST number: {}", workOrder);
+                      return ResponseEntity.notFound().build();
+                  }
+              }
+          }
+      }
+  } catch (Exception e) {
+      LOG.error("Error processing POST work order request: {}", e.getMessage());
+      return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
+  }
+}
+
+//FIXED: Enhanced method to handle special characters in path variables
+@GetMapping(value = "/getworkorder/number/{workOrder:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> getWorkOrderByNumberEnhanced(@PathVariable String workOrder) {
+  try {
+      LOG.info("Received work order with enhanced path matching: {}", workOrder);
+      
+      // Try to URL decode if needed
+      String decodedWorkOrder = URLDecoder.decode(workOrder, StandardCharsets.UTF_8);
+      LOG.info("Decoded work order: {}", decodedWorkOrder);
+      
+      // Use your existing SQL approach to find work order
+      try (Connection connection = dataSource.getConnection()) {
+          String sql = """
+              SELECT order_id, work_order, plant_location, department, work_location,
+                     work_order_date, completion_date, ld_applicable,
+                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                     creation_date, created_by, last_update_date, last_updated_by
+              FROM bits_po_entry_header
+              WHERE work_order = ?
+              LIMIT 1
+              """;
+              
+          try (PreparedStatement statement = connection.prepareStatement(sql)) {
+              statement.setString(1, decodedWorkOrder);
+              
+              try (ResultSet resultSet = statement.executeQuery()) {
+                  if (resultSet.next()) {
+                      Map<String, Object> response = new HashMap<>();
+                      response.put("orderId", resultSet.getLong("order_id"));
+                      response.put("workOrder", resultSet.getString("work_order"));
+                      response.put("plantLocation", resultSet.getString("plant_location"));
+                      response.put("department", resultSet.getString("department"));
+                      response.put("workLocation", resultSet.getString("work_location"));
+                      
+                      // Handle dates safely
+                      try {
+                          if (resultSet.getDate("work_order_date") != null) {
+                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing work_order_date for work order {}", decodedWorkOrder);
+                      }
+                      
+                      try {
+                          if (resultSet.getDate("completion_date") != null) {
+                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                          }
+                      } catch (Exception dateEx) {
+                          LOG.warn("Error parsing completion_date for work order {}", decodedWorkOrder);
+                      }
+                      
+                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                      
+                      LOG.info("Successfully fetched details for enhanced work order: {} with order_id: {}", 
+                              decodedWorkOrder, resultSet.getLong("order_id"));
+                      return ResponseEntity.ok(response);
+                  } else {
+                      // Try with original (non-decoded) work order
+                      statement.setString(1, workOrder);
+                      try (ResultSet resultSet2 = statement.executeQuery()) {
+                          if (resultSet2.next()) {
+                              Map<String, Object> response = new HashMap<>();
+                              response.put("orderId", resultSet2.getLong("order_id"));
+                              response.put("workOrder", resultSet2.getString("work_order"));
+                              response.put("plantLocation", resultSet2.getString("plant_location"));
+                              response.put("department", resultSet2.getString("department"));
+                              response.put("workLocation", resultSet2.getString("work_location"));
+                              
+                              // Handle dates safely
+                              try {
+                                  if (resultSet2.getDate("work_order_date") != null) {
+                                      response.put("workOrderDate", resultSet2.getDate("work_order_date").toLocalDate().toString());
+                                  }
+                              } catch (Exception dateEx) {
+                                  LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                              }
+                              
+                              try {
+                                  if (resultSet2.getDate("completion_date") != null) {
+                                      response.put("completionDate", resultSet2.getDate("completion_date").toLocalDate().toString());
+                                  }
+                              } catch (Exception dateEx) {
+                                  LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                              }
+                              
+                              response.put("ldApplicable", resultSet2.getBoolean("ld_applicable"));
+                              response.put("scrapAllowanceVisiblePercent", resultSet2.getString("scrap_allowance_visible_percent"));
+                              response.put("scrapAllowanceInvisiblePercent", resultSet2.getString("scrap_allowance_invisible_percent"));
+                              response.put("materialIssueType", resultSet2.getString("material_issue_type"));
+                              
+                              LOG.info("Successfully fetched details for original work order: {} with order_id: {}", 
+                                      workOrder, resultSet2.getLong("order_id"));
+                              return ResponseEntity.ok(response);
+                          }
+                      }
+                      return ResponseEntity.notFound().build();
+                  }
+              }
+          }
+      }
+  } catch (Exception e) {
+      LOG.error("Error processing enhanced work order: {}", e.getMessage());
+      return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
+  }
+}
+
+//NEW: Search work order with special character handling
+@GetMapping(value = "/getworkorder/search/{searchTerm:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<?> searchWorkOrderWithSpecialChars(@PathVariable String searchTerm) {
+  try {
+      LOG.info("Searching work order with special characters: {}", searchTerm);
+      
+      // Try multiple decoding strategies
+      String[] searchVariants = {
+          searchTerm,
+          URLDecoder.decode(searchTerm, StandardCharsets.UTF_8),
+          searchTerm.replace("_SLASH_", "/").replace("_BACKSLASH_", "\\"),
+          searchTerm.replace("%2F", "/").replace("%5C", "\\")
+      };
+      
+      try (Connection connection = dataSource.getConnection()) {
+          String sql = """
+              SELECT order_id, work_order, plant_location, department, work_location,
+                     work_order_date, completion_date, ld_applicable,
+                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type
+              FROM bits_po_entry_header
+              WHERE work_order = ?
+              LIMIT 1
+              """;
+              
+          try (PreparedStatement statement = connection.prepareStatement(sql)) {
+              for (String variant : searchVariants) {
+                  LOG.info("Trying search variant: {}", variant);
+                  statement.setString(1, variant);
+                  
+                  try (ResultSet resultSet = statement.executeQuery()) {
+                      if (resultSet.next()) {
+                          Map<String, Object> response = new HashMap<>();
+                          response.put("orderId", resultSet.getLong("order_id"));
+                          response.put("workOrder", resultSet.getString("work_order"));
+                          response.put("plantLocation", resultSet.getString("plant_location"));
+                          response.put("department", resultSet.getString("department"));
+                          response.put("workLocation", resultSet.getString("work_location"));
+                          
+                          // Handle dates safely
+                          try {
+                              if (resultSet.getDate("work_order_date") != null) {
+                                  response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                              }
+                          } catch (Exception dateEx) {
+                              LOG.warn("Error parsing work_order_date for work order {}", variant);
+                          }
+                          
+                          try {
+                              if (resultSet.getDate("completion_date") != null) {
+                                  response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                              }
+                          } catch (Exception dateEx) {
+                              LOG.warn("Error parsing completion_date for work order {}", variant);
+                          }
+                          
+                          response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                          response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                          response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                          response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                          
+                          LOG.info("Successfully found work order using variant: {} -> {}", variant, resultSet.getString("work_order"));
+                          return ResponseEntity.ok(response);
+                      }
+                  }
+              }
+              
+              LOG.warn("No work order found for any search variant of: {}", searchTerm);
+              return ResponseEntity.notFound().build();
+          }
+      }
+  } catch (Exception e) {
+      LOG.error("Error searching work order with special characters: {}", e.getMessage());
+      return ResponseEntity.internalServerError().body("Error processing search: " + e.getMessage());
+  }
+}
+
+ 
+ 
+ 
+ 
 }
  
