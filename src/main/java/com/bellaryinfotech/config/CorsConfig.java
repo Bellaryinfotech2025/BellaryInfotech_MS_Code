@@ -14,6 +14,13 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
+        
+        // 🔐 Allow only these domains
+        config.setAllowedOriginPatterns(Arrays.asList(
+            "http://dev.bellaryinfotech.com",
+            "http://uat.bellaryinfotech.com",
+            "http://prod.bellaryinfotech.com"
+        ));
 
         // Allow all origins - note: use allowedOriginPatterns when allowCredentials = true
         config.setAllowedOriginPatterns(Arrays.asList("*"));
