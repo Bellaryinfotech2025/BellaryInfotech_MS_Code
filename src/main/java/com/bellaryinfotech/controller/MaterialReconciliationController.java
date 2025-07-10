@@ -28,6 +28,134 @@ public class MaterialReconciliationController {
     private JdbcTemplate jdbcTemplate;
     
     /**
+     * Get company names from vendor_profile table for contractor dropdown
+     */
+    @GetMapping("/getCompanyNames/details")
+    public ResponseEntity<?> getCompanyNames() {
+        try {
+            LOG.info("Fetching company names from vendor_profile table");
+            
+            String sql = """
+                SELECT DISTINCT company_name 
+                FROM vendor_profile 
+                WHERE status = 'ACTIVE' AND company_name IS NOT NULL AND company_name != ''
+                ORDER BY company_name
+                """;
+            
+            List<Map<String, Object>> companyNames = new ArrayList<>();
+            
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Map<String, Object> company = new HashMap<>();
+                        company.put("companyName", resultSet.getString("company_name"));
+                        companyNames.add(company);
+                    }
+                }
+            }
+            
+            LOG.info("Found {} company names", companyNames.size());
+            return ResponseEntity.ok(companyNames);
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching company names", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching company names: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get drawing numbers and mark numbers by order_id from bits_drawing_entry
+     */
+    @GetMapping("/getDrawingAndMarkByOrderId/details")
+    public ResponseEntity<?> getDrawingAndMarkByOrderId(@RequestParam Long orderId) {
+        try {
+            LOG.info("Fetching drawing and mark numbers for order ID: {}", orderId);
+            
+            String sql = """
+                SELECT DISTINCT drawing_no, mark_no, total_marked_weight
+                FROM bits_drawing_entry 
+                WHERE order_id = ? AND drawing_no IS NOT NULL AND mark_no IS NOT NULL
+                ORDER BY drawing_no, mark_no
+                """;
+            
+            List<Map<String, Object>> drawingData = new ArrayList<>();
+            
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                
+                statement.setLong(1, orderId);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("drawingNo", resultSet.getString("drawing_no"));
+                        data.put("markNo", resultSet.getString("mark_no"));
+                        data.put("totalMarkedWeight", resultSet.getDouble("total_marked_weight"));
+                        drawingData.add(data);
+                    }
+                }
+            }
+            
+            LOG.info("Found {} drawing/mark entries for order ID: {}", drawingData.size(), orderId);
+            return ResponseEntity.ok(drawingData);
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching drawing/mark data for order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching drawing/mark data: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get total marked weight by drawing number and order_id
+     */
+    @GetMapping("/getTotalMarkedWeightByDrawing/details")
+    public ResponseEntity<?> getTotalMarkedWeightByDrawing(
+            @RequestParam Long orderId, 
+            @RequestParam String drawingNo) {
+        try {
+            LOG.info("Fetching total marked weight for order ID: {} and drawing: {}", orderId, drawingNo);
+            
+            String sql = """
+                SELECT SUM(total_marked_weight) as total_weight, COUNT(*) as row_count
+                FROM bits_drawing_entry 
+                WHERE order_id = ? AND drawing_no = ?
+                """;
+            
+            Map<String, Object> result = new HashMap<>();
+            
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                
+                statement.setLong(1, orderId);
+                statement.setString(2, drawingNo);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        result.put("totalWeight", resultSet.getDouble("total_weight"));
+                        result.put("rowCount", resultSet.getInt("row_count"));
+                    } else {
+                        result.put("totalWeight", 0.0);
+                        result.put("rowCount", 0);
+                    }
+                }
+            }
+            
+            LOG.info("Total marked weight for drawing {}: {}", drawingNo, result.get("totalWeight"));
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching total marked weight", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching total marked weight: " + e.getMessage());
+        }
+    }
+    
+    // Keep all existing methods from previous implementation
+    /**
      * Get RA numbers by order_id from fabrication_drawing_entry
      */
     @GetMapping("/getRaNumbersByOrderId/details")
