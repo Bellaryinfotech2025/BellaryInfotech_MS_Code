@@ -17,7 +17,8 @@ import com.bellaryinfotech.service.UserService;
 @RequestMapping("/api")
 //change with frontend ip address or domain where frontend is running
 //@CrossOrigin(origins = "http://dev.bellaryinfotech.com", allowedHeaders = "*", methods = {org.springframework.web.bind.annotation.RequestMethod.GET, org.springframework.web.bind.annotation.RequestMethod.POST})
-    public class UserController {
+//    
+public class UserController {
 
  
     @Autowired
