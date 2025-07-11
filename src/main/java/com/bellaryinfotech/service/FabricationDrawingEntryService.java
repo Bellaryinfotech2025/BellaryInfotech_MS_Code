@@ -32,4 +32,7 @@ public interface FabricationDrawingEntryService {
     boolean existsByLineId(Long lineId);
     
     void deleteByLineId(Long lineId);
+    
+ // NEW: Method to get distinct RA numbers
+    List<String> getDistinctRaNumbers();
 }

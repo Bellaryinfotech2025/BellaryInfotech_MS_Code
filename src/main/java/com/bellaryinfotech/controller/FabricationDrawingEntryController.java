@@ -306,4 +306,27 @@ public class FabricationDrawingEntryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    
+    
+    
+ // NEW: Endpoint to get distinct RA numbers
+    @GetMapping("/getDistinctFabricationRaNumbers/details")
+    public ResponseEntity<?> getDistinctFabricationRaNumbers() {
+        try {
+            List<String> raNumbers = fabricationDrawingEntryService.getDistinctRaNumbers();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Distinct RA numbers retrieved successfully");
+            response.put("count", raNumbers.size());
+            response.put("data", raNumbers);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error retrieving distinct RA numbers: " + e.getMessage());
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

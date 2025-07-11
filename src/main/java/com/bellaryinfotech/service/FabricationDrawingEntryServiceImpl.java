@@ -233,4 +233,17 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error deleting by line ID: " + e.getMessage(), e);
         }
     }
+    
+    
+    
+    
+ // NEW: Implementation for getting distinct RA numbers
+    @Override
+    public List<String> getDistinctRaNumbers() {
+        try {
+            return fabricationDrawingEntryRepository.findDistinctRaNo();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct RA numbers: " + e.getMessage(), e);
+        }
+    }
 }

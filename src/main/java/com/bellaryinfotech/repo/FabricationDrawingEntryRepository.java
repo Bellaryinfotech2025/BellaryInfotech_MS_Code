@@ -52,4 +52,9 @@ public interface FabricationDrawingEntryRepository extends JpaRepository<Fabrica
     boolean existsByLineId(Long lineId);
     
     void deleteByLineId(Long lineId);
+    
+    
+ // NEW: Method to fetch distinct RA numbers
+    @Query("SELECT DISTINCT f.raNo FROM FabricationDrawingEntry f WHERE f.raNo IS NOT NULL AND f.raNo != ''")
+    List<String> findDistinctRaNo();
 }
