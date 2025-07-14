@@ -19,8 +19,8 @@ public class CorsConfig {
         config.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:5173",                   // Local dev
             "http://dev.bellaryinfotech.com",          // Dev
-            "http://uat.bellaryinfotech.com",          // UAT
-            "http://prod.bellaryinfotech.com"          // Production
+            "https://uat.bellaryinfotech.com",          // UAT
+            "https://prod.bellaryinfotech.com"          // Production
         ));
 
         config.setAllowCredentials(true);
