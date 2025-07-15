@@ -1,13 +1,11 @@
 package com.bellaryinfotech.service;
- 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.bellaryinfotech.DTO.FabricationDrawingEntryDto;
 import com.bellaryinfotech.model.FabricationDrawingEntry;
 import com.bellaryinfotech.repo.FabricationDrawingEntryRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,19 +13,19 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEntryService {
-    
+
     @Autowired
     private FabricationDrawingEntryRepository fabricationDrawingEntryRepository;
-    
+
     @Override
     public List<FabricationDrawingEntryDto> createFabricationDrawingEntries(List<FabricationDrawingEntryDto> fabricationEntries) {
         try {
             List<FabricationDrawingEntry> entities = fabricationEntries.stream()
                 .map(this::convertToEntity)
                 .collect(Collectors.toList());
-            
+
             List<FabricationDrawingEntry> savedEntities = fabricationDrawingEntryRepository.saveAll(entities);
-            
+
             return savedEntities.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -35,7 +33,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error creating fabrication drawing entries: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public List<FabricationDrawingEntryDto> getFabricationEntriesByWorkOrderAndBuilding(String workOrder, String buildingName) {
         try {
@@ -47,7 +45,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching fabrication entries by work order and building: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public List<FabricationDrawingEntryDto> getFabricationEntriesByDrawingAndMark(String drawingNo, String markNo) {
         try {
@@ -59,7 +57,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching fabrication entries by drawing and mark: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public List<FabricationDrawingEntryDto> getFabricationEntriesByOrderId(Long orderId) {
         try {
@@ -71,7 +69,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching fabrication entries by order ID: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public List<FabricationDrawingEntryDto> getAllFabricationEntries() {
         try {
@@ -83,7 +81,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching all fabrication entries: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public FabricationDrawingEntryDto getFabricationEntryById(Long id) {
         try {
@@ -94,7 +92,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching fabrication entry by ID: " + e.getMessage(), e);
         }
     }
-    
+
     @Override
     public void deleteFabricationEntry(Long id) {
         try {
@@ -106,7 +104,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error deleting fabrication entry: " + e.getMessage(), e);
         }
     }
-    
+
     // Helper methods for conversion
     private FabricationDrawingEntry convertToEntity(FabricationDrawingEntryDto dto) {
         FabricationDrawingEntry entity = new FabricationDrawingEntry();
@@ -134,17 +132,17 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
         entity.setFinishingStage(dto.getFinishingStage());
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
-        
+
         if (dto.getCreationDate() != null) {
             entity.setCreationDate(dto.getCreationDate());
         }
         if (dto.getLastUpdateDate() != null) {
             entity.setLastUpdateDate(dto.getLastUpdateDate());
         }
-        
+
         return entity;
     }
-    
+
     private FabricationDrawingEntryDto convertToDto(FabricationDrawingEntry entity) {
         FabricationDrawingEntryDto dto = new FabricationDrawingEntryDto();
         dto.setId(entity.getId());
@@ -233,17 +231,44 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error deleting by line ID: " + e.getMessage(), e);
         }
     }
-    
-    
-    
-    
- // NEW: Implementation for getting distinct RA numbers
+
+    // NEW: Implementation for getting distinct RA numbers
     @Override
     public List<String> getDistinctRaNumbers() {
         try {
             return fabricationDrawingEntryRepository.findDistinctRaNo();
         } catch (Exception e) {
             throw new RuntimeException("Error fetching distinct RA numbers: " + e.getMessage(), e);
+        }
+    }
+
+    // NEW: Implementation for getting distinct drawing numbers by order ID
+    @Override
+    public List<String> getDistinctDrawingNumbersByOrderId(Long orderId) {
+        try {
+            return fabricationDrawingEntryRepository.findDistinctDrawingNoByOrderId(orderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct drawing numbers by order ID: " + e.getMessage(), e);
+        }
+    }
+
+    // NEW: Implementation for getting distinct mark numbers by order ID
+    @Override
+    public List<String> getDistinctMarkNumbersByOrderId(Long orderId) {
+        try {
+            return fabricationDrawingEntryRepository.findDistinctMarkNoByOrderId(orderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct mark numbers by order ID: " + e.getMessage(), e);
+        }
+    }
+
+    // NEW: Implementation for getting total marked weight by drawing number and mark number
+    @Override
+    public Double getTotalMarkedWeightByDrawingAndMark(Long orderId, String drawingNo, String markNo) {
+        try {
+            return fabricationDrawingEntryRepository.sumTotalMarkedWgtByOrderIdAndDrawingNoAndMarkNo(orderId, drawingNo, markNo);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total marked weight by drawing and mark: " + e.getMessage(), e);
         }
     }
 }

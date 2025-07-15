@@ -20,25 +20,25 @@ import java.util.Optional;
 @Service
 @Transactional
 public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(RawMaterialEntryServiceImpl.class);
-    
-    @Autowired
+
+        private static final Logger LOG = LoggerFactory.getLogger(RawMaterialEntryServiceImpl.class);
+
+        @Autowired
     private RawMaterialEntryRepository rawMaterialEntryRepository;
-    
-    @Autowired
+
+        @Autowired
     private RestTemplate restTemplate;
-    
-    // NEW: Method to get orderId from bits_po_entry_header by workOrder
+
+        // Method to get orderId from bits_po_entry_header by workOrder
     private Long getOrderIdByWorkOrder(String workOrder) {
         try {
             // Call the BitsHeaderController to get header details by work order
             String url = "http://localhost:5522/api/V2.0/getworkorder/number/" + workOrder;
-            
-            // Assuming the response contains orderId field
+
+                        // Assuming the response contains orderId field
             Object response = restTemplate.getForObject(url, Object.class);
-            
-            if (response != null) {
+
+                        if (response != null) {
                 // Parse the response to extract orderId
                 // This assumes the response has an orderId field
                 if (response instanceof java.util.Map) {
@@ -53,52 +53,51 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                     }
                 }
             }
-            
-            LOG.warn("Could not find orderId for work order: {}", workOrder);
+
+                        LOG.warn("Could not find orderId for work order: {}", workOrder);
             return null;
-            
-        } catch (Exception e) {
+
+                    } catch (Exception e) {
             LOG.error("Error fetching orderId for work order: {}", workOrder, e);
             return null;
         }
     }
-    
-    @Override
+
+        @Override
     public List<RawMaterialEntry> saveRawMaterialEntry(RawMaterialEntryDTO rawMaterialEntryDTO) {
         LOG.info("Saving raw material entry with {} work orders and {} service entries",
                  rawMaterialEntryDTO.getWorkOrders().size(), rawMaterialEntryDTO.getServiceEntries().size());
-        
-        List<RawMaterialEntry> savedEntries = new ArrayList<>();
-        
-        // Process each combination of work order and service entry
+
+                List<RawMaterialEntry> savedEntries = new ArrayList<>();
+
+                // Process each combination of work order and service entry
         for (RawMaterialEntryDTO.WorkOrderDTO workOrderDTO : rawMaterialEntryDTO.getWorkOrders()) {
-            // NEW: Get orderId from bits_po_entry_header
             Long orderId = getOrderIdByWorkOrder(workOrderDTO.getWorkOrder());
-            
-            for (RawMaterialEntryDTO.ServiceEntryDTO serviceEntryDTO : rawMaterialEntryDTO.getServiceEntries()) {
+
+                        for (RawMaterialEntryDTO.ServiceEntryDTO serviceEntryDTO : rawMaterialEntryDTO.getServiceEntries()) {
                 RawMaterialEntry entry = new RawMaterialEntry();
-                
-                // Set work order data
+
+                                // Set work order data
                 entry.setWorkOrder(workOrderDTO.getWorkOrder());
-                // NEW: Set the orderId from bits_po_entry_header
                 entry.setOrderId(orderId);
-                
-                // Set service entry data
+
+                                // Set service entry data
                 entry.setSection(serviceEntryDTO.getSection());
-                // NEW: Set materialCode
                 entry.setMaterialCode(serviceEntryDTO.getMaterialCode());
                 entry.setWidth(parseBigDecimal(serviceEntryDTO.getWidth()));
                 entry.setLength(parseBigDecimal(serviceEntryDTO.getLength()));
                 entry.setQty(parseBigDecimal(serviceEntryDTO.getQty()));
                 entry.setUom(serviceEntryDTO.getUom());
                 entry.setTotalWeight(parseBigDecimal(serviceEntryDTO.getTotalWeight()));
-                // NEW: Set totalReceived
                 entry.setTotalReceived(parseBigDecimal(serviceEntryDTO.getTotalReceived()));
-                
-                // Set the new fields
+
+                                // NEW: Set receiverName and totalTransferredToOther (with default if empty)
+                entry.setReceiverName(serviceEntryDTO.getReceiverName() != null && !serviceEntryDTO.getReceiverName().trim().isEmpty() ? serviceEntryDTO.getReceiverName().trim() : "No data exists");
+                entry.setTotalTransferredToOther(serviceEntryDTO.getTotalTransferredToOther() != null && !serviceEntryDTO.getTotalTransferredToOther().trim().isEmpty() ? serviceEntryDTO.getTotalTransferredToOther().trim() : "No data exists");
+
+                                // Set other fields
                 entry.setVehicleNumber(serviceEntryDTO.getVehicleNumber());
                 entry.setDocumentNo(serviceEntryDTO.getDocumentNo());
-                // Parse and set date fields
                 if (serviceEntryDTO.getDocumentDate() != null && !serviceEntryDTO.getDocumentDate().trim().isEmpty()) {
                     try {
                         entry.setDocumentDate(LocalDate.parse(serviceEntryDTO.getDocumentDate()));
@@ -113,37 +112,36 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
                         LOG.warn("Error parsing received date: {}", serviceEntryDTO.getReceivedDate());
                     }
                 }
-                
-                // Set audit fields
+
+                                // Set audit fields
                 entry.setCreatedBy(rawMaterialEntryDTO.getCreatedBy());
                 entry.setCreatedDate(LocalDateTime.now());
                 entry.setLastUpdatedBy(rawMaterialEntryDTO.getCreatedBy());
                 entry.setLastUpdatedDate(LocalDateTime.now());
                 entry.setTenantId(1);
-                
-                // Store work order ID in attribute field for reference
-                entry.setAttribute1V(workOrderDTO.getId());
-                
-                RawMaterialEntry savedEntry = rawMaterialEntryRepository.save(entry);
+
+                                entry.setAttribute1V(workOrderDTO.getId());
+
+                                RawMaterialEntry savedEntry = rawMaterialEntryRepository.save(entry);
                 savedEntries.add(savedEntry);
-                
-                LOG.info("Saved raw material entry with ID: {} and orderId: {}", savedEntry.getId(), savedEntry.getOrderId());
+
+                                LOG.info("Saved raw material entry with ID: {} and orderId: {}", savedEntry.getId(), savedEntry.getOrderId());
             }
         }
-        
-        LOG.info("Successfully saved {} raw material entries", savedEntries.size());
+
+                LOG.info("Successfully saved {} raw material entries", savedEntries.size());
         return savedEntries;
     }
-    
-    @Override
+
+        @Override
     public List<RawMaterialEntry> getAllRawMaterialEntries() {
         LOG.info("Fetching all raw material entries");
         List<RawMaterialEntry> entries = rawMaterialEntryRepository.findAllOrderByCreatedDateDesc();
         LOG.info("Found {} raw material entries", entries.size());
         return entries;
     }
-    
-    @Override
+
+        @Override
     public RawMaterialEntry getRawMaterialEntryById(Long id) {
         LOG.info("Fetching raw material entry by ID: {}", id);
         Optional<RawMaterialEntry> entry = rawMaterialEntryRepository.findById(id);
@@ -155,56 +153,58 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
             return null;
         }
     }
-    
-    @Override
+
+        @Override
     public List<RawMaterialEntry> getRawMaterialEntriesByWorkOrder(String workOrder) {
         LOG.info("Fetching raw material entries by work order: {}", workOrder);
         List<RawMaterialEntry> entries = rawMaterialEntryRepository.findByWorkOrder(workOrder);
         LOG.info("Found {} raw material entries for work order: {}", entries.size(), workOrder);
         return entries;
     }
-    
-    @Override
+
+        @Override
     public List<RawMaterialEntry> getRawMaterialEntriesBySection(String section) {
         LOG.info("Fetching raw material entries by section: {}", section);
         List<RawMaterialEntry> entries = rawMaterialEntryRepository.findBySection(section);
         LOG.info("Found {} raw material entries for section: {}", entries.size(), section);
         return entries;
     }
-    
-    @Override
+
+        @Override
     public RawMaterialEntry updateRawMaterialEntry(Long id, RawMaterialEntry rawMaterialEntry) {
         LOG.info("Updating raw material entry with ID: {}", id);
         Optional<RawMaterialEntry> existingEntry = rawMaterialEntryRepository.findById(id);
-        
-        if (existingEntry.isPresent()) {
+
+                if (existingEntry.isPresent()) {
             RawMaterialEntry entry = existingEntry.get();
-            
-            entry.setWorkOrder(rawMaterialEntry.getWorkOrder());
-            // NEW: Update orderId if workOrder changes
+
+                        entry.setWorkOrder(rawMaterialEntry.getWorkOrder());
             if (!entry.getWorkOrder().equals(rawMaterialEntry.getWorkOrder())) {
                 Long newOrderId = getOrderIdByWorkOrder(rawMaterialEntry.getWorkOrder());
                 entry.setOrderId(newOrderId);
             }
-            
-            entry.setSection(rawMaterialEntry.getSection());
-            // NEW: Update materialCode
+
+                        entry.setSection(rawMaterialEntry.getSection());
             entry.setMaterialCode(rawMaterialEntry.getMaterialCode());
             entry.setWidth(rawMaterialEntry.getWidth());
             entry.setLength(rawMaterialEntry.getLength());
             entry.setQty(rawMaterialEntry.getQty());
             entry.setUom(rawMaterialEntry.getUom());
             entry.setTotalWeight(rawMaterialEntry.getTotalWeight());
-            // NEW: Update totalReceived
             entry.setTotalReceived(rawMaterialEntry.getTotalReceived());
-            entry.setVehicleNumber(rawMaterialEntry.getVehicleNumber());
+
+                        // NEW: Update receiverName and totalTransferredToOther (with default if empty)
+            entry.setReceiverName(rawMaterialEntry.getReceiverName() != null && !rawMaterialEntry.getReceiverName().trim().isEmpty() ? rawMaterialEntry.getReceiverName().trim() : "No data exists");
+            entry.setTotalTransferredToOther(rawMaterialEntry.getTotalTransferredToOther() != null && !rawMaterialEntry.getTotalTransferredToOther().trim().isEmpty() ? rawMaterialEntry.getTotalTransferredToOther().trim() : "No data exists");
+
+                        entry.setVehicleNumber(rawMaterialEntry.getVehicleNumber());
             entry.setDocumentNo(rawMaterialEntry.getDocumentNo());
             entry.setDocumentDate(rawMaterialEntry.getDocumentDate());
             entry.setReceivedDate(rawMaterialEntry.getReceivedDate());
             entry.setLastUpdatedBy(rawMaterialEntry.getLastUpdatedBy());
             entry.setLastUpdatedDate(LocalDateTime.now());
-            
-            RawMaterialEntry updatedEntry = rawMaterialEntryRepository.save(entry);
+
+                        RawMaterialEntry updatedEntry = rawMaterialEntryRepository.save(entry);
             LOG.info("Successfully updated raw material entry with ID: {}", id);
             return updatedEntry;
         } else {
@@ -212,39 +212,39 @@ public class RawMaterialEntryServiceImpl implements RawMaterialEntryService {
             return null;
         }
     }
-    
-    @Override
+
+        @Override
     public void deleteRawMaterialEntry(Long id) {
         LOG.info("Deleting raw material entry with ID: {}", id);
         rawMaterialEntryRepository.deleteById(id);
         LOG.info("Successfully deleted raw material entry with ID: {}", id);
     }
-    
-    @Override
+
+        @Override
     public List<String> getDistinctWorkOrders() {
         LOG.info("Fetching distinct work orders");
         List<String> workOrders = rawMaterialEntryRepository.findDistinctWorkOrders();
         LOG.info("Found {} distinct work orders", workOrders.size());
         return workOrders;
     }
-    
-    @Override
+
+        @Override
     public List<String> getDistinctSections() {
         LOG.info("Fetching distinct sections");
         List<String> sections = rawMaterialEntryRepository.findDistinctSections();
         LOG.info("Found {} distinct sections", sections.size());
         return sections;
     }
-    
-    @Override
+
+        @Override
     public List<String> getDistinctUoms() {
         LOG.info("Fetching distinct UOMs");
         List<String> uoms = rawMaterialEntryRepository.findDistinctUoms();
         LOG.info("Found {} distinct UOMs", uoms.size());
         return uoms;
     }
-    
-    private BigDecimal parseBigDecimal(String value) {
+
+        private BigDecimal parseBigDecimal(String value) {
         try {
             return value != null && !value.trim().isEmpty() ? new BigDecimal(value) : BigDecimal.ZERO;
         } catch (NumberFormatException e) {
