@@ -18,7 +18,7 @@ public class CorsConfig {
         // ✅ Allow all required frontend domains
         config.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:5173",    
-            "http://test.bellaryinfotech.com ",       
+            "http://test.bellaryinfotech.com",       
             "http://dev.bellaryinfotech.com",           
             "https://uat.bellaryinfotech.com",          
             "https://prod.bellaryinfotech.com"           
