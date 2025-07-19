@@ -31,7 +31,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
 
     @Autowired
     private BitsDrawingEntryDao bitsDrawingEntryDao;
-    
+        
     @Autowired
     private BitsDrawingEntryRepository bitsDrawingEntryRepository;
 
@@ -42,47 +42,40 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public List<BitsDrawingEntryDto> createDrawingEntry(BitsDrawingEntryDto drawingEntryDto) {
         try {
             logger.info("Creating drawing entry with marked quantity: {}", drawingEntryDto.getMarkedQty());
-            
+                        
             // Validate input
             if (drawingEntryDto.getMarkedQty() == null || drawingEntryDto.getMarkedQty().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException("Marked quantity must be greater than zero");
             }
 
-            List<BitsDrawingEntry> entriesToSave = new ArrayList<>();
-            int markedQtyInt = drawingEntryDto.getMarkedQty().intValue();
-
-            // Create entries based on marked quantity
-            for (int i = 0; i < markedQtyInt; i++) {
-                BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
-                
-                // DO NOT SET lineId - let it auto-generate
-                entry.setLineId(null);
-                
-                // Set creation metadata
-                entry.setCreationDate(LocalDateTime.now());
-                entry.setLastUpdatingDate(LocalDateTime.now());
-                
-                // Set marked quantity to 1 for each individual entry
-                entry.setMarkedQty(BigDecimal.ONE);
-                
-                // Set default tenant if not provided
-                if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
-                    entry.setTenantId("DEFAULT");
-                }
-                
-                entriesToSave.add(entry);
+            // FIXED: Create single entry with the exact marked quantity entered by user
+            BitsDrawingEntry entry = convertDtoToEntity(drawingEntryDto);
+                            
+            // DO NOT SET lineId - let it auto-generate
+            entry.setLineId(null);
+                            
+            // Set creation metadata
+            entry.setCreationDate(LocalDateTime.now());
+            entry.setLastUpdatingDate(LocalDateTime.now());
+                            
+            // FIXED: Store the exact marked quantity entered by user (not 1)
+            entry.setMarkedQty(drawingEntryDto.getMarkedQty());
+                            
+            // Set default tenant if not provided
+            if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
+                entry.setTenantId("DEFAULT");
             }
-
-            // Save all entries
-            List<BitsDrawingEntry> savedEntries = bitsDrawingEntryDao.saveAll(entriesToSave);
-            
-            logger.info("Successfully created {} drawing entries", savedEntries.size());
-            
-            // Convert back to DTOs
-            return savedEntries.stream()
-                    .map(this::convertEntityToDto)
-                    .collect(Collectors.toList());
-                    
+                            
+            // Save the single entry
+            BitsDrawingEntry savedEntry = bitsDrawingEntryDao.save(entry);
+                        
+            logger.info("Successfully created drawing entry with marked quantity: {}", savedEntry.getMarkedQty());
+                        
+            // Return as list with single entry
+            List<BitsDrawingEntryDto> result = new ArrayList<>();
+            result.add(convertEntityToDto(savedEntry));
+            return result;
+                            
         } catch (Exception e) {
             logger.error("Error creating drawing entry", e);
             throw new RuntimeException("Failed to create drawing entry: " + e.getMessage(), e);
@@ -93,50 +86,46 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public List<BitsDrawingEntryDto> createDrawingEntries(List<BitsDrawingEntryDto> drawingEntryDtos) {
         try {
             logger.info("Creating {} drawing entries", drawingEntryDtos.size());
-            
+                        
             List<BitsDrawingEntry> allEntriesToSave = new ArrayList<>();
-            
+                        
             for (BitsDrawingEntryDto dto : drawingEntryDtos) {
                 // Validate input
                 if (dto.getMarkedQty() == null || dto.getMarkedQty().compareTo(BigDecimal.ZERO) <= 0) {
                     throw new IllegalArgumentException("Marked quantity must be greater than zero for drawing: " + dto.getDrawingNo());
                 }
-
-                int markedQtyInt = dto.getMarkedQty().intValue();
-
-                // Create entries based on marked quantity
-                for (int i = 0; i < markedQtyInt; i++) {
-                    BitsDrawingEntry entry = convertDtoToEntity(dto);
-                    
-                    // DO NOT SET lineId - let it auto-generate
-                    entry.setLineId(null);
-                    
-                    // Set creation metadata
-                    entry.setCreationDate(LocalDateTime.now());
-                    entry.setLastUpdatingDate(LocalDateTime.now());
-                    
-                    // Set marked quantity to 1 for each individual entry
-                    entry.setMarkedQty(BigDecimal.ONE);
-                    
-                    // Set default tenant if not provided
-                    if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
-                        entry.setTenantId("DEFAULT");
-                    }
-                    
-                    allEntriesToSave.add(entry);
+                
+                // FIXED: Create single entry with exact marked quantity (not multiple entries)
+                BitsDrawingEntry entry = convertDtoToEntity(dto);
+                                
+                // DO NOT SET lineId - let it auto-generate
+                entry.setLineId(null);
+                                
+                // Set creation metadata
+                entry.setCreationDate(LocalDateTime.now());
+                entry.setLastUpdatingDate(LocalDateTime.now());
+                                
+                // FIXED: Store the exact marked quantity entered by user
+                entry.setMarkedQty(dto.getMarkedQty());
+                                
+                // Set default tenant if not provided
+                if (entry.getTenantId() == null || entry.getTenantId().trim().isEmpty()) {
+                    entry.setTenantId("DEFAULT");
                 }
+                                
+                allEntriesToSave.add(entry);
             }
 
             // Save all entries
             List<BitsDrawingEntry> savedEntries = bitsDrawingEntryDao.saveAll(allEntriesToSave);
-            
-            logger.info("Successfully created {} total drawing entries", savedEntries.size());
-            
+                        
+            logger.info("Successfully created {} drawing entries", savedEntries.size());
+                        
             // Convert back to DTOs
             return savedEntries.stream()
                     .map(this::convertEntityToDto)
                     .collect(Collectors.toList());
-                    
+                            
         } catch (Exception e) {
             logger.error("Error creating drawing entries", e);
             throw new RuntimeException("Failed to create drawing entries: " + e.getMessage(), e);
@@ -293,29 +282,29 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public BitsDrawingEntryDto updateDrawingEntry(String lineId, BitsDrawingEntryDto drawingEntryDto) {
         try {
             logger.info("Updating drawing entry with line ID: {}", lineId);
-            
+                        
             // Validate lineId
             if (lineId == null || lineId.trim().isEmpty()) {
                 throw new IllegalArgumentException("Line ID cannot be null or empty");
             }
-            
+                        
             // Convert String to Long for the new ID type
             Long id = Long.parseLong(lineId);
             Optional<BitsDrawingEntry> existingEntityOpt = bitsDrawingEntryRepository.findById(id);
             if (!existingEntityOpt.isPresent()) {
                 throw new RuntimeException("Drawing entry not found with line ID: " + lineId);
             }
-            
+                        
             BitsDrawingEntry existingEntity = existingEntityOpt.get();
-            
+                        
             // Validate the DTO
             if (drawingEntryDto == null) {
                 throw new IllegalArgumentException("Drawing entry data cannot be null");
             }
-            
+                        
             updateEntityFromDto(existingEntity, drawingEntryDto);
             existingEntity.setLastUpdatingDate(LocalDateTime.now());
-            
+                        
             BitsDrawingEntry savedEntity = bitsDrawingEntryRepository.save(existingEntity);
             logger.info("Successfully updated drawing entry with line ID: {}", lineId);
             return convertEntityToDto(savedEntity);
@@ -511,17 +500,17 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     public BitsDrawingEntryStatsDto getDrawingEntryStats(String drawingNo) {
         try {
             logger.info("Getting drawing entry statistics for: {}", drawingNo);
-            
+                        
             Long count = getCountByDrawingNo(drawingNo);
             BigDecimal sumMarkedQty = getSumMarkedQtyByDrawingNo(drawingNo);
             BigDecimal sumTotalMarkedWgt = getSumTotalMarkedWgtByDrawingNo(drawingNo);
-            
+                        
             BitsDrawingEntryStatsDto stats = new BitsDrawingEntryStatsDto();
             stats.setDrawingNo(drawingNo);
             stats.setTotalEntries(count);
             stats.setTotalMarkedQty(sumMarkedQty);
             stats.setTotalMarkedWeight(sumTotalMarkedWgt);
-            
+                        
             return stats;
         } catch (Exception e) {
             logger.error("Error getting drawing entry statistics: {}", drawingNo, e);
@@ -532,10 +521,10 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
     // Helper methods for conversion between Entity and DTO
     private BitsDrawingEntry convertDtoToEntity(BitsDrawingEntryDto dto) {
         BitsDrawingEntry entity = new BitsDrawingEntry();
-        
+                
         // DO NOT SET lineId from DTO - let it auto-generate
         // entity.setLineId(dto.getLineId()); // REMOVED THIS LINE
-        
+                
         entity.setVersion(dto.getVersion());
         entity.setOrderId(dto.getOrderId()); // NEW FIELD
         entity.setDrawingNo(dto.getDrawingNo());
@@ -550,39 +539,38 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         entity.setItemQty(dto.getItemQty());
         entity.setItemWeight(dto.getItemWeight());
         entity.setTotalItemWeight(dto.getTotalItemWeight());
-        
+                
         // Set default tenant if not provided
         String tenantId = dto.getTenantId();
         if (tenantId == null || tenantId.trim().isEmpty()) {
             tenantId = "DEFAULT";
         }
         entity.setTenantId(tenantId);
-        
+                
         entity.setCreationDate(dto.getCreationDate());
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatingDate(dto.getLastUpdatingDate());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
-
         // Set new fields
         entity.setDrawingWeight(dto.getDrawingWeight());
         entity.setMarkWeight(dto.getMarkWeight());
         entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
         entity.setTargetDate(dto.getTargetDate());
-        
+                
         // Set PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) {
             entity.setPoLineReferenceId(dto.getPoLineReferenceId());
         }
-        
+                
         // Set fabrication stages
         entity.setCuttingStage(dto.getCuttingStage() != null ? dto.getCuttingStage() : "N");
         entity.setFitUpStage(dto.getFitUpStage() != null ? dto.getFitUpStage() : "N");
         entity.setWeldingStage(dto.getWeldingStage() != null ? dto.getWeldingStage() : "N");
         entity.setFinishingStage(dto.getFinishingStage() != null ? dto.getFinishingStage() : "N");
-        
+                
         // NEW: Set RA.NO field
         entity.setRaNo(dto.getRaNo());
-        
+                
         // Set attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
@@ -599,13 +587,13 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getAttribute3D() != null) entity.setAttribute3D(dto.getAttribute3D());
         if (dto.getAttribute4D() != null) entity.setAttribute4D(dto.getAttribute4D());
         if (dto.getAttribute5D() != null) entity.setAttribute5D(dto.getAttribute5D());
-        
+                
         return entity;
     }
 
     private BitsDrawingEntryDto convertEntityToDto(BitsDrawingEntry entity) {
         BitsDrawingEntryDto dto = new BitsDrawingEntryDto();
-        
+                
         dto.setLineId(entity.getLineId());
         dto.setVersion(entity.getVersion());
         dto.setOrderId(entity.getOrderId()); // NEW FIELD
@@ -626,25 +614,25 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setLastUpdatingDate(entity.getLastUpdatingDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
-        
+                
         // Set new fields
         dto.setDrawingWeight(entity.getDrawingWeight());
         dto.setMarkWeight(entity.getMarkWeight());
         dto.setDrawingReceivedDate(entity.getDrawingReceivedDate());
         dto.setTargetDate(entity.getTargetDate());
-        
+                
         // Set PO Line Reference ID if available
         dto.setPoLineReferenceId(entity.getPoLineReferenceId());
-        
+                
         // Set fabrication stages
         dto.setCuttingStage(entity.getCuttingStage() != null ? entity.getCuttingStage() : "N");
         dto.setFitUpStage(entity.getFitUpStage() != null ? entity.getFitUpStage() : "N");
         dto.setWeldingStage(entity.getWeldingStage() != null ? entity.getWeldingStage() : "N");
         dto.setFinishingStage(entity.getFinishingStage() != null ? entity.getFinishingStage() : "N");
-        
+                
         // NEW: Set RA.NO field
         dto.setRaNo(entity.getRaNo());
-        
+                
         // Set attributes
         dto.setAttribute1V(entity.getAttribute1V());
         dto.setAttribute2V(entity.getAttribute2V());
@@ -661,7 +649,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         dto.setAttribute3D(entity.getAttribute3D());
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
-        
+                
         return dto;
     }
 
@@ -679,35 +667,35 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         if (dto.getItemWeight() != null) entity.setItemWeight(dto.getItemWeight());
         if (dto.getTotalItemWeight() != null) entity.setTotalItemWeight(dto.getTotalItemWeight());
         if (dto.getOrderId() != null) entity.setOrderId(dto.getOrderId()); // NEW FIELD
-        
+                
         // Handle tenant ID with default
         if (dto.getTenantId() != null) {
             entity.setTenantId(dto.getTenantId());
         } else if (entity.getTenantId() == null || entity.getTenantId().trim().isEmpty()) {
             entity.setTenantId("DEFAULT");
         }
-        
+                
         if (dto.getCreatedBy() != null) entity.setCreatedBy(dto.getCreatedBy());
         if (dto.getLastUpdatedBy() != null) entity.setLastUpdatedBy(dto.getLastUpdatedBy());
-        
+                
         // Update new fields
         if (dto.getDrawingWeight() != null) entity.setDrawingWeight(dto.getDrawingWeight());
         if (dto.getMarkWeight() != null) entity.setMarkWeight(dto.getMarkWeight());
         if (dto.getDrawingReceivedDate() != null) entity.setDrawingReceivedDate(dto.getDrawingReceivedDate());
         if (dto.getTargetDate() != null) entity.setTargetDate(dto.getTargetDate());
-        
+                
         // Update PO Line Reference ID if provided
         if (dto.getPoLineReferenceId() != null) entity.setPoLineReferenceId(dto.getPoLineReferenceId());
-        
+                
         // Update fabrication stages
         if (dto.getCuttingStage() != null) entity.setCuttingStage(dto.getCuttingStage());
         if (dto.getFitUpStage() != null) entity.setFitUpStage(dto.getFitUpStage());
         if (dto.getWeldingStage() != null) entity.setWeldingStage(dto.getWeldingStage());
         if (dto.getFinishingStage() != null) entity.setFinishingStage(dto.getFinishingStage());
-        
+                
         // NEW: Update RA.NO field
         if (dto.getRaNo() != null) entity.setRaNo(dto.getRaNo());
-        
+                
         // Update attributes if not null
         if (dto.getAttribute1V() != null) entity.setAttribute1V(dto.getAttribute1V());
         if (dto.getAttribute2V() != null) entity.setAttribute2V(dto.getAttribute2V());
@@ -732,12 +720,12 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             if (workOrder == null || workOrder.trim().isEmpty()) {
                 return null;
             }
-            
+                        
             Optional<BitsHeaderAll> headerOpt = bitsHeaderRepository.findByWorkOrder(workOrder);
             if (headerOpt.isPresent()) {
                 return headerOpt.get().getOrderId();
             }
-            
+                        
             logger.warn("No order found for work order: {}", workOrder);
             return null;
         } catch (Exception e) {
@@ -745,7 +733,7 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             return null;
         }
     }
-    
+        
     @Override
     public List<String> getDistinctRaNumbers() {
         try {
@@ -754,13 +742,10 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             logger.error("Error getting distinct RA numbers", e);
             throw new RuntimeException("Failed to get distinct RA numbers: " + e.getMessage(), e);
         }
-}
-    
-    
-    
-    //newly added request for new apis
- // ADD these new methods to your existing BitsDrawingEntryServiceImpl.java
+    }
 
+    //newly added request for new apis 
+    // ADD these new methods to your existing BitsDrawingEntryServiceImpl.java
     @Override
     public List<String> getDistinctWorkOrdersFromDrawingEntry() {
         try {
@@ -800,7 +785,4 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
             throw new RuntimeException("Failed to get distinct mark numbers: " + e.getMessage(), e);
         }
     }
-    
-    
-    
 }
