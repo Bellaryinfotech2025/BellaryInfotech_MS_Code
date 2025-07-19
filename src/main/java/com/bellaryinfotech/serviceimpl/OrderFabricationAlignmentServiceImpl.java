@@ -1,9 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.OrderFabricationAlignmentDTO;
 import com.bellaryinfotech.model.OrderFabricationAlignment;
 import com.bellaryinfotech.repo.OrderFabricationAlignmentRepository;
 import com.bellaryinfotech.repo.OrderFabricationErectionRepository;
+import com.bellaryinfotech.service.OrderFabricationAlignmentService;
 import com.bellaryinfotech.model.OrderFabricationErection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.ErectionDrawingEntryDto;
 import com.bellaryinfotech.model.ErectionDrawingEntry;
 import com.bellaryinfotech.repo.ErectionDrawingEntryRepository;
+import com.bellaryinfotech.service.ErectionDrawingEntryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

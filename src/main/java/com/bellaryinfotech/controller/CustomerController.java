@@ -3,7 +3,7 @@ package com.bellaryinfotech.controller;
 import com.bellaryinfotech.DTOImpl.CustomerUpdateDTO;
 import com.bellaryinfotech.DTOImpl.OrderRequestDTO;
 import com.bellaryinfotech.service.CustomerService;
-import com.bellaryinfotech.service.CustomerServiceImpl;
+import com.bellaryinfotech.serviceimpl.CustomerServiceImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

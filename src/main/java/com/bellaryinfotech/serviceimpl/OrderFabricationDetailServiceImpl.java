@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
  
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import com.bellaryinfotech.DTO.OrderFabricationDetailDTO;
 import com.bellaryinfotech.model.OrderFabricationDetail;
  
 import com.bellaryinfotech.repo.OrderFabricationDetailRepository;
- 
+import com.bellaryinfotech.service.OrderFabricationDetailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

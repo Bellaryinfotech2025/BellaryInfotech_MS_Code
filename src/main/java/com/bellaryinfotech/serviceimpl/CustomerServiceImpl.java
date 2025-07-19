@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.stereotype.Service;
 
@@ -25,6 +25,7 @@ import com.bellaryinfotech.model.CustomerAccount;
 import com.bellaryinfotech.model.CustomerAccountSite;
 import com.bellaryinfotech.model.CustomerContact;
 import com.bellaryinfotech.model.OrderHeader;
+import com.bellaryinfotech.service.CustomerService;
  
 @Service
 @Transactional

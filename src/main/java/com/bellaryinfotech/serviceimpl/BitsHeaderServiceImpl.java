@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.bellaryinfotech.DTO.BitsHeaderDto;
 import com.bellaryinfotech.model.BitsHeaderAll;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
+import com.bellaryinfotech.service.BitsHeaderService;
 
 import java.sql.Timestamp;
 import java.time.Instant;

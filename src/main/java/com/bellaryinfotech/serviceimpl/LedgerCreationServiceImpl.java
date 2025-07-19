@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
  
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bellaryinfotech.DTO.LedgerCreationDTO;
 import com.bellaryinfotech.model.LedgerCreation;
 import com.bellaryinfotech.repo.LedgerCreationRepository;
+import com.bellaryinfotech.service.LedgerCreationService;
 
 import java.util.List;
 import java.util.stream.Collectors;

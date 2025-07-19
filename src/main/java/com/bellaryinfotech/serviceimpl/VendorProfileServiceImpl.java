@@ -1,8 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.VendorProfileDTO;
 import com.bellaryinfotech.model.VendorProfile;
 import com.bellaryinfotech.repo.VendorProfileRepository;
+import com.bellaryinfotech.service.VendorProfileService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

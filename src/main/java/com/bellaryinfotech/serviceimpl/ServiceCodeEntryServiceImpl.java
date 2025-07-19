@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.bellaryinfotech.DTO.ServiceCodeEntryDto;
 import com.bellaryinfotech.model.ServiceCodeEntry;
 import com.bellaryinfotech.repo.ServiceCodeEntryRepository;
+import com.bellaryinfotech.service.ServiceCodeEntryService;
 
 import java.math.BigDecimal;
 import java.util.List;

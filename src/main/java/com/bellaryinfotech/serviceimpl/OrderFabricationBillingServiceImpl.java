@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DAO.OrderFabricationBillingDao;
 import com.bellaryinfotech.DTO.OrderFabricationBillingDTO;
@@ -7,6 +7,8 @@ import com.bellaryinfotech.model.OrderFabricationAlignment;
 import com.bellaryinfotech.model.OrderFabricationBilling;
 import com.bellaryinfotech.repo.OrderFabricationAlignmentRepository;
 import com.bellaryinfotech.repo.OrderFabricationBillingRepository;
+import com.bellaryinfotech.service.OrderFabricationBillingService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;

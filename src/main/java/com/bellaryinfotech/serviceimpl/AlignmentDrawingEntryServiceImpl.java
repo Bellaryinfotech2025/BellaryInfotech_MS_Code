@@ -1,8 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.AlignmentDrawingEntryDto;
 import com.bellaryinfotech.model.AlignmentDrawingEntry;
 import com.bellaryinfotech.repo.AlignmentDrawingEntryRepository;
+import com.bellaryinfotech.service.AlignmentDrawingEntryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

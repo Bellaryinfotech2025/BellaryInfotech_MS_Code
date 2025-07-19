@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bellaryinfotech.DTO.BitsLinesDto;
 import com.bellaryinfotech.model.BitsLinesAll;
 import com.bellaryinfotech.repo.BitsLinesRepository;
+import com.bellaryinfotech.service.BitsLinesService;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
 
 import java.math.BigDecimal;

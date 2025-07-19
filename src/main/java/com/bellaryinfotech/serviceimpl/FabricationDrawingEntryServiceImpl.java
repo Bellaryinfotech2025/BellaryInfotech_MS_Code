@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bellaryinfotech.DTO.FabricationDrawingEntryDto;
 import com.bellaryinfotech.model.FabricationDrawingEntry;
 import com.bellaryinfotech.repo.FabricationDrawingEntryRepository;
+import com.bellaryinfotech.service.FabricationDrawingEntryService;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

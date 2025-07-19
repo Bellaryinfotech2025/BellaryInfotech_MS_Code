@@ -1,9 +1,11 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 
 import com.bellaryinfotech.DTO.OrderLineDetailsDTO;
 import com.bellaryinfotech.model.OrderLineDetails;
 import com.bellaryinfotech.repo.OrderLineDetailsRepository;
+import com.bellaryinfotech.service.OrderLineDetailsService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,10 +1,13 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.model.OrderFabricationErection;
 import com.bellaryinfotech.model.OrderFabricationImport;
 import com.bellaryinfotech.DTO.OrderFabricationDetailDTO;
 import com.bellaryinfotech.repo.OrderFabricationErectionRepository;
 import com.bellaryinfotech.repo.OrderFabricationImportRepository;
+import com.bellaryinfotech.service.OrderFabricationDetailService;
+import com.bellaryinfotech.service.OrderFabricationErectionService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;

@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -9,6 +9,7 @@ import com.bellaryinfotech.model.OrderDetailsHeader;
 import com.bellaryinfotech.model.OrderDetailsLookup;
 import com.bellaryinfotech.repo.OrderDetailsCorelookupRepository;
 import com.bellaryinfotech.repo.OrderDetailsHeaderRepository;
+import com.bellaryinfotech.service.OrderDetailsService;
 
 import java.util.Date;
 import java.util.HashMap;

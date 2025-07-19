@@ -28,7 +28,7 @@ import com.bellaryinfotech.repo.CustomerAccountRepository;
 import com.bellaryinfotech.repo.CustomerContactRepository;
 import com.bellaryinfotech.repo.CustomerSiteRepository;
 import com.bellaryinfotech.repo.OrderHeaderRepository;
-import com.bellaryinfotech.service.CustomerServiceImpl;
+import com.bellaryinfotech.serviceimpl.CustomerServiceImpl;
 
 @Repository
 public class CustomerDaoImpl extends GenericDAOImpl implements CustomerDAO {

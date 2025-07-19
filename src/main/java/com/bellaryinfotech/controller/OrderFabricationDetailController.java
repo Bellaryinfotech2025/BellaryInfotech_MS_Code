@@ -2,7 +2,7 @@ package com.bellaryinfotech.controller;
 
 import com.bellaryinfotech.DTO.OrderFabricationDetailDTO;
 import com.bellaryinfotech.service.OrderFabricationDetailService;
-import com.bellaryinfotech.service.OrderFabricationDetailServiceImpl;
+import com.bellaryinfotech.serviceimpl.OrderFabricationDetailServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

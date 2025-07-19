@@ -1,8 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.BillingDrawingEntryDto;
 import com.bellaryinfotech.model.BillingDrawingEntry;
 import com.bellaryinfotech.repo.BillingDrawingEntryRepository;
+import com.bellaryinfotech.service.BillingDrawingEntryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

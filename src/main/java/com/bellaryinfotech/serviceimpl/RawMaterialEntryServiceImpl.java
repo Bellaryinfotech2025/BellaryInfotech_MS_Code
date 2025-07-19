@@ -1,8 +1,10 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.RawMaterialEntryDTO;
 import com.bellaryinfotech.model.RawMaterialEntry;
 import com.bellaryinfotech.repo.RawMaterialEntryRepository;
+import com.bellaryinfotech.service.RawMaterialEntryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

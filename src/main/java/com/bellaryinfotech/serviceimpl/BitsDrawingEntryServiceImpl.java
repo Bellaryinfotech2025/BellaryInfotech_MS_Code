@@ -1,4 +1,4 @@
-package com.bellaryinfotech.service;
+package com.bellaryinfotech.serviceimpl;
 
 import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryStatsDto;
@@ -6,6 +6,7 @@ import com.bellaryinfotech.DAO.BitsDrawingEntryDao;
 import com.bellaryinfotech.model.BitsDrawingEntry;
 import com.bellaryinfotech.repo.BitsDrawingEntryRepository;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
+import com.bellaryinfotech.service.BitsDrawingEntryService;
 import com.bellaryinfotech.model.BitsHeaderAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
