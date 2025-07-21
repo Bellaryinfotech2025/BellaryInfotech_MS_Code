@@ -1,6 +1,8 @@
 package com.bellaryinfotech.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "billing_users")
@@ -26,6 +28,12 @@ public class User {
     
     @Column(nullable = false)
     private String role;
+    
+    @Column(nullable = false)
+    private LocalDateTime registerTime;
+    
+    @Column(nullable = false)
+    private LocalDate registerDate;
 
     public String getFullname() {
         return fullname;
@@ -49,6 +57,22 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public LocalDateTime getRegisterTime() {
+        return registerTime;
+    }
+
+    public void setRegisterTime(LocalDateTime registerTime) {
+        this.registerTime = registerTime;
+    }
+
+    public LocalDate getRegisterDate() {
+        return registerDate;
+    }
+
+    public void setRegisterDate(LocalDate registerDate) {
+        this.registerDate = registerDate;
     }
 
     // Getters and Setters

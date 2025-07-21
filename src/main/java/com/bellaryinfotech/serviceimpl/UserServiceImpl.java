@@ -1,31 +1,82 @@
 package com.bellaryinfotech.serviceimpl;
+ 
 
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.bellaryinfotech.model.User;
 import com.bellaryinfotech.repo.UserRepository;
 import com.bellaryinfotech.service.UserService;
+import com.bellaryinfotech.DTO.UserRegistrationDTO;
+import com.bellaryinfotech.DTO.UserLoginDTO;
+import com.bellaryinfotech.DTO.UserResponseDTO;
 
 @Service
 public class UserServiceImpl implements UserService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    // Register User (without password encoding)
     @Override
-    public User registerUser(User user) {
-        return userRepository.save(user);
+    public UserResponseDTO registerUser(UserRegistrationDTO userRegistrationDTO) {
+        // Create new user entity
+        User user = new User();
+        user.setFullname(userRegistrationDTO.getFullname());
+        user.setUsername(userRegistrationDTO.getUsername());
+        user.setRole(userRegistrationDTO.getRole());
+        user.setEmail(userRegistrationDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(userRegistrationDTO.getPassword())); // Encrypt password
+        user.setPhoneNumber(userRegistrationDTO.getPhoneNumber());
+        user.setRegisterTime(LocalDateTime.now());
+        user.setRegisterDate(LocalDate.now());
+        
+        // Save user
+        User savedUser = userRepository.save(user);
+        
+        // Convert to response DTO
+        return convertToResponseDTO(savedUser);
     }
 
-    // Login User (Simple match without BCrypt)
     @Override
-    public Optional<User> loginUser(String email, String password) {
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent() && password.equals(user.get().getPassword())) {
-            return user;
+    public Optional<UserResponseDTO> loginUser(UserLoginDTO userLoginDTO) {
+        Optional<User> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
+        
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // Check if password matches using BCrypt
+            if (passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+                return Optional.of(convertToResponseDTO(user));
+            }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    private UserResponseDTO convertToResponseDTO(User user) {
+        return new UserResponseDTO(
+            user.getId(),
+            user.getFullname(),
+            user.getUsername(),
+            user.getRole(),
+            user.getEmail(),
+            user.getPhoneNumber(),
+            user.getRegisterTime(),
+            user.getRegisterDate()
+        );
     }
 }

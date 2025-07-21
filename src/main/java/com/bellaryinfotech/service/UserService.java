@@ -1,9 +1,13 @@
 package com.bellaryinfotech.service;
 
 import java.util.Optional;
-import com.bellaryinfotech.model.User;
+import com.bellaryinfotech.DTO.UserRegistrationDTO;
+import com.bellaryinfotech.DTO.UserLoginDTO;
+import com.bellaryinfotech.DTO.UserResponseDTO;
 
 public interface UserService {
-    User registerUser(User user);
-    Optional<User> loginUser(String email, String password);
+    UserResponseDTO registerUser(UserRegistrationDTO userRegistrationDTO);
+    Optional<UserResponseDTO> loginUser(UserLoginDTO userLoginDTO);
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 }
