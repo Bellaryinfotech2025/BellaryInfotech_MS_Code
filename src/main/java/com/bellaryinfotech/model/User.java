@@ -1,5 +1,4 @@
 package com.bellaryinfotech.model;
- 
 
 import jakarta.persistence.*;
 
@@ -9,40 +8,49 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(nullable = false, unique = true)
     private String email;
-
+    
     @Column(nullable = false)
     private String password;
-
+    
     @Column(nullable = false)
     private String username;
     
-
     @Column(nullable = false)
     private String fullname;
     
-	@Column(nullable = false)
+    @Column(nullable = false)
     private Long PhoneNumber;
+    
+    @Column(nullable = false)
+    private String role;
 
     public String getFullname() {
-		return fullname;
-	}
+        return fullname;
+    }
 
-	public void setFullname(String fullname) {
-		this.fullname = fullname;
-	}
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
 
-	public Long getPhoneNumber() {
-		return PhoneNumber;
-	}
+    public Long getPhoneNumber() {
+        return PhoneNumber;
+    }
 
-	public void setPhoneNumber(Long phoneNumber) {
-		PhoneNumber = phoneNumber;
-	}
+    public void setPhoneNumber(Long phoneNumber) {
+        PhoneNumber = phoneNumber;
+    }
 
- 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -84,4 +92,3 @@ public class User {
         this.fullname = fullname;
     }
 }
-
