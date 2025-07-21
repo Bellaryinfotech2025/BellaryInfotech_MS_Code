@@ -846,9 +846,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     .body("Failed to get distinct RA numbers: " + e.getMessage());
         }
     }
-    
-    
- // ADD these new endpoints to your existing BitsDrawingEntryController.java
+//Newly added apis that fetch the work order from the  bits_drawing_entry
 
     /**
      * Get distinct work orders from bits_drawing_entry
