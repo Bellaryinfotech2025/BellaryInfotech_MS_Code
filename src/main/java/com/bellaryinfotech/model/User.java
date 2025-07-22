@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 
+
+
 @Entity
 @Table(name = "billing_users")
 public class User {
@@ -34,6 +36,45 @@ public class User {
     
     @Column(nullable = false)
     private LocalDate registerDate;
+    
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean verified = false;
+
+    // Constructors
+    public User() {}
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getFullname() {
         return fullname;
@@ -75,37 +116,12 @@ public class User {
         this.registerDate = registerDate;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    public Boolean getVerified() {
+        return verified;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
     }
 
     public String getName() {
@@ -113,6 +129,6 @@ public class User {
     }
 
     public void setName(String name) {
-        this.fullname = fullname;
+        this.fullname = name;
     }
 }

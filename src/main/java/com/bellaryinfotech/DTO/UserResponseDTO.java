@@ -13,11 +13,12 @@ public class UserResponseDTO {
     private Long phoneNumber;
     private LocalDateTime registerTime;
     private LocalDate registerDate;
+    private Boolean verified;
 
     // Constructors
     public UserResponseDTO() {}
 
-    public UserResponseDTO(Long id, String fullname, String username, String role, String email, Long phoneNumber, LocalDateTime registerTime, LocalDate registerDate) {
+    public UserResponseDTO(Long id, String fullname, String username, String role, String email, Long phoneNumber, LocalDateTime registerTime, LocalDate registerDate, Boolean verified) {
         this.id = id;
         this.fullname = fullname;
         this.username = username;
@@ -26,6 +27,7 @@ public class UserResponseDTO {
         this.phoneNumber = phoneNumber;
         this.registerTime = registerTime;
         this.registerDate = registerDate;
+        this.verified = verified;
     }
 
     // Getters and Setters
@@ -91,5 +93,13 @@ public class UserResponseDTO {
 
     public void setRegisterDate(LocalDate registerDate) {
         this.registerDate = registerDate;
+    }
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
     }
 }

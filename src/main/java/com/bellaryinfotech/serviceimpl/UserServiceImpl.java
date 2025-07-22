@@ -1,5 +1,6 @@
 package com.bellaryinfotech.serviceimpl;
  
+ 
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userRegistrationDTO.getPhoneNumber());
         user.setRegisterTime(LocalDateTime.now());
         user.setRegisterDate(LocalDate.now());
+        user.setVerified(true); // Set as verified since OTP was verified
         
         // Save user
         User savedUser = userRepository.save(user);
@@ -49,6 +51,10 @@ public class UserServiceImpl implements UserService {
         
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+            // Check if user is verified
+            if (!user.getVerified()) {
+                throw new RuntimeException("Email not verified. Please verify your email first.");
+            }
             // Check if password matches using BCrypt
             if (passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
                 return Optional.of(convertToResponseDTO(user));
@@ -76,7 +82,8 @@ public class UserServiceImpl implements UserService {
             user.getEmail(),
             user.getPhoneNumber(),
             user.getRegisterTime(),
-            user.getRegisterDate()
+            user.getRegisterDate(),
+            user.getVerified()
         );
     }
 }
