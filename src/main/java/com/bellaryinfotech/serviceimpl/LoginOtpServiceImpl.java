@@ -103,7 +103,7 @@ public class LoginOtpServiceImpl implements LoginOtpService {
 
             String emailBody = String.format(
                 "Dear User,\n\n" +
-                "You are attempting to sign in to your Bellary Billing Solutions account.\n\n" +
+                "You are attempting to sign in to your Bellary Infotech Solutions account.\n\n" +
                 "To complete your login, please use the following One-Time Password (OTP):\n\n" +
                 "OTP: %s\n\n" +
                 "This OTP is valid for 5 minutes only. Please do not share this code with anyone.\n\n" +
