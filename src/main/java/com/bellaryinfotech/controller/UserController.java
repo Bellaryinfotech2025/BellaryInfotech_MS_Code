@@ -1,4 +1,3 @@
- 
 package com.bellaryinfotech.controller;
 
 import java.util.Optional;
@@ -48,12 +47,12 @@ public class UserController {
     private UserRepository userRepository;
 
      
-    @PostMapping("/verifyemail/user/auth")
+    @PostMapping("/verify/user/email")
     public ResponseEntity<String> verifyEmail(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
         try {
             logger.info("Email verification request for: {}", emailVerificationDTO.getEmail());
             
-            
+             
             if (userService.existsByEmail(emailVerificationDTO.getEmail())) {
                 logger.warn("Email already exists: {}", emailVerificationDTO.getEmail());
                 return ResponseEntity.badRequest().body("Email already exists");
@@ -69,8 +68,8 @@ public class UserController {
         }
     }
 
-     //registration otp 
-    @PostMapping("/verifyotp/user/auth")
+     
+    @PostMapping("/verify/user/otp")
     public ResponseEntity<String> verifyOtp(@Valid @RequestBody OtpVerificationDTO otpVerificationDTO) {
         try {
             logger.info("OTP verification request for email: {}", otpVerificationDTO.getEmail());
@@ -89,8 +88,8 @@ public class UserController {
         }
     }
 
-    // Resend OTP for registration
-    @PostMapping("/resendotp/user/auth")
+     
+    @PostMapping("/resend/user/otp")
     public ResponseEntity<String> resendOtp(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
         try {
             logger.info("Resend OTP request for email: {}", emailVerificationDTO.getEmail());
@@ -104,7 +103,7 @@ public class UserController {
         }
     }
 
-    // Login email verification  
+     
     @PostMapping("/login/verify/email")
     public ResponseEntity<String> loginVerifyEmail(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
         try {
@@ -133,20 +132,20 @@ public class UserController {
         }
     }
 
-    // Login with OTP verification
-    @PostMapping("/login/verify/otp")
+     
+    @PostMapping("/login/user/otp")
     public ResponseEntity<?> loginWithOtp(@Valid @RequestBody LoginOtpDTO loginOtpDTO) {
         try {
             logger.info("Login with OTP request for email: {}", loginOtpDTO.getEmail());
             
-            // Verify OTP
+            
             boolean isOtpValid = loginOtpService.verifyLoginOtp(loginOtpDTO.getEmail(), loginOtpDTO.getOtp());
             if (!isOtpValid) {
                 logger.warn("Invalid or expired login OTP for email: {}", loginOtpDTO.getEmail());
                 return ResponseEntity.badRequest().body("Invalid or expired OTP");
             }
             
-            // Get user details
+             
             Optional<User> userOptional = userRepository.findByEmail(loginOtpDTO.getEmail());
             if (!userOptional.isPresent()) {
                 logger.warn("User not found for email: {}", loginOtpDTO.getEmail());
@@ -155,10 +154,10 @@ public class UserController {
             
             User user = userOptional.get();
             
-            // Generate  the JWT token
+             
             String token = jwtUtil.generateToken(user.getEmail(), user.getUsername(), user.getRole());
             
-            // response
+            
             LoginResponseDTO response = new LoginResponseDTO(
                 token,
                 user.getEmail(),
@@ -176,13 +175,13 @@ public class UserController {
         }
     }
 
-    // Resend login OTP  
+    
     @PostMapping("/resend/login/otp")
     public ResponseEntity<String> resendLoginOtp(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
         try {
             logger.info("Resend login OTP request for email: {}", emailVerificationDTO.getEmail());
             
-            // Check if email exists
+            
             if (!userService.existsByEmail(emailVerificationDTO.getEmail())) {
                 logger.warn("Email not found for resend login OTP: {}", emailVerificationDTO.getEmail());
                 return ResponseEntity.badRequest().body("Email not found");
@@ -197,19 +196,19 @@ public class UserController {
         }
     }
 
-    // Register API
+     
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
         try {
             logger.info("Registration request for email: {}", userRegistrationDTO.getEmail());
             
-            // Check if email already exists
+             
             if (userService.existsByEmail(userRegistrationDTO.getEmail())) {
                 logger.warn("Registration failed - email already exists: {}", userRegistrationDTO.getEmail());
                 return ResponseEntity.badRequest().body("Email already exists");
             }
             
-            // Check if username already exists
+           
             if (userService.existsByUsername(userRegistrationDTO.getUsername())) {
                 logger.warn("Registration failed - username already exists: {}", userRegistrationDTO.getUsername());
                 return ResponseEntity.badRequest().body("Username already exists");
@@ -227,8 +226,8 @@ public class UserController {
         }
     }
 
-    // Token validation endpoint
-    @PostMapping("/validate-token")
+    
+    @PostMapping("/validate/token")
     public ResponseEntity<?> validateToken(@RequestBody String token) {
         try {
             if (jwtUtil.validateToken(token)) {
