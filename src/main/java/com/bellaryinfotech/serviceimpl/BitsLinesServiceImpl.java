@@ -3,7 +3,6 @@ package com.bellaryinfotech.serviceimpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.bellaryinfotech.DTO.BitsLinesDto;
 import com.bellaryinfotech.model.BitsLinesAll;
 import com.bellaryinfotech.repo.BitsLinesRepository;
@@ -16,7 +15,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,11 +74,43 @@ public class BitsLinesServiceImpl implements BitsLinesService {
             line.setTotalPrice(totalPrice);
         }
         
+        // NEW: Calculate and set GST values if GST selection is provided
+        if (lineDto.getGstType() != null && !lineDto.getGstType().isEmpty()) {
+            BigDecimal subTotal = line.getTotalPrice() != null ? line.getTotalPrice() : BigDecimal.ZERO;
+            line.setSubTotal(subTotal);
+            
+            // Parse GST rate and calculate GST amounts
+            BigDecimal gstRate = parseGSTRate(lineDto.getGstType());
+            
+            if (lineDto.getGstType().contains("CGST") && lineDto.getGstType().contains("SGST")) {
+                // For CGST & SGST, split the rate
+                BigDecimal halfRate = gstRate.divide(BigDecimal.valueOf(2), 4, BigDecimal.ROUND_HALF_UP);
+                BigDecimal cgstAmount = subTotal.multiply(halfRate).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal sgstAmount = subTotal.multiply(halfRate).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                
+                line.setCgstTotal(cgstAmount);
+                line.setSgstTotal(sgstAmount);
+                line.setTotalIncGst(subTotal.add(cgstAmount).add(sgstAmount));
+            } else {
+                // For IGST or single GST rate
+                BigDecimal gstAmount = subTotal.multiply(gstRate).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                line.setCgstTotal(BigDecimal.ZERO);
+                line.setSgstTotal(BigDecimal.ZERO);
+                line.setTotalIncGst(subTotal.add(gstAmount));
+            }
+        } else {
+            // No GST applied
+            line.setSubTotal(line.getTotalPrice());
+            line.setCgstTotal(BigDecimal.ZERO);
+            line.setSgstTotal(BigDecimal.ZERO);
+            line.setTotalIncGst(line.getTotalPrice());
+        }
+        
         LOG.info("Saving line entity with orderId: {}, lineNumber: {}", line.getOrderId(), line.getLineNumber());
         
         BitsLinesAll savedLine = linesRepository.save(line);
         
-        LOG.info("Saved line with ID: {}, orderId: {}, lineNumber: {}", 
+        LOG.info("Saved line with ID: {}, orderId: {}, lineNumber: {}",
                 savedLine.getLineId(), savedLine.getOrderId(), savedLine.getLineNumber());
         
         return convertToDto(savedLine);
@@ -254,8 +284,8 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         LOG.info("Debug: Total lines in database: {}", lines.size());
         
         for (BitsLinesAll line : lines) {
-            LOG.info("Debug: Line ID: {}, orderId: {}, lineNumber: {}, attribute1V: '{}'", 
-                line.getLineId(), line.getOrderId(), line.getLineNumber(), line.getAttribute1V());
+            LOG.info("Debug: Line ID: {}, orderId: {}, lineNumber: {}, attribute1V: '{}'",
+                    line.getLineId(), line.getOrderId(), line.getLineNumber(), line.getAttribute1V());
         }
         
         return lines.stream()
@@ -263,7 +293,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
                 .collect(Collectors.toList());
     }
 
-    // NEW: Get distinct serial numbers
+    // Get distinct serial numbers
     public List<String> getDistinctSerialNumbers() {
         LOG.info("Fetching distinct serial numbers from repository");
         List<String> serialNumbers = linesRepository.findDistinctSerialNumbers();
@@ -285,6 +315,13 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setUnitPrice(entity.getUnitPrice());
         dto.setTotalPrice(entity.getTotalPrice());
         
+        // NEW: Map GST fields
+        dto.setGstType(entity.getGstType());
+        dto.setSubTotal(entity.getSubTotal());
+        dto.setCgstTotal(entity.getCgstTotal());
+        dto.setSgstTotal(entity.getSgstTotal());
+        dto.setTotalIncGst(entity.getTotalIncGst());
+        
         // Attribute mappings (maintain backward compatibility)
         dto.setWorkOrderRef(entity.getAttribute1V());
         dto.setAttribute2V(entity.getAttribute2V());
@@ -301,12 +338,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setAttribute3D(entity.getAttribute3D());
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
-     // NEW: Map GST fields
-        dto.setGstType(entity.getGstType());
-        dto.setSubTotal(entity.getSubTotal());
-        dto.setCgstTotal(entity.getCgstTotal());
-        dto.setSgstTotal(entity.getSgstTotal());
-        dto.setTotalIncGst(entity.getTotalIncGst());
+        
         return dto;
     }
 
@@ -322,6 +354,13 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setUom(dto.getUom());
         entity.setUnitPrice(dto.getUnitPrice());
         entity.setTotalPrice(dto.getTotalPrice());
+        
+        // NEW: Map GST fields
+        entity.setGstType(dto.getGstType());
+        entity.setSubTotal(dto.getSubTotal());
+        entity.setCgstTotal(dto.getCgstTotal());
+        entity.setSgstTotal(dto.getSgstTotal());
+        entity.setTotalIncGst(dto.getTotalIncGst());
         
         // Attribute mappings (maintain backward compatibility)
         entity.setAttribute1V(dto.getWorkOrderRef());
@@ -339,12 +378,6 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setAttribute3D(dto.getAttribute3D());
         entity.setAttribute4D(dto.getAttribute4D());
         entity.setAttribute5D(dto.getAttribute5D());
-     // NEW: Map GST fields
-        entity.setGstType(dto.getGstType());
-        entity.setSubTotal(dto.getSubTotal());
-        entity.setCgstTotal(dto.getCgstTotal());
-        entity.setSgstTotal(dto.getSgstTotal());
-        entity.setTotalIncGst(dto.getTotalIncGst());
         
         return entity;
     }
@@ -358,12 +391,46 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setUnitPrice(dto.getUnitPrice());
         entity.setTotalPrice(dto.getTotalPrice());
         
-     // NEW: Update GST fields
+        // NEW: Update GST fields
         entity.setGstType(dto.getGstType());
         entity.setSubTotal(dto.getSubTotal());
         entity.setCgstTotal(dto.getCgstTotal());
         entity.setSgstTotal(dto.getSgstTotal());
         entity.setTotalIncGst(dto.getTotalIncGst());
-       
+        
+        // Don't update orderId and lineNumber during updates to maintain integrity
+        // Don't update workOrderRef during updates to maintain the link
+    }
+    
+    // Helper method to parse GST rate from selection string
+    private BigDecimal parseGSTRate(String gstSelection) {
+        if (gstSelection == null || gstSelection.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        
+        try {
+            // Extract percentage from strings like "18%", "IGST 18%", "CGST 9% & SGST 9%"
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)");
+            java.util.regex.Matcher matcher = pattern.matcher(gstSelection);
+            
+            if (gstSelection.contains("CGST") && gstSelection.contains("SGST")) {
+                // For CGST & SGST, sum both percentages
+                java.util.List<String> matches = new java.util.ArrayList<>();
+                while (matcher.find()) {
+                    matches.add(matcher.group(1));
+                }
+                if (matches.size() >= 2) {
+                    return new BigDecimal(matches.get(0)).add(new BigDecimal(matches.get(1)));
+                } else if (matches.size() == 1) {
+                    return new BigDecimal(matches.get(0)).multiply(BigDecimal.valueOf(2));
+                }
+            } else if (matcher.find()) {
+                return new BigDecimal(matcher.group(1));
+            }
+        } catch (Exception e) {
+            LOG.warn("Error parsing GST rate from: {}", gstSelection, e);
+        }
+        
+        return BigDecimal.ZERO;
     }
 }
