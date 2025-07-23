@@ -301,7 +301,12 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setAttribute3D(entity.getAttribute3D());
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
-        
+     // NEW: Map GST fields
+        dto.setGstType(entity.getGstType());
+        dto.setSubTotal(entity.getSubTotal());
+        dto.setCgstTotal(entity.getCgstTotal());
+        dto.setSgstTotal(entity.getSgstTotal());
+        dto.setTotalIncGst(entity.getTotalIncGst());
         return dto;
     }
 
@@ -334,6 +339,12 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setAttribute3D(dto.getAttribute3D());
         entity.setAttribute4D(dto.getAttribute4D());
         entity.setAttribute5D(dto.getAttribute5D());
+     // NEW: Map GST fields
+        entity.setGstType(dto.getGstType());
+        entity.setSubTotal(dto.getSubTotal());
+        entity.setCgstTotal(dto.getCgstTotal());
+        entity.setSgstTotal(dto.getSgstTotal());
+        entity.setTotalIncGst(dto.getTotalIncGst());
         
         return entity;
     }
@@ -346,7 +357,13 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setUom(dto.getUom());
         entity.setUnitPrice(dto.getUnitPrice());
         entity.setTotalPrice(dto.getTotalPrice());
-        // Don't update orderId and lineNumber during updates to maintain integrity
-        // Don't update workOrderRef during updates to maintain the link
+        
+     // NEW: Update GST fields
+        entity.setGstType(dto.getGstType());
+        entity.setSubTotal(dto.getSubTotal());
+        entity.setCgstTotal(dto.getCgstTotal());
+        entity.setSgstTotal(dto.getSgstTotal());
+        entity.setTotalIncGst(dto.getTotalIncGst());
+       
     }
 }

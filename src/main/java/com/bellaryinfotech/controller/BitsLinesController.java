@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.bellaryinfotech.DTO.BitsLinesDto;
 import com.bellaryinfotech.service.BitsLinesService;
 
@@ -40,7 +39,7 @@ public class BitsLinesController {
     public static final String CREATE_LINE_WITH_ORDER = "/createBitsLineWithOrder/details";
     public static final String GET_LINES_BY_ORDER_ID = "/getBitsLinesByOrderId/details";
     public static final String CREATE_MULTIPLE_LINES = "/createMultipleBitsLines/details";
-    // to get the lines detaisl for invoice
+    // to get the lines details for invoice
     public static final String GET_INVOICE_DATA = "/getInvoiceData/details";
     
     // NEW: Endpoint for distinct serial numbers
@@ -204,7 +203,7 @@ public class BitsLinesController {
             // Use the existing service method to get lines by order ID
             List<BitsLinesDto> lines = linesService.getLinesByOrderId(orderId);
             
-            // Transform the data to include only the fields needed for invoice
+            // Transform the data to include only the fields needed for invoice (including GST fields)
             List<Map<String, Object>> invoiceData = lines.stream()
                     .map(line -> {
                         Map<String, Object> invoiceItem = new HashMap<>();
@@ -216,6 +215,14 @@ public class BitsLinesController {
                         invoiceItem.put("uom", line.getUom());
                         invoiceItem.put("unitPrice", line.getUnitPrice());
                         invoiceItem.put("totalPrice", line.getTotalPrice());
+                        
+                        // NEW: Include GST fields in invoice data
+                        invoiceItem.put("gstType", line.getGstType());
+                        invoiceItem.put("subTotal", line.getSubTotal());
+                        invoiceItem.put("cgstTotal", line.getCgstTotal());
+                        invoiceItem.put("sgstTotal", line.getSgstTotal());
+                        invoiceItem.put("totalIncGst", line.getTotalIncGst());
+                        
                         return invoiceItem;
                     })
                     .collect(Collectors.toList());

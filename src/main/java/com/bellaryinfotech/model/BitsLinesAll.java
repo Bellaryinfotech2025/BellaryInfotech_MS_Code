@@ -102,6 +102,22 @@ public class BitsLinesAll {
     
     @Column(name = "attribute5_d")
     private LocalDate attribute5D;
+    
+ // NEW: GST-related columns
+    @Column(name = "gst_type")
+    private String gstType;
+    
+    @Column(name = "sub_total")
+    private BigDecimal subTotal;
+    
+    @Column(name = "cgst_total")
+    private BigDecimal cgstTotal;
+    
+    @Column(name = "sgst_total")
+    private BigDecimal sgstTotal;
+    
+    @Column(name = "total_inc_gst")
+    private BigDecimal totalIncGst;
 
     // Default constructor
     public BitsLinesAll() {}
@@ -353,4 +369,48 @@ public class BitsLinesAll {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
+    
+    //new columns
+
+	public String getGstType() {
+		return gstType;
+	}
+
+	public void setGstType(String gstType) {
+		this.gstType = gstType;
+	}
+
+	public BigDecimal getSubTotal() {
+		return subTotal;
+	}
+
+	public void setSubTotal(BigDecimal subTotal) {
+		this.subTotal = subTotal;
+	}
+
+	public BigDecimal getCgstTotal() {
+		return cgstTotal;
+	}
+
+	public void setCgstTotal(BigDecimal cgstTotal) {
+		this.cgstTotal = cgstTotal;
+	}
+
+	public BigDecimal getSgstTotal() {
+		return sgstTotal;
+	}
+
+	public void setSgstTotal(BigDecimal sgstTotal) {
+		this.sgstTotal = sgstTotal;
+	}
+
+	public BigDecimal getTotalIncGst() {
+		return totalIncGst;
+	}
+
+	public void setTotalIncGst(BigDecimal totalIncGst) {
+		this.totalIncGst = totalIncGst;
+	}
+    
+    
 }

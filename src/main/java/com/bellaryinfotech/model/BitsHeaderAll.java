@@ -108,6 +108,12 @@ public class BitsHeaderAll {
     // NEW: Customer ID field
     @Column(name = "customer_id")
     private Long customerId;
+    //new columns 
+    @Column(name = "rcm_applicable")
+    private Boolean rcmApplicable = false;
+
+    @Column(name = "gst_selection", length = 100)
+    private String gstSelection;
 
     // Default constructor
     public BitsHeaderAll() {}
@@ -370,6 +376,22 @@ public class BitsHeaderAll {
 
 	public void setCustomerId(Long customerId) {
 		this.customerId = customerId;
+	}
+	//new getter and  setter
+	public Boolean getRcmApplicable() {
+		return rcmApplicable;
+	}
+
+	public void setRcmApplicable(Boolean rcmApplicable) {
+		this.rcmApplicable = rcmApplicable;
+	}
+
+	public String getGstSelection() {
+		return gstSelection;
+	}
+
+	public void setGstSelection(String gstSelection) {
+		this.gstSelection = gstSelection;
 	}
 
 	// Helper method to convert LocalDateTime to Timestamp

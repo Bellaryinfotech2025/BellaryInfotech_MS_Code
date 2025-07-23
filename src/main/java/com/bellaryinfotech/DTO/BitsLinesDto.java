@@ -39,6 +39,13 @@ public class BitsLinesDto {
     private LocalDate attribute3D;
     private LocalDate attribute4D;
     private LocalDate attribute5D;
+    
+ // NEW: GST-related fields
+    private String gstType;
+    private BigDecimal subTotal;
+    private BigDecimal cgstTotal;
+    private BigDecimal sgstTotal;
+    private BigDecimal totalIncGst;
 
     // Default constructor
     public BitsLinesDto() {}
@@ -126,4 +133,46 @@ public class BitsLinesDto {
     
     public LocalDate getAttribute5D() { return attribute5D; }
     public void setAttribute5D(LocalDate attribute5d) { attribute5D = attribute5d; }
+
+	public String getGstType() {
+		return gstType;
+	}
+
+	public void setGstType(String gstType) {
+		this.gstType = gstType;
+	}
+
+	public BigDecimal getSubTotal() {
+		return subTotal;
+	}
+
+	public void setSubTotal(BigDecimal subTotal) {
+		this.subTotal = subTotal;
+	}
+
+	public BigDecimal getCgstTotal() {
+		return cgstTotal;
+	}
+
+	public void setCgstTotal(BigDecimal cgstTotal) {
+		this.cgstTotal = cgstTotal;
+	}
+
+	public BigDecimal getSgstTotal() {
+		return sgstTotal;
+	}
+
+	public void setSgstTotal(BigDecimal sgstTotal) {
+		this.sgstTotal = sgstTotal;
+	}
+
+	public BigDecimal getTotalIncGst() {
+		return totalIncGst;
+	}
+
+	public void setTotalIncGst(BigDecimal totalIncGst) {
+		this.totalIncGst = totalIncGst;
+	}
+    
+    
 }

@@ -114,6 +114,9 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        dto.setScrapAllowanceVisiblePercent(entity.getScrapAllowanceVisiblePercent());
        dto.setScrapAllowanceInvisiblePercent(entity.getScrapAllowanceInvisiblePercent());
        dto.setMaterialIssueType(entity.getMaterialIssueType());
+       // NEW: Map GST-related fields
+       dto.setRcmApplicable(entity.getRcmApplicable());
+       dto.setGstSelection(entity.getGstSelection());
        return dto;
    }
 
@@ -129,6 +132,9 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        entity.setScrapAllowanceVisiblePercent(dto.getScrapAllowanceVisiblePercent());
        entity.setScrapAllowanceInvisiblePercent(dto.getScrapAllowanceInvisiblePercent());
        entity.setMaterialIssueType(dto.getMaterialIssueType());
+       // NEW: Map GST-related fields
+       entity.setRcmApplicable(dto.getRcmApplicable());
+       entity.setGstSelection(dto.getGstSelection());
        return entity;
    }
 
@@ -143,5 +149,8 @@ public class BitsHeaderServiceImpl implements BitsHeaderService {
        entity.setScrapAllowanceVisiblePercent(dto.getScrapAllowanceVisiblePercent());
        entity.setScrapAllowanceInvisiblePercent(dto.getScrapAllowanceInvisiblePercent());
        entity.setMaterialIssueType(dto.getMaterialIssueType());
+       // NEW: Update GST-related fields
+       entity.setRcmApplicable(dto.getRcmApplicable());
+       entity.setGstSelection(dto.getGstSelection());
    }
 }

@@ -15,6 +15,10 @@ public class BitsHeaderDto {
     private String scrapAllowanceVisiblePercent;
     private String scrapAllowanceInvisiblePercent;
     private String materialIssueType;
+ // NEW: GST-related fields
+    private Boolean rcmApplicable;
+    private String gstSelection;
+
      
 
     // Default constructor
@@ -36,6 +40,8 @@ public class BitsHeaderDto {
         this.scrapAllowanceVisiblePercent = scrapAllowanceVisiblePercent;
         this.scrapAllowanceInvisiblePercent = scrapAllowanceInvisiblePercent;
         this.materialIssueType = materialIssueType;
+        this.rcmApplicable = rcmApplicable;
+        this.gstSelection = gstSelection;
     }
 
     // Getters and Setters
@@ -125,5 +131,22 @@ public class BitsHeaderDto {
 
     public void setMaterialIssueType(String materialIssueType) {
         this.materialIssueType = materialIssueType;
+    }
+    
+    // NEW: GST-related getters and setters
+    public Boolean getRcmApplicable() {
+        return rcmApplicable;
+    }
+
+    public void setRcmApplicable(Boolean rcmApplicable) {
+        this.rcmApplicable = rcmApplicable;
+    }
+
+    public String getGstSelection() {
+        return gstSelection;
+    }
+
+    public void setGstSelection(String gstSelection) {
+        this.gstSelection = gstSelection;
     }
 }

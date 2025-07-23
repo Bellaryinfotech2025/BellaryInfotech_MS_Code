@@ -42,12 +42,9 @@ public class BitsHeaderController {
     @Autowired
     private DataSource dataSource;
     
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    
-
     // Constants for endpoints
     public static final String GET_ALL_HEADERS = "/getAllBitsHeaders/details";
     public static final String GET_HEADER_BY_ID = "/getBitsHeaderById/details";
@@ -106,11 +103,12 @@ public class BitsHeaderController {
     @GetMapping(value = GET_WORKORDER_DETAILS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getWorkOrderDetails(@PathVariable String workOrderNumber) {
         try (Connection connection = dataSource.getConnection()) {
-            // UPDATED: Added order_id to the query - THIS IS THE KEY FIX
+            // UPDATED: Added order_id and GST fields to the query - THIS IS THE KEY FIX
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        creation_date, created_by, last_update_date, last_updated_by
                 FROM bits_po_entry_header 
                 WHERE work_order = ?
@@ -122,7 +120,7 @@ public class BitsHeaderController {
                 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        // UPDATED: Create response map to explicitly include orderId
+                        // UPDATED: Create response map to explicitly include orderId and GST fields
                         Map<String, Object> response = new HashMap<>();
                         response.put("orderId", resultSet.getLong("order_id")); // KEY FIX: Explicitly return orderId
                         response.put("workOrder", resultSet.getString("work_order"));
@@ -150,10 +148,14 @@ public class BitsHeaderController {
                         // Handle boolean
                         response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
                         
-                        // Handle the new fields
+                        // Handle the existing fields
                         response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
                         response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
                         response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                        
+                        // NEW: Handle GST fields
+                        response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                        response.put("gstSelection", resultSet.getString("gst_selection"));
                         
                         // Handle timestamps
                         try {
@@ -185,7 +187,7 @@ public class BitsHeaderController {
                             LOG.warn("Error parsing last_updated_by for work order {}", workOrderNumber);
                         }
                         
-                        LOG.info("Successfully fetched details for work order: {} with order_id: {}", 
+                        LOG.info("Successfully fetched details for work order: {} with order_id: {}",
                                 workOrderNumber, resultSet.getLong("order_id"));
                         return ResponseEntity.ok(response);
                     } else {
@@ -210,11 +212,12 @@ public class BitsHeaderController {
         List<BitsHeaderAll> headers = new ArrayList<>();
         
         try (Connection connection = dataSource.getConnection()) {
-            // UPDATED: Added new columns to the query
+            // UPDATED: Added GST columns to the query
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -223,94 +226,98 @@ public class BitsHeaderController {
             
             try (PreparedStatement statement = connection.prepareStatement(sql);
                  ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        BitsHeaderAll header = new BitsHeaderAll();
-                        
-                        // Set basic fields
-                        header.setOrderId(resultSet.getLong("order_id"));
-                        header.setWorkOrder(resultSet.getString("work_order"));
-                        header.setPlantLocation(resultSet.getString("plant_location"));
-                        header.setDepartment(resultSet.getString("department"));
-                        header.setWorkLocation(resultSet.getString("work_location"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
+                while (resultSet.next()) {
+                    BitsHeaderAll header = new BitsHeaderAll();
+                    
+                    // Set basic fields
+                    header.setOrderId(resultSet.getLong("order_id"));
+                    header.setWorkOrder(resultSet.getString("work_order"));
+                    header.setPlantLocation(resultSet.getString("plant_location"));
+                    header.setDepartment(resultSet.getString("department"));
+                    header.setWorkLocation(resultSet.getString("work_location"));
+                    
+                    // Handle dates safely
+                    try {
+                        if (resultSet.getDate("work_order_date") != null) {
+                            header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
                         }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle boolean
-                        header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
-                        
-                        // ADDED: Handle new fields
-                        header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
-                        header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
-                        header.setMaterialIssueType(resultSet.getString("material_issue_type"));
-                        
-                        // Handle tenant ID
-                        try {
-                            header.setTenantId(resultSet.getInt("tenant_id"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing tenant_id for order ID: {}", header.getOrderId());
-                            header.setTenantId(1); // Default tenant ID
-                        }
-                        
-                        // Handle timestamps
-                        try {
-                            Timestamp creationDate = resultSet.getTimestamp("creation_date");
-                            if (creationDate != null) {
-                                header.setCreationDate(creationDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing creation_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            Timestamp lastUpdateDate = resultSet.getTimestamp("last_update_date");
-                            if (lastUpdateDate != null) {
-                                header.setLastUpdateDate(lastUpdateDate);
-                            }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_update_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle created_by and last_updated_by
-                        try {
-                            header.setCreatedBy(resultSet.getLong("created_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing created_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            header.setLastUpdatedBy(resultSet.getLong("last_updated_by"));
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing last_updated_by for order ID: {}", header.getOrderId());
-                        }
-                        
-                        // Handle attribute fields
-                        header.setAttribute1V(resultSet.getString("attribute1_v"));
-                        header.setAttribute2V(resultSet.getString("attribute2_v"));
-                        header.setAttribute3V(resultSet.getString("attribute3_v"));
-                        header.setAttribute4V(resultSet.getString("attribute4_v"));
-                        header.setAttribute5V(resultSet.getString("attribute5_v"));
-                        
-                        headers.add(header);
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
                     }
                     
-                    LOG.info("Found {} headers total: {}", headers.size());
-                    return ResponseEntity.ok(headers);
+                    try {
+                        if (resultSet.getDate("completion_date") != null) {
+                            header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
+                        }
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
+                    }
+                    
+                    // Handle boolean
+                    header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                    
+                    // Handle existing fields
+                    header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
+                    header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
+                    header.setMaterialIssueType(resultSet.getString("material_issue_type"));
+                    
+                    // NEW: Handle GST fields
+                    header.setRcmApplicable(resultSet.getBoolean("rcm_applicable"));
+                    header.setGstSelection(resultSet.getString("gst_selection"));
+                    
+                    // Handle tenant ID
+                    try {
+                        header.setTenantId(resultSet.getInt("tenant_id"));
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing tenant_id for order ID: {}", header.getOrderId());
+                        header.setTenantId(1); // Default tenant ID
+                    }
+                    
+                    // Handle timestamps
+                    try {
+                        Timestamp creationDate = resultSet.getTimestamp("creation_date");
+                        if (creationDate != null) {
+                            header.setCreationDate(creationDate);
+                        }
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing creation_date for order ID: {}", header.getOrderId());
+                    }
+                    
+                    try {
+                        Timestamp lastUpdateDate = resultSet.getTimestamp("last_update_date");
+                        if (lastUpdateDate != null) {
+                            header.setLastUpdateDate(lastUpdateDate);
+                        }
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing last_update_date for order ID: {}", header.getOrderId());
+                    }
+                    
+                    // Handle created_by and last_updated_by
+                    try {
+                        header.setCreatedBy(resultSet.getLong("created_by"));
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing created_by for order ID: {}", header.getOrderId());
+                    }
+                    
+                    try {
+                        header.setLastUpdatedBy(resultSet.getLong("last_updated_by"));
+                    } catch (Exception e) {
+                        LOG.warn("Error parsing last_updated_by for order ID: {}", header.getOrderId());
+                    }
+                    
+                    // Handle attribute fields
+                    header.setAttribute1V(resultSet.getString("attribute1_v"));
+                    header.setAttribute2V(resultSet.getString("attribute2_v"));
+                    header.setAttribute3V(resultSet.getString("attribute3_v"));
+                    header.setAttribute4V(resultSet.getString("attribute4_v"));
+                    header.setAttribute5V(resultSet.getString("attribute5_v"));
+                    
+                    headers.add(header);
                 }
+                
+                LOG.info("Found {} headers total: {}", headers.size());
+                return ResponseEntity.ok(headers);
+            }
             
         } catch (Exception e) {
             LOG.error("Error searching bits headers by work order", e);
@@ -328,6 +335,7 @@ public class BitsHeaderController {
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -369,10 +377,14 @@ public class BitsHeaderController {
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
                         
-                        // Handle new fields
+                        // Handle existing fields
                         header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
                         header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
                         header.setMaterialIssueType(resultSet.getString("material_issue_type"));
+                        
+                        // NEW: Handle GST fields
+                        header.setRcmApplicable(resultSet.getBoolean("rcm_applicable"));
+                        header.setGstSelection(resultSet.getString("gst_selection"));
                         
                         // Handle tenant ID
                         try {
@@ -444,6 +456,7 @@ public class BitsHeaderController {
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -485,10 +498,14 @@ public class BitsHeaderController {
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
                         
-                        // Handle new fields
+                        // Handle existing fields
                         header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
                         header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
                         header.setMaterialIssueType(resultSet.getString("material_issue_type"));
+                        
+                        // NEW: Handle GST fields
+                        header.setRcmApplicable(resultSet.getBoolean("rcm_applicable"));
+                        header.setGstSelection(resultSet.getString("gst_selection"));
                         
                         // Handle tenant ID
                         try {
@@ -560,6 +577,7 @@ public class BitsHeaderController {
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable, tenant_id,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -601,10 +619,14 @@ public class BitsHeaderController {
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
                         
-                        // Handle new fields
+                        // Handle existing fields
                         header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
                         header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
                         header.setMaterialIssueType(resultSet.getString("material_issue_type"));
+                        
+                        // NEW: Handle GST fields
+                        header.setRcmApplicable(resultSet.getBoolean("rcm_applicable"));
+                        header.setGstSelection(resultSet.getString("gst_selection"));
                         
                         // Handle tenant ID
                         try {
@@ -680,13 +702,19 @@ public class BitsHeaderController {
             String department = headerData.get("department") != null ? headerData.get("department").toString() : null;
             String workLocation = headerData.get("workLocation") != null ? headerData.get("workLocation").toString() : null;
             
-            // ADDED: Extract new field values
-            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ? 
+            // Extract existing field values
+            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ?
                     headerData.get("scrapAllowanceVisiblePercent").toString() : null;
-            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ? 
+            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ?
                     headerData.get("scrapAllowanceInvisiblePercent").toString() : null;
-            String materialIssueType = headerData.get("materialIssueType") != null ? 
+            String materialIssueType = headerData.get("materialIssueType") != null ?
                     headerData.get("materialIssueType").toString() : null;
+            
+            // NEW: Extract GST field values
+            Boolean rcmApplicable = headerData.get("rcmApplicable") != null ?
+                    Boolean.valueOf(headerData.get("rcmApplicable").toString()) : false;
+            String gstSelection = headerData.get("gstSelection") != null ?
+                    headerData.get("gstSelection").toString() : null;
             
             // Parse dates
             LocalDate workOrderDate = null;
@@ -708,18 +736,19 @@ public class BitsHeaderController {
             }
             
             // Parse boolean
-            Boolean ldApplicable = headerData.get("ldApplicable") != null ? 
+            Boolean ldApplicable = headerData.get("ldApplicable") != null ?
                     Boolean.valueOf(headerData.get("ldApplicable").toString()) : false;
             
             // Insert into database
-            // UPDATED: Added new columns to the SQL statement
+            // UPDATED: Added GST columns to the SQL statement
             String sql = """
                 INSERT INTO bits_po_entry_header (
                     work_order, plant_location, department, work_location,
                     work_order_date, completion_date, ld_applicable,
                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                    rcm_applicable, gst_selection,
                     tenant_id, creation_date, created_by, last_update_date, last_updated_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)
                 RETURNING order_id
                 """;
             
@@ -745,15 +774,19 @@ public class BitsHeaderController {
                 // Set boolean
                 statement.setBoolean(7, ldApplicable);
                 
-                // ADDED: Set new fields
+                // Set existing fields
                 statement.setString(8, scrapAllowanceVisiblePercent);
                 statement.setString(9, scrapAllowanceInvisiblePercent);
                 statement.setString(10, materialIssueType);
                 
+                // NEW: Set GST fields
+                statement.setBoolean(11, rcmApplicable);
+                statement.setString(12, gstSelection);
+                
                 // Set default values
-                statement.setInt(11, 1); // Default tenant ID
-                statement.setLong(12, 1L); // Default created_by
-                statement.setLong(13, 1L); // Default last_updated_by
+                statement.setInt(13, 1); // Default tenant ID
+                statement.setLong(14, 1L); // Default created_by
+                statement.setLong(15, 1L); // Default last_updated_by
                 
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
@@ -770,10 +803,14 @@ public class BitsHeaderController {
                         response.put("completionDate", completionDate != null ? completionDate.toString() : null);
                         response.put("ldApplicable", ldApplicable);
                         
-                        // ADDED: Include new fields in response
+                        // Include existing fields in response
                         response.put("scrapAllowanceVisiblePercent", scrapAllowanceVisiblePercent);
                         response.put("scrapAllowanceInvisiblePercent", scrapAllowanceInvisiblePercent);
                         response.put("materialIssueType", materialIssueType);
+                        
+                        // NEW: Include GST fields in response
+                        response.put("rcmApplicable", rcmApplicable);
+                        response.put("gstSelection", gstSelection);
                         
                         LOG.info("Successfully created bits header with ID: {}", orderId);
                         return ResponseEntity.status(201).body(response);
@@ -812,13 +849,19 @@ public class BitsHeaderController {
             String department = headerData.get("department") != null ? headerData.get("department").toString() : null;
             String workLocation = headerData.get("workLocation") != null ? headerData.get("workLocation").toString() : null;
             
-            // ADDED: Extract new field values
-            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ? 
+            // Extract existing field values
+            String scrapAllowanceVisiblePercent = headerData.get("scrapAllowanceVisiblePercent") != null ?
                     headerData.get("scrapAllowanceVisiblePercent").toString() : null;
-            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ? 
+            String scrapAllowanceInvisiblePercent = headerData.get("scrapAllowanceInvisiblePercent") != null ?
                     headerData.get("scrapAllowanceInvisiblePercent").toString() : null;
-            String materialIssueType = headerData.get("materialIssueType") != null ? 
+            String materialIssueType = headerData.get("materialIssueType") != null ?
                     headerData.get("materialIssueType").toString() : null;
+            
+            // NEW: Extract GST field values
+            Boolean rcmApplicable = headerData.get("rcmApplicable") != null ?
+                    Boolean.valueOf(headerData.get("rcmApplicable").toString()) : false;
+            String gstSelection = headerData.get("gstSelection") != null ?
+                    headerData.get("gstSelection").toString() : null;
             
             // Parse dates
             LocalDate workOrderDate = null;
@@ -840,11 +883,11 @@ public class BitsHeaderController {
             }
             
             // Parse boolean
-            Boolean ldApplicable = headerData.get("ldApplicable") != null ? 
+            Boolean ldApplicable = headerData.get("ldApplicable") != null ?
                     Boolean.valueOf(headerData.get("ldApplicable").toString()) : false;
             
             // Update the header
-            // UPDATED: Added new columns to the SQL UPDATE
+            // UPDATED: Added GST columns to the SQL UPDATE
             String sql = """
                 UPDATE bits_po_entry_header SET
                     work_order = ?,
@@ -857,6 +900,8 @@ public class BitsHeaderController {
                     scrap_allowance_visible_percent = ?,
                     scrap_allowance_invisible_percent = ?,
                     material_issue_type = ?,
+                    rcm_applicable = ?,
+                    gst_selection = ?,
                     last_update_date = CURRENT_TIMESTAMP,
                     last_updated_by = ?
                 WHERE order_id = ?
@@ -881,18 +926,22 @@ public class BitsHeaderController {
                     statement.setNull(6, java.sql.Types.DATE);
                 }
                 
-                // Set boolean and default values
+                // Set boolean and existing fields
                 statement.setBoolean(7, ldApplicable);
                 
-                // ADDED: Set new fields
+                // Set existing fields
                 statement.setString(8, scrapAllowanceVisiblePercent);
                 statement.setString(9, scrapAllowanceInvisiblePercent);
                 statement.setString(10, materialIssueType);
                 
-                statement.setLong(11, 1L); // Default last_updated_by
+                // NEW: Set GST fields
+                statement.setBoolean(11, rcmApplicable);
+                statement.setString(12, gstSelection);
+                
+                statement.setLong(13, 1L); // Default last_updated_by
                 
                 // Set ID for WHERE clause
-                statement.setLong(12, id);
+                statement.setLong(14, id);
                 
                 int rowsAffected = statement.executeUpdate();
                 if (rowsAffected > 0) {
@@ -909,10 +958,14 @@ public class BitsHeaderController {
                     response.put("completionDate", completionDate != null ? completionDate.toString() : null);
                     response.put("ldApplicable", ldApplicable);
                     
-                    // ADDED: Include new fields in response
+                    // Include existing fields in response
                     response.put("scrapAllowanceVisiblePercent", scrapAllowanceVisiblePercent);
                     response.put("scrapAllowanceInvisiblePercent", scrapAllowanceInvisiblePercent);
                     response.put("materialIssueType", materialIssueType);
+                    
+                    // NEW: Include GST fields in response
+                    response.put("rcmApplicable", rcmApplicable);
+                    response.put("gstSelection", gstSelection);
                     
                     return ResponseEntity.ok(response);
                 } else {
@@ -956,11 +1009,12 @@ public class BitsHeaderController {
         LOG.info("Fetching bits header by ID: {}", id);
         
         try (Connection connection = dataSource.getConnection()) {
-            // UPDATED: Added new columns to the query
+            // UPDATED: Added GST columns to the query
             String sql = """
                 SELECT order_id, work_order, plant_location, department, work_location,
                        work_order_date, completion_date, ld_applicable,
                        scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                       rcm_applicable, gst_selection,
                        tenant_id, creation_date, created_by, last_update_date, last_updated_by,
                        attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
                 FROM bits_po_entry_header 
@@ -1001,10 +1055,14 @@ public class BitsHeaderController {
                         // Handle boolean
                         header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
                         
-                        // ADDED: Handle new fields
+                        // Handle existing fields
                         header.setScrapAllowanceVisiblePercent(resultSet.getString("scrap_allowance_visible_percent"));
                         header.setScrapAllowanceInvisiblePercent(resultSet.getString("scrap_allowance_invisible_percent"));
                         header.setMaterialIssueType(resultSet.getString("material_issue_type"));
+                        
+                        // NEW: Handle GST fields
+                        header.setRcmApplicable(resultSet.getBoolean("rcm_applicable"));
+                        header.setGstSelection(resultSet.getString("gst_selection"));
                         
                         // Handle tenant ID
                         try {
@@ -1076,7 +1134,7 @@ public class BitsHeaderController {
         try (Connection connection = dataSource.getConnection()) {
             String sql = """
                 SELECT line_id, line_number, ser_no, service_code, service_desc,
-                       qty, uom, rate, amount, work_order_ref  
+                       qty, uom, rate, amount, work_order_ref
                 FROM bits_po_entry_lines 
                 WHERE work_order_ref = ?
                 ORDER BY line_id
@@ -1117,312 +1175,319 @@ public class BitsHeaderController {
     // NEW: Get work order by order ID
     @GetMapping(value = "/getworkorder/order/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getWorkOrderByOrderId(@PathVariable Long orderId) {
-    try {
-        LOG.info("Fetching work order by order ID: {}", orderId);
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable,
-                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type
-                FROM bits_po_entry_header 
-                WHERE order_id = ?
-                """;
+        try {
+            LOG.info("Fetching work order by order ID: {}", orderId);
             
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setLong(1, orderId);
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date, ld_applicable,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection
+                    FROM bits_po_entry_header 
+                    WHERE order_id = ?
+                    """;
                 
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("orderId", resultSet.getLong("order_id"));
-                        response.put("workOrder", resultSet.getString("work_order"));
-                        response.put("plantLocation", resultSet.getString("plant_location"));
-                        response.put("department", resultSet.getString("department"));
-                        response.put("workLocation", resultSet.getString("work_location"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setLong(1, orderId);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("orderId", resultSet.getLong("order_id"));
+                            response.put("workOrder", resultSet.getString("work_order"));
+                            response.put("plantLocation", resultSet.getString("plant_location"));
+                            response.put("department", resultSet.getString("department"));
+                            response.put("workLocation", resultSet.getString("work_location"));
+                            
+                            // Handle dates safely
+                            try {
+                                if (resultSet.getDate("work_order_date") != null) {
+                                    response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing work_order_date for order ID {}", orderId);
                             }
-                        } catch (Exception dateEx) {
-                            LOG.warn("Error parsing work_order_date for order ID {}", orderId);
-                        }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                            
+                            try {
+                                if (resultSet.getDate("completion_date") != null) {
+                                    response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing completion_date for order ID {}", orderId);
                             }
-                        } catch (Exception dateEx) {
-                            LOG.warn("Error parsing completion_date for order ID {}", orderId);
+                            
+                            response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                            response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                            response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                            response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                            
+                            // NEW: Include GST fields
+                            response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                            response.put("gstSelection", resultSet.getString("gst_selection"));
+                            
+                            return ResponseEntity.ok(response);
+                        } else {
+                            LOG.warn("No work order found with order ID: {}", orderId);
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                    .body("Work order not found with order ID: " + orderId);
                         }
-                        
-                        response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                        response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
-                        response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
-                        response.put("materialIssueType", resultSet.getString("material_issue_type"));
-                        
-                        return ResponseEntity.ok(response);
-                    } else {
-                        LOG.warn("No work order found with order ID: {}", orderId);
-                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                .body("Work order not found with order ID: " + orderId);
                     }
                 }
             }
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching work order by order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching work order: " + e.getMessage());
         }
-        
-    } catch (Exception e) {
-        LOG.error("Error fetching work order by order ID: {}", orderId, e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error fetching work order: " + e.getMessage());
     }
-}
 
     // NEW: Check if work order exists
     @GetMapping(value = "/getworkorder/exists/{workOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> checkWorkOrderExists(@PathVariable String workOrder) {
-    try {
-        LOG.info("Checking if work order exists: {}", workOrder);
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = "SELECT COUNT(*) FROM bits_po_entry_header WHERE work_order = ?";
+        try {
+            LOG.info("Checking if work order exists: {}", workOrder);
             
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, workOrder);
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = "SELECT COUNT(*) FROM bits_po_entry_header WHERE work_order = ?";
                 
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        boolean exists = resultSet.getInt(1) > 0;
-                        
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, workOrder);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            boolean exists = resultSet.getInt(1) > 0;
+                            
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("workOrder", workOrder);
+                            response.put("exists", exists);
+                            
+                            return ResponseEntity.ok(response);
+                        }
+                    }
+                }
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("workOrder", workOrder);
+            response.put("exists", false);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            LOG.error("Error checking work order existence: {}", workOrder, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error checking work order: " + e.getMessage());
+        }
+    }
+
+    // NEW: Get all distinct work orders
+    @GetMapping(value = "/getworkorder/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctWorkOrders() {
+        try {
+            LOG.info("Fetching all distinct work orders");
+            
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT DISTINCT work_order 
+                    FROM bits_po_entry_header 
+                    WHERE work_order IS NOT NULL 
+                    AND work_order != ''
+                    ORDER BY work_order
+                    """;
+                
+                List<String> distinctWorkOrders = new ArrayList<>();
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    
+                    while (resultSet.next()) {
+                        String workOrder = resultSet.getString("work_order");
+                        if (workOrder != null && !workOrder.trim().isEmpty()) {
+                            distinctWorkOrders.add(workOrder.trim());
+                        }
+                    }
+                }
+                
+                LOG.info("Found {} distinct work orders", distinctWorkOrders.size());
+                return ResponseEntity.ok(distinctWorkOrders);
+            }
+            
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct work orders", e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // NEW: Validate order ID exists
+    @GetMapping(value = "/validateOrderId/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> validateOrderId(@PathVariable Long orderId) {
+        try {
+            LOG.info("Validating order ID: {}", orderId);
+            
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = "SELECT work_order FROM bits_po_entry_header WHERE order_id = ?";
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setLong(1, orderId);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
                         Map<String, Object> response = new HashMap<>();
-                        response.put("workOrder", workOrder);
-                        response.put("exists", exists);
+                        response.put("orderId", orderId);
+                        
+                        if (resultSet.next()) {
+                            response.put("exists", true);
+                            response.put("workOrder", resultSet.getString("work_order"));
+                        } else {
+                            response.put("exists", false);
+                        }
                         
                         return ResponseEntity.ok(response);
                     }
                 }
             }
+            
+        } catch (Exception e) {
+            LOG.error("Error validating order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error validating order ID: " + e.getMessage());
         }
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("workOrder", workOrder);
-        response.put("exists", false);
-        
-        return ResponseEntity.ok(response);
-        
-    } catch (Exception e) {
-        LOG.error("Error checking work order existence: {}", workOrder, e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error checking work order: " + e.getMessage());
     }
-}
-
-    // NEW: Get all distinct work orders
-    @GetMapping(value = "/getworkorder/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getDistinctWorkOrders() {
-    try {
-        LOG.info("Fetching all distinct work orders");
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT DISTINCT work_order 
-                FROM bits_po_entry_header 
-                WHERE work_order IS NOT NULL 
-                AND work_order != ''
-                ORDER BY work_order
-                """;
-            
-            List<String> distinctWorkOrders = new ArrayList<>();
-            
-            try (PreparedStatement statement = connection.prepareStatement(sql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                
-                while (resultSet.next()) {
-                    String workOrder = resultSet.getString("work_order");
-                    if (workOrder != null && !workOrder.trim().isEmpty()) {
-                        distinctWorkOrders.add(workOrder.trim());
-                    }
-                }
-            }
-            
-            LOG.info("Found {} distinct work orders", distinctWorkOrders.size());
-            return ResponseEntity.ok(distinctWorkOrders);
-        }
-        
-    } catch (Exception e) {
-        LOG.error("Error fetching distinct work orders", e);
-        return ResponseEntity.ok(new ArrayList<>());
-    }
-}
-
-    // NEW: Validate order ID exists
-    @GetMapping(value = "/validateOrderId/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> validateOrderId(@PathVariable Long orderId) {
-    try {
-        LOG.info("Validating order ID: {}", orderId);
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = "SELECT work_order FROM bits_po_entry_header WHERE order_id = ?";
-            
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setLong(1, orderId);
-                
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("orderId", orderId);
-                    
-                    if (resultSet.next()) {
-                        response.put("exists", true);
-                        response.put("workOrder", resultSet.getString("work_order"));
-                    } else {
-                        response.put("exists", false);
-                    }
-                    
-                    return ResponseEntity.ok(response);
-                }
-            }
-        }
-        
-    } catch (Exception e) {
-        LOG.error("Error validating order ID: {}", orderId, e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error validating order ID: " + e.getMessage());
-    }
-}
 
     // ============ ADDITIONAL UTILITY ENDPOINTS ============
     
     // Get headers by LD applicable status
     @GetMapping(value = "/searchBitsHeadersByLdApplicable/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<BitsHeaderAll>> searchByLdApplicable(@RequestParam Boolean ldApplicable) {
-    try {
-        LOG.info("Searching bits headers by LD applicable: {}", ldApplicable);
-        
-        List<BitsHeaderAll> headers = new ArrayList<>();
-        
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = """
-                SELECT order_id, work_order, plant_location, department, work_location,
-                       work_order_date, completion_date, ld_applicable, tenant_id,
-                       scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
-                       creation_date, created_by, last_update_date, last_updated_by,
-                       attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
-                FROM bits_po_entry_header 
-                WHERE ld_applicable = ?
-                ORDER BY order_id DESC
-                """;
+        try {
+            LOG.info("Searching bits headers by LD applicable: {}", ldApplicable);
             
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setBoolean(1, ldApplicable);
+            List<BitsHeaderAll> headers = new ArrayList<>();
+            
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date
+                           work_order_date, completion_date, ld_applicable, tenant_id,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection,
+                           creation_date, created_by, last_update_date, last_updated_by,
+                           attribute1_v, attribute2_v, attribute3_v, attribute4_v, attribute5_v
+                    FROM bits_po_entry_header 
+                    WHERE ld_applicable = ?
+                    ORDER BY order_id DESC
+                    """;
                 
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        BitsHeaderAll header = new BitsHeaderAll();
-                        
-                        header.setOrderId(resultSet.getLong("order_id"));
-                        header.setWorkOrder(resultSet.getString("work_order"));
-                        header.setPlantLocation(resultSet.getString("plant_location"));
-                        header.setDepartment(resultSet.getString("department"));
-                        header.setWorkLocation(resultSet.getString("work_location"));
-                        header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
-                        
-                        // Handle dates safely
-                        try {
-                            if (resultSet.getDate("work_order_date") != null) {
-                                header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setBoolean(1, ldApplicable);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        while (resultSet.next()) {
+                            BitsHeaderAll header = new BitsHeaderAll();
+                            
+                            header.setOrderId(resultSet.getLong("order_id"));
+                            header.setWorkOrder(resultSet.getString("work_order"));
+                            header.setPlantLocation(resultSet.getString("plant_location"));
+                            header.setDepartment(resultSet.getString("department"));
+                            header.setWorkLocation(resultSet.getString("work_location"));
+                            header.setLdApplicable(resultSet.getBoolean("ld_applicable"));
+                            
+                            // Handle dates safely
+                            try {
+                                if (resultSet.getDate("work_order_date") != null) {
+                                    header.setWorkOrderDate(resultSet.getDate("work_order_date").toLocalDate());
+                                }
+                            } catch (Exception e) {
+                                LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
                             }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing work_order_date for order ID: {}", header.getOrderId());
-                        }
-                        
-                        try {
-                            if (resultSet.getDate("completion_date") != null) {
-                                header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
+                            
+                            try {
+                                if (resultSet.getDate("completion_date") != null) {
+                                    header.setCompletionDate(resultSet.getDate("completion_date").toLocalDate());
+                                }
+                            } catch (Exception e) {
+                                LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
                             }
-                        } catch (Exception e) {
-                            LOG.warn("Error parsing completion_date for order ID: {}", header.getOrderId());
+                            
+                            headers.add(header);
                         }
-                        
-                        headers.add(header);
                     }
                 }
             }
+            
+            LOG.info("Found {} headers with LD applicable: {}", headers.size(), ldApplicable);
+            return ResponseEntity.ok(headers);
+            
+        } catch (Exception e) {
+            LOG.error("Error searching bits headers by LD applicable", e);
+            return ResponseEntity.ok(new ArrayList<>());
         }
-        
-        LOG.info("Found {} headers with LD applicable: {}", headers.size(), ldApplicable);
-        return ResponseEntity.ok(headers);
-        
-    } catch (Exception e) {
-        LOG.error("Error searching bits headers by LD applicable", e);
-        return ResponseEntity.ok(new ArrayList<>());
     }
-}
 
     // Get statistics about headers
     @GetMapping(value = "/getBitsHeadersStats/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getHeadersStats() {
-    try {
-        LOG.info("Fetching bits headers statistics");
-        
-        try (Connection connection = dataSource.getConnection()) {
-            Map<String, Object> stats = new HashMap<>();
+        try {
+            LOG.info("Fetching bits headers statistics");
             
-            // Get total count
-            String countSql = "SELECT COUNT(*) FROM bits_po_entry_header";
-            try (PreparedStatement statement = connection.prepareStatement(countSql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    stats.put("totalHeaders", resultSet.getInt(1));
+            try (Connection connection = dataSource.getConnection()) {
+                Map<String, Object> stats = new HashMap<>();
+                
+                // Get total count
+                String countSql = "SELECT COUNT(*) FROM bits_po_entry_header";
+                try (PreparedStatement statement = connection.prepareStatement(countSql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        stats.put("totalHeaders", resultSet.getInt(1));
+                    }
                 }
+                
+                // Get distinct work orders count
+                String distinctWorkOrdersSql = "SELECT COUNT(DISTINCT work_order) FROM bits_po_entry_header WHERE work_order IS NOT NULL";
+                try (PreparedStatement statement = connection.prepareStatement(distinctWorkOrdersSql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        stats.put("distinctWorkOrders", resultSet.getInt(1));
+                    }
+                }
+                
+                // Get distinct plant locations count
+                String distinctPlantLocationsSql = "SELECT COUNT(DISTINCT plant_location) FROM bits_po_entry_header WHERE plant_location IS NOT NULL";
+                try (PreparedStatement statement = connection.prepareStatement(distinctPlantLocationsSql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        stats.put("distinctPlantLocations", resultSet.getInt(1));
+                    }
+                }
+                
+                // Get distinct departments count
+                String distinctDepartmentsSql = "SELECT COUNT(DISTINCT department) FROM bits_po_entry_header WHERE department IS NOT NULL";
+                try (PreparedStatement statement = connection.prepareStatement(distinctDepartmentsSql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        stats.put("distinctDepartments", resultSet.getInt(1));
+                    }
+                }
+                
+                // Get headers with LD applicable count
+                String ldApplicableSql = "SELECT COUNT(*) FROM bits_po_entry_header WHERE ld_applicable = true";
+                try (PreparedStatement statement = connection.prepareStatement(ldApplicableSql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        stats.put("headersWithLdApplicable", resultSet.getInt(1));
+                    }
+                }
+                
+                return ResponseEntity.ok(stats);
             }
             
-            // Get distinct work orders count
-            String distinctWorkOrdersSql = "SELECT COUNT(DISTINCT work_order) FROM bits_po_entry_header WHERE work_order IS NOT NULL";
-            try (PreparedStatement statement = connection.prepareStatement(distinctWorkOrdersSql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    stats.put("distinctWorkOrders", resultSet.getInt(1));
-                }
-            }
-            
-            // Get distinct plant locations count
-            String distinctPlantLocationsSql = "SELECT COUNT(DISTINCT plant_location) FROM bits_po_entry_header WHERE plant_location IS NOT NULL";
-            try (PreparedStatement statement = connection.prepareStatement(distinctPlantLocationsSql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    stats.put("distinctPlantLocations", resultSet.getInt(1));
-                }
-            }
-            
-            // Get distinct departments count
-            String distinctDepartmentsSql = "SELECT COUNT(DISTINCT department) FROM bits_po_entry_header WHERE department IS NOT NULL";
-            try (PreparedStatement statement = connection.prepareStatement(distinctDepartmentsSql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    stats.put("distinctDepartments", resultSet.getInt(1));
-                }
-            }
-            
-            // Get headers with LD applicable count
-            String ldApplicableSql = "SELECT COUNT(*) FROM bits_po_entry_header WHERE ld_applicable = true";
-            try (PreparedStatement statement = connection.prepareStatement(ldApplicableSql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    stats.put("headersWithLdApplicable", resultSet.getInt(1));
-                }
-            }
-            
-            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            LOG.error("Error fetching bits headers statistics", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching statistics: " + e.getMessage());
         }
-        
-    } catch (Exception e) {
-        LOG.error("Error fetching bits headers statistics", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error fetching statistics: " + e.getMessage());
     }
-}
 
     // Health check endpoint
     @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1449,17 +1514,14 @@ public class BitsHeaderController {
                     .body("Health check failed: " + e.getMessage());
         }
     }
-    
-    
- // NEW: Update RA.NO for drawing entry
+
+    // NEW: Update RA.NO for drawing entry
     @PutMapping("/updateDrawingEntryRaNo/details")
     public ResponseEntity<?> updateDrawingEntryRaNo(@RequestParam Long lineId, @RequestParam String raNo) {
         LOG.info("Updating RA.NO for lineId: {} with value: {}", lineId, raNo);
         try {
             String sql = "UPDATE bits_drawing_entry SET ra_no = ?, last_update_date = CURRENT_TIMESTAMP, last_updated_by = 'system' WHERE line_id = ?";
-
             int rowsUpdated = jdbcTemplate.update(sql, raNo, lineId);
-
             if (rowsUpdated > 0) {
                 LOG.info("Successfully updated RA.NO for lineId: {}", lineId);
                 return ResponseEntity.ok(Map.of("success", true, "message", "RA.NO updated successfully"));
@@ -1507,629 +1569,528 @@ public class BitsHeaderController {
             return ResponseEntity.ok(new ArrayList<>());
         }
     }
-    
-    
-    
-    
-    
-    
- // ADD THESE NEW ENDPOINTS TO YOUR EXISTING BitsHeaderController.java
 
- // NEW: Update customer for a work order
- @PutMapping(value = "/updateCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
- public ResponseEntity<?> updateCustomerForWorkOrder(@RequestParam Long orderId, @RequestParam Long customerId) {
-     LOG.info("Updating customer for order ID: {} with customer ID: {}", orderId, customerId);
-     
-     try (Connection connection = dataSource.getConnection()) {
-         // First verify the order exists
-         String checkSql = "SELECT work_order FROM bits_po_entry_header WHERE order_id = ?";
-         try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
-             checkStatement.setLong(1, orderId);
-             try (ResultSet checkResult = checkStatement.executeQuery()) {
-                 if (!checkResult.next()) {
-                     return ResponseEntity.notFound().build();
-                 }
-             }
-         }
-         
-         // Update the customer_id
-         String updateSql = "UPDATE bits_po_entry_header SET customer_id = ?, last_update_date = CURRENT_TIMESTAMP, last_updated_by = 1 WHERE order_id = ?";
-         try (PreparedStatement statement = connection.prepareStatement(updateSql)) {
-             statement.setLong(1, customerId);
-             statement.setLong(2, orderId);
-             
-             int rowsAffected = statement.executeUpdate();
-             if (rowsAffected > 0) {
-                 LOG.info("Successfully updated customer for order ID: {}", orderId);
-                 
-                 Map<String, Object> response = new HashMap<>();
-                 response.put("success", true);
-                 response.put("message", "Customer updated successfully");
-                 response.put("orderId", orderId);
-                 response.put("customerId", customerId);
-                 
-                 return ResponseEntity.ok(response);
-             } else {
-                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                     .body("Failed to update customer");
-             }
-         }
-     } catch (Exception e) {
-         LOG.error("Error updating customer for order ID: {}", orderId, e);
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-             .body("Error updating customer: " + e.getMessage());
-     }
- }
+    // NEW: Update customer for a work order
+    @PutMapping(value = "/updateCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateCustomerForWorkOrder(@RequestParam Long orderId, @RequestParam Long customerId) {
+        LOG.info("Updating customer for order ID: {} with customer ID: {}", orderId, customerId);
+        
+        try (Connection connection = dataSource.getConnection()) {
+            // First verify the order exists
+            String checkSql = "SELECT work_order FROM bits_po_entry_header WHERE order_id = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
+                checkStatement.setLong(1, orderId);
+                try (ResultSet checkResult = checkStatement.executeQuery()) {
+                    if (!checkResult.next()) {
+                        return ResponseEntity.notFound().build();
+                    }
+                }
+            }
+            
+            // Update the customer_id
+            String updateSql = "UPDATE bits_po_entry_header SET customer_id = ?, last_update_date = CURRENT_TIMESTAMP, last_updated_by = 1 WHERE order_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(updateSql)) {
+                statement.setLong(1, customerId);
+                statement.setLong(2, orderId);
+                
+                int rowsAffected = statement.executeUpdate();
+                if (rowsAffected > 0) {
+                    LOG.info("Successfully updated customer for order ID: {}", orderId);
+                    
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("message", "Customer updated successfully");
+                    response.put("orderId", orderId);
+                    response.put("customerId", customerId);
+                    
+                    return ResponseEntity.ok(response);
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to update customer");
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error updating customer for order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error updating customer: " + e.getMessage());
+        }
+    }
 
- // NEW: Get work order with customer details
- @GetMapping(value = "/getWorkOrderWithCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
- public ResponseEntity<?> getWorkOrderWithCustomer(@RequestParam String workOrder, @RequestParam(required = false) Long customerId) {
-     LOG.info("Fetching work order with customer details: {} and customer ID: {}", workOrder, customerId);
-     
-     try (Connection connection = dataSource.getConnection()) {
-         String sql = """
-             SELECT h.order_id, h.work_order, h.plant_location, h.department, h.work_location,
-                    h.work_order_date, h.completion_date, h.ld_applicable, h.customer_id,
-                    l.ledger_name, l.house_plot_no, l.street, l.village_post, l.mandal_taluq,
-                    l.district, l.state, l.pin_code, l.contact_person_name, l.mobile_no, l.email
-             FROM bits_po_entry_header h
-             LEFT JOIN ledger_creation l ON h.customer_id = l.id
-             WHERE h.work_order = ?
-             """ + (customerId != null ? " AND h.customer_id = ?" : "");
-         
-         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-             statement.setString(1, workOrder);
-             if (customerId != null) {
-                 statement.setLong(2, customerId);
-             }
-             
-             try (ResultSet resultSet = statement.executeQuery()) {
-                 if (resultSet.next()) {
-                     Map<String, Object> response = new HashMap<>();
-                     
-                     // Work order details
-                     response.put("orderId", resultSet.getLong("order_id"));
-                     response.put("workOrder", resultSet.getString("work_order"));
-                     response.put("plantLocation", resultSet.getString("plant_location"));
-                     response.put("department", resultSet.getString("department"));
-                     response.put("workLocation", resultSet.getString("work_location"));
-                     
-                     // Handle dates
-                     try {
-                         if (resultSet.getDate("work_order_date") != null) {
-                             response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
-                         }
-                     } catch (Exception e) {
-                         LOG.warn("Error parsing work_order_date");
-                     }
-                     
-                     try {
-                         if (resultSet.getDate("completion_date") != null) {
-                             response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
-                         }
-                     } catch (Exception e) {
-                         LOG.warn("Error parsing completion_date");
-                     }
-                     
-                     response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                     response.put("customerId", resultSet.getObject("customer_id"));
-                     
-                     // Customer details (if available)
-                     if (resultSet.getObject("customer_id") != null) {
-                         Map<String, Object> customerDetails = new HashMap<>();
-                         customerDetails.put("ledgerName", resultSet.getString("ledger_name"));
-                         customerDetails.put("housePlotNo", resultSet.getString("house_plot_no"));
-                         customerDetails.put("street", resultSet.getString("street"));
-                         customerDetails.put("villagePost", resultSet.getString("village_post"));
-                         customerDetails.put("mandalTaluq", resultSet.getString("mandal_taluq"));
-                         customerDetails.put("district", resultSet.getString("district"));
-                         customerDetails.put("state", resultSet.getString("state"));
-                         customerDetails.put("pinCode", resultSet.getString("pin_code"));
-                         customerDetails.put("contactPersonName", resultSet.getString("contact_person_name"));
-                         customerDetails.put("mobileNo", resultSet.getString("mobile_no"));
-                         customerDetails.put("email", resultSet.getString("email"));
-                         
-                         // Format address
-                         StringBuilder address = new StringBuilder();
-                         if (resultSet.getString("house_plot_no") != null) address.append(resultSet.getString("house_plot_no")).append(", ");
-                         if (resultSet.getString("street") != null) address.append(resultSet.getString("street")).append(", ");
-                         if (resultSet.getString("village_post") != null) address.append(resultSet.getString("village_post")).append(", ");
-                         if (resultSet.getString("mandal_taluq") != null) address.append(resultSet.getString("mandal_taluq")).append(", ");
-                         if (resultSet.getString("district") != null) address.append(resultSet.getString("district")).append(", ");
-                         if (resultSet.getString("state") != null) address.append(resultSet.getString("state")).append(" ");
-                         if (resultSet.getString("pin_code") != null) address.append(resultSet.getString("pin_code"));
-                         
-                         customerDetails.put("fullAddress", address.toString().replaceAll(", $", ""));
-                         response.put("customerDetails", customerDetails);
-                     }
-                     
-                     return ResponseEntity.ok(response);
-                 } else {
-                     return ResponseEntity.notFound().build();
-                 }
-             }
-         }
-     } catch (Exception e) {
-         LOG.error("Error fetching work order with customer details", e);
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-             .body("Error fetching data: " + e.getMessage());
-     }
- }
+    // NEW: Get work order with customer details
+    @GetMapping(value = "/getWorkOrderWithCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getWorkOrderWithCustomer(@RequestParam String workOrder, @RequestParam(required = false) Long customerId) {
+        LOG.info("Fetching work order with customer details: {} and customer ID: {}", workOrder, customerId);
+        
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT h.order_id, h.work_order, h.plant_location, h.department, h.work_location,
+                       h.work_order_date, h.completion_date, h.ld_applicable, h.customer_id,
+                       l.ledger_name, l.house_plot_no, l.street, l.village_post, l.mandal_taluq,
+                       l.district, l.state, l.pin_code, l.contact_person_name, l.mobile_no, l.email
+                FROM bits_po_entry_header h
+                LEFT JOIN ledger_creation l ON h.customer_id = l.id
+                WHERE h.work_order = ?
+                """ + (customerId != null ? " AND h.customer_id = ?" : "");
+            
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, workOrder);
+                if (customerId != null) {
+                    statement.setLong(2, customerId);
+                }
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        Map<String, Object> response = new HashMap<>();
+                        
+                        // Work order details
+                        response.put("orderId", resultSet.getLong("order_id"));
+                        response.put("workOrder", resultSet.getString("work_order"));
+                        response.put("plantLocation", resultSet.getString("plant_location"));
+                        response.put("department", resultSet.getString("department"));
+                        response.put("workLocation", resultSet.getString("work_location"));
+                        
+                        // Handle dates
+                        try {
+                            if (resultSet.getDate("work_order_date") != null) {
+                                response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                            }
+                        } catch (Exception e) {
+                            LOG.warn("Error parsing work_order_date");
+                        }
+                        
+                        try {
+                            if (resultSet.getDate("completion_date") != null) {
+                                response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                            }
+                        } catch (Exception e) {
+                            LOG.warn("Error parsing completion_date");
+                        }
+                        
+                        response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                        response.put("customerId", resultSet.getObject("customer_id"));
+                        
+                        // Customer details (if available)
+                        if (resultSet.getObject("customer_id") != null) {
+                            Map<String, Object> customerDetails = new HashMap<>();
+                            customerDetails.put("ledgerName", resultSet.getString("ledger_name"));
+                            customerDetails.put("housePlotNo", resultSet.getString("house_plot_no"));
+                            customerDetails.put("street", resultSet.getString("street"));
+                            customerDetails.put("villagePost", resultSet.getString("village_post"));
+                            customerDetails.put("mandalTaluq", resultSet.getString("mandal_taluq"));
+                            customerDetails.put("district", resultSet.getString("district"));
+                            customerDetails.put("state", resultSet.getString("state"));
+                            customerDetails.put("pinCode", resultSet.getString("pin_code"));
+                            customerDetails.put("contactPersonName", resultSet.getString("contact_person_name"));
+                            customerDetails.put("mobileNo", resultSet.getString("mobile_no"));
+                            customerDetails.put("email", resultSet.getString("email"));
+                            
+                            // Format address
+                            StringBuilder address = new StringBuilder();
+                            if (resultSet.getString("house_plot_no") != null) address.append(resultSet.getString("house_plot_no")).append(", ");
+                            if (resultSet.getString("street") != null) address.append(resultSet.getString("street")).append(", ");
+                            if (resultSet.getString("village_post") != null) address.append(resultSet.getString("village_post")).append(", ");
+                            if (resultSet.getString("mandal_taluq") != null) address.append(resultSet.getString("mandal_taluq")).append(", ");
+                            if (resultSet.getString("district") != null) address.append(resultSet.getString("district")).append(", ");
+                            if (resultSet.getString("state") != null) address.append(resultSet.getString("state")).append(" ");
+                            if (resultSet.getString("pin_code") != null) address.append(resultSet.getString("pin_code"));
+                            
+                            customerDetails.put("fullAddress", address.toString().replaceAll(", $", ""));
+                            response.put("customerDetails", customerDetails);
+                        }
+                        
+                        return ResponseEntity.ok(response);
+                    } else {
+                        return ResponseEntity.notFound().build();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching work order with customer details", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error fetching data: " + e.getMessage());
+        }
+    }
 
- // NEW: Get all customers for dropdown
-  
- 
- 
- 
+    // NEW: Get all customers for dropdown
+    @GetMapping("/getAllCustomers/details")
+    public ResponseEntity<List<Map<String, Object>>> getAllCustomers() {
+        try {
+            String sql = """
+                SELECT id, ledger_name, gstin, pan, state, district, contact_person_name
+                FROM ledger_creation 
+                WHERE status = 'ACTIVE'
+                ORDER BY ledger_name
+                """;
+            
+            // Better approach: Use queryForList with RowMapper
+            List<Map<String, Object>> customers = jdbcTemplate.query(sql, 
+                (resultSet, rowNum) -> {
+                    Map<String, Object> customer = new HashMap<>();
+                    customer.put("id", resultSet.getLong("id"));
+                    customer.put("ledgerName", resultSet.getString("ledger_name"));
+                    customer.put("gstin", resultSet.getString("gstin"));
+                    customer.put("pan", resultSet.getString("pan"));
+                    customer.put("state", resultSet.getString("state"));
+                    customer.put("district", resultSet.getString("district"));
+                    customer.put("contactPersonName", resultSet.getString("contact_person_name"));
+                    return customer;
+                });
+            return ResponseEntity.ok(customers);
+        } catch (Exception e) {
+            LOG.error("Error fetching all customers", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
- 
- ////
- @GetMapping("/getWorkOrderWithCustomer/details")
- public ResponseEntity<Map<String, Object>> getWorkOrderWithCustomerDetails(
-         @RequestParam String workOrder,
-         @RequestParam(required = false) Long customerId) {
+    //NEW: Method to handle Base64 encoded work orders
+    @GetMapping(value = "/getworkorder/base64/{encodedWorkOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getWorkOrderByBase64(@PathVariable String encodedWorkOrder) {
+        try {
+            // Decode Base64
+            String workOrder = new String(Base64.getDecoder().decode(encodedWorkOrder));
+            LOG.info("Decoded work order from Base64: {}", workOrder);
+            
+            // Use your existing SQL approach to find work order
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date, ld_applicable,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection,
+                           creation_date, created_by, last_update_date, last_updated_by
+                    FROM bits_po_entry_header
+                    WHERE work_order = ?
+                    LIMIT 1
+                    """;
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, workOrder);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("orderId", resultSet.getLong("order_id"));
+                            response.put("workOrder", resultSet.getString("work_order"));
+                            response.put("plantLocation", resultSet.getString("plant_location"));
+                            response.put("department", resultSet.getString("department"));
+                            response.put("workLocation", resultSet.getString("work_location"));
+                            
+                            // Handle dates safely
+                            try {
+                                if (resultSet.getDate("work_order_date") != null) {
+                                    response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                            }
+                            
+                            try {
+                                if (resultSet.getDate("completion_date") != null) {
+                                    response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                            }
+                            
+                            response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                            response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                            response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                            response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                            
+                            // NEW: Include GST fields
+                            response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                            response.put("gstSelection", resultSet.getString("gst_selection"));
+                            
+                            LOG.info("Successfully fetched details for Base64 work order: {} with order_id: {}",
+                                    workOrder, resultSet.getLong("order_id"));
+                            return ResponseEntity.ok(response);
+                        } else {
+                            LOG.warn("No work order found with Base64 decoded number: {}", workOrder);
+                            return ResponseEntity.notFound().build();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error decoding Base64 work order: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid Base64 encoding: " + e.getMessage());
+        }
+    }
 
-     Map<String, Object> response = new HashMap<>();
+    //NEW: Method to handle POST requests for work orders
+    @PostMapping(value = "/getworkorder/number", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getWorkOrderByPost(@RequestBody Map<String, String> request) {
+        try {
+            String workOrder = request.get("workOrder");
+            LOG.info("Received work order via POST: {}", workOrder);
+            
+            if (workOrder == null || workOrder.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Work order is required");
+            }
+            
+            // Use your existing SQL approach to find work order
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date, ld_applicable,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection,
+                           creation_date, created_by, last_update_date, last_updated_by
+                    FROM bits_po_entry_header
+                    WHERE work_order = ?
+                    LIMIT 1
+                    """;
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, workOrder);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("orderId", resultSet.getLong("order_id"));
+                            response.put("workOrder", resultSet.getString("work_order"));
+                            response.put("plantLocation", resultSet.getString("plant_location"));
+                            response.put("department", resultSet.getString("department"));
+                            response.put("workLocation", resultSet.getString("work_location"));
+                            
+                            // Handle dates safely
+                            try {
+                                if (resultSet.getDate("work_order_date") != null) {
+                                    response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                            }
+                            
+                            try {
+                                if (resultSet.getDate("completion_date") != null) {
+                                    response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                            }
+                            
+                            response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                            response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                            response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                            response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                            
+                            // NEW: Include GST fields
+                            response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                            response.put("gstSelection", resultSet.getString("gst_selection"));
+                            
+                            LOG.info("Successfully fetched details for POST work order: {} with order_id: {}",
+                                    workOrder, resultSet.getLong("order_id"));
+                            return ResponseEntity.ok(response);
+                        } else {
+                            LOG.warn("No work order found with POST number: {}", workOrder);
+                            return ResponseEntity.notFound().build();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error processing POST work order request: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
+        }
+    }
 
-     try {
-         // Updated SQL query
-         String sql = """
- SELECT h.order_id, h.work_order, h.plant_location, h.department, h.work_location,
-        h.work_order_date, h.completion_date, h.ld_applicable, h.customer_id,
-        l.ledger_name, l.house_plot_no, l.street, l.village_post, l.mandal_taluq,
-        l.district, l.state, l.pin_code, l.gstin, l.pan
- FROM bits_po_entry_header h
- LEFT JOIN ledger_creation l ON h.customer_id = l.id
- WHERE h.work_order = ?
- """ + (customerId != null ? " AND h.customer_id = ?" : "");
+    //FIXED: Enhanced method to handle special characters in path variables
+    @GetMapping(value = "/getworkorder/number/{workOrder:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getWorkOrderByNumberEnhanced(@PathVariable String workOrder) {
+        try {
+            LOG.info("Received work order with enhanced path matching: {}", workOrder);
+            
+            // Try to URL decode if needed
+            String decodedWorkOrder = URLDecoder.decode(workOrder, StandardCharsets.UTF_8);
+            LOG.info("Decoded work order: {}", decodedWorkOrder);
+            
+            // Use your existing SQL approach to find work order
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date, ld_applicable,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection,
+                           creation_date, created_by, last_update_date, last_updated_by
+                    FROM bits_po_entry_header
+                    WHERE work_order = ?
+                    LIMIT 1
+                    """;
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, decodedWorkOrder);
+                    
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("orderId", resultSet.getLong("order_id"));
+                            response.put("workOrder", resultSet.getString("work_order"));
+                            response.put("plantLocation", resultSet.getString("plant_location"));
+                            response.put("department", resultSet.getString("department"));
+                            response.put("workLocation", resultSet.getString("work_location"));
+                            
+                            // Handle dates safely
+                            try {
+                                if (resultSet.getDate("work_order_date") != null) {
+                                    response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing work_order_date for work order {}", decodedWorkOrder);
+                            }
+                            
+                            try {
+                                if (resultSet.getDate("completion_date") != null) {
+                                    response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                                }
+                            } catch (Exception dateEx) {
+                                LOG.warn("Error parsing completion_date for work order {}", decodedWorkOrder);
+                            }
+                            
+                            response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                            response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                            response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                            response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                            
+                            // NEW: Include GST fields
+                            response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                            response.put("gstSelection", resultSet.getString("gst_selection"));
+                            
+                            LOG.info("Successfully fetched details for enhanced work order: {} with order_id: {}",
+                                    decodedWorkOrder, resultSet.getLong("order_id"));
+                            return ResponseEntity.ok(response);
+                        } else {
+                            // Try with original (non-decoded) work order
+                            statement.setString(1, workOrder);
+                            try (ResultSet resultSet2 = statement.executeQuery()) {
+                                if (resultSet2.next()) {
+                                    Map<String, Object> response = new HashMap<>();
+                                    response.put("orderId", resultSet2.getLong("order_id"));
+                                    response.put("workOrder", resultSet2.getString("work_order"));
+                                    response.put("plantLocation", resultSet2.getString("plant_location"));
+                                    response.put("department", resultSet2.getString("department"));
+                                    response.put("workLocation", resultSet2.getString("work_location"));
+                                    
+                                    // Handle dates safely
+                                    try {
+                                        if (resultSet2.getDate("work_order_date") != null) {
+                                            response.put("workOrderDate", resultSet2.getDate("work_order_date").toLocalDate().toString());
+                                        }
+                                    } catch (Exception dateEx) {
+                                        LOG.warn("Error parsing work_order_date for work order {}", workOrder);
+                                    }
+                                    
+                                    try {
+                                        if (resultSet2.getDate("completion_date") != null) {
+                                            response.put("completionDate", resultSet2.getDate("completion_date").toLocalDate().toString());
+                                        }
+                                    } catch (Exception dateEx) {
+                                        LOG.warn("Error parsing completion_date for work order {}", workOrder);
+                                    }
+                                    
+                                    response.put("ldApplicable", resultSet2.getBoolean("ld_applicable"));
+                                    response.put("scrapAllowanceVisiblePercent", resultSet2.getString("scrap_allowance_visible_percent"));
+                                    response.put("scrapAllowanceInvisiblePercent", resultSet2.getString("scrap_allowance_invisible_percent"));
+                                    response.put("materialIssueType", resultSet2.getString("material_issue_type"));
+                                    
+                                    // NEW: Include GST fields
+                                    response.put("rcmApplicable", resultSet2.getBoolean("rcm_applicable"));
+                                    response.put("gstSelection", resultSet2.getString("gst_selection"));
+                                    
+                                    LOG.info("Successfully fetched details for original work order: {} with order_id: {}",
+                                            workOrder, resultSet2.getLong("order_id"));
+                                    return ResponseEntity.ok(response);
+                                }
+                            }
+                            return ResponseEntity.notFound().build();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error processing enhanced work order: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
+        }
+    }
 
-         jdbcTemplate.query(sql, ps -> {
-             ps.setString(1, workOrder);
-             if (customerId != null) {
-                 ps.setLong(2, customerId);
-             }
-         }, resultSet -> {
-             response.put("orderId", resultSet.getLong("order_id"));
-             response.put("workOrder", resultSet.getString("work_order"));
-             response.put("plantLocation", resultSet.getString("plant_location"));
-             response.put("department", resultSet.getString("department"));
-             response.put("workLocation", resultSet.getString("work_location"));
-             response.put("workOrderDate", resultSet.getDate("work_order_date"));
-             response.put("completionDate", resultSet.getDate("completion_date"));
-             response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-             response.put("customerId", resultSet.getObject("customer_id"));
-
-             // Customer details (if available)
-             if (resultSet.getObject("customer_id") != null) {
-                 Map<String, Object> customerDetails = new HashMap<>();
-                 customerDetails.put("ledgerName", resultSet.getString("ledger_name"));
-                 customerDetails.put("gstin", resultSet.getString("gstin"));
-                 customerDetails.put("pan", resultSet.getString("pan"));
-                 customerDetails.put("housePlotNo", resultSet.getString("house_plot_no"));
-                 customerDetails.put("street", resultSet.getString("street"));
-                 customerDetails.put("villagePost", resultSet.getString("village_post"));
-                 customerDetails.put("mandalTaluq", resultSet.getString("mandal_taluq"));
-                 customerDetails.put("district", resultSet.getString("district"));
-                 customerDetails.put("state", resultSet.getString("state"));
-                 customerDetails.put("pinCode", resultSet.getString("pin_code"));
-
-                 // Format address
-                 StringBuilder address = new StringBuilder();
-                 if (resultSet.getString("house_plot_no") != null) address.append(resultSet.getString("house_plot_no")).append(", ");
-                 if (resultSet.getString("street") != null) address.append(resultSet.getString("street")).append(", ");
-                 if (resultSet.getString("village_post") != null) address.append(resultSet.getString("village_post")).append(", ");
-                 if (resultSet.getString("mandal_taluq") != null) address.append(resultSet.getString("mandal_taluq")).append(", ");
-                 if (resultSet.getString("district") != null) address.append(resultSet.getString("district")).append(", ");
-                 if (resultSet.getString("state") != null) address.append(resultSet.getString("state")).append(" ");
-                 if (resultSet.getString("pin_code") != null) address.append(resultSet.getString("pin_code"));
-
-                 customerDetails.put("fullAddress", address.toString().replaceAll(", $", ""));
-                 response.put("customerDetails", customerDetails);
-             }
-         });
-
-         if (response.isEmpty()) {
-             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-         }
-
-         return new ResponseEntity<>(response, HttpStatus.OK);
-
-     } catch (Exception e) {
-         e.printStackTrace();
-         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-     }
- }
-
- @GetMapping("/getAllCustomers/details")
- public ResponseEntity<List<Map<String, Object>>> getAllCustomers() {
-     try {
-         String sql = """
-             SELECT id, ledger_name, gstin, pan, state, district
-             FROM ledger_creation 
-             WHERE status = 'ACTIVE'
-             ORDER BY ledger_name
-             """;
-         
-         // Better approach: Use queryForList with RowMapper
-         List<Map<String, Object>> customers = jdbcTemplate.query(sql, 
-             (resultSet, rowNum) -> {
-                 Map<String, Object> customer = new HashMap<>();
-                 customer.put("id", resultSet.getLong("id"));
-                 customer.put("ledgerName", resultSet.getString("ledger_name"));
-                 customer.put("gstin", resultSet.getString("gstin"));
-                 customer.put("pan", resultSet.getString("pan"));
-                 customer.put("state", resultSet.getString("state"));
-                 customer.put("district", resultSet.getString("district"));
-                 return customer;
-             });
-
-         return ResponseEntity.ok(customers);
-
-     } catch (Exception e) {
-         LOG.error("Error fetching all customers", e);
-         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-     }
- }
- 
- 
- 
-
-
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- /////////////////////////
- 
- 
-//NEW: Method to handle Base64 encoded work orders
-@GetMapping(value = "/getworkorder/base64/{encodedWorkOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<?> getWorkOrderByBase64(@PathVariable String encodedWorkOrder) {
-  try {
-      // Decode Base64
-      String workOrder = new String(Base64.getDecoder().decode(encodedWorkOrder));
-      LOG.info("Decoded work order from Base64: {}", workOrder);
-      
-      // Use your existing SQL approach to find work order
-      try (Connection connection = dataSource.getConnection()) {
-          String sql = """
-              SELECT order_id, work_order, plant_location, department, work_location,
-                     work_order_date, completion_date, ld_applicable,
-                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
-                     creation_date, created_by, last_update_date, last_updated_by
-              FROM bits_po_entry_header
-              WHERE work_order = ?
-              LIMIT 1
-              """;
-              
-          try (PreparedStatement statement = connection.prepareStatement(sql)) {
-              statement.setString(1, workOrder);
-              
-              try (ResultSet resultSet = statement.executeQuery()) {
-                  if (resultSet.next()) {
-                      Map<String, Object> response = new HashMap<>();
-                      response.put("orderId", resultSet.getLong("order_id"));
-                      response.put("workOrder", resultSet.getString("work_order"));
-                      response.put("plantLocation", resultSet.getString("plant_location"));
-                      response.put("department", resultSet.getString("department"));
-                      response.put("workLocation", resultSet.getString("work_location"));
-                      
-                      // Handle dates safely
-                      try {
-                          if (resultSet.getDate("work_order_date") != null) {
-                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing work_order_date for work order {}", workOrder);
-                      }
-                      
-                      try {
-                          if (resultSet.getDate("completion_date") != null) {
-                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing completion_date for work order {}", workOrder);
-                      }
-                      
-                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
-                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
-                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
-                      
-                      LOG.info("Successfully fetched details for Base64 work order: {} with order_id: {}", 
-                              workOrder, resultSet.getLong("order_id"));
-                      return ResponseEntity.ok(response);
-                  } else {
-                      LOG.warn("No work order found with Base64 decoded number: {}", workOrder);
-                      return ResponseEntity.notFound().build();
-                  }
-              }
-          }
-      }
-  } catch (Exception e) {
-      LOG.error("Error decoding Base64 work order: {}", e.getMessage());
-      return ResponseEntity.badRequest().body("Invalid Base64 encoding: " + e.getMessage());
-  }
+    //NEW: Search work order with special character handling
+    @GetMapping(value = "/getworkorder/search/{searchTerm:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> searchWorkOrderWithSpecialChars(@PathVariable String searchTerm) {
+        try {
+            LOG.info("Searching work order with special characters: {}", searchTerm);
+            
+            // Try multiple decoding strategies
+            String[] searchVariants = {
+                searchTerm,
+                URLDecoder.decode(searchTerm, StandardCharsets.UTF_8),
+                searchTerm.replace("_SLASH_", "/").replace("_BACKSLASH_", "\\"),
+                searchTerm.replace("%2F", "/").replace("%5C", "\\")
+            };
+            
+            try (Connection connection = dataSource.getConnection()) {
+                String sql = """
+                    SELECT order_id, work_order, plant_location, department, work_location,
+                           work_order_date, completion_date, ld_applicable,
+                           scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
+                           rcm_applicable, gst_selection
+                    FROM bits_po_entry_header
+                    WHERE work_order = ?
+                    LIMIT 1
+                    """;
+                
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    for (String variant : searchVariants) {
+                        LOG.info("Trying search variant: {}", variant);
+                        statement.setString(1, variant);
+                        
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                            if (resultSet.next()) {
+                                Map<String, Object> response = new HashMap<>();
+                                response.put("orderId", resultSet.getLong("order_id"));
+                                response.put("workOrder", resultSet.getString("work_order"));
+                                response.put("plantLocation", resultSet.getString("plant_location"));
+                                response.put("department", resultSet.getString("department"));
+                                response.put("workLocation", resultSet.getString("work_location"));
+                                
+                                // Handle dates safely
+                                try {
+                                    if (resultSet.getDate("work_order_date") != null) {
+                                        response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
+                                    }
+                                } catch (Exception dateEx) {
+                                    LOG.warn("Error parsing work_order_date for work order {}", variant);
+                                }
+                                
+                                try {
+                                    if (resultSet.getDate("completion_date") != null) {
+                                        response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
+                                    }
+                                } catch (Exception dateEx) {
+                                    LOG.warn("Error parsing completion_date for work order {}", variant);
+                                }
+                                
+                                response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
+                                response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
+                                response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
+                                response.put("materialIssueType", resultSet.getString("material_issue_type"));
+                                
+                                // NEW: Include GST fields
+                                response.put("rcmApplicable", resultSet.getBoolean("rcm_applicable"));
+                                response.put("gstSelection", resultSet.getString("gst_selection"));
+                                
+                                LOG.info("Successfully found work order using variant: {} -> {}", variant, resultSet.getString("work_order"));
+                                return ResponseEntity.ok(response);
+                            }
+                        }
+                    }
+                    
+                    LOG.warn("No work order found for any search variant of: {}", searchTerm);
+                    return ResponseEntity.notFound().build();
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error searching work order with special characters: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error processing search: " + e.getMessage());
+        }
+    }
 }
-
-//NEW: Method to handle POST requests for work orders
-@PostMapping(value = "/getworkorder/number", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<?> getWorkOrderByPost(@RequestBody Map<String, String> request) {
-  try {
-      String workOrder = request.get("workOrder");
-      LOG.info("Received work order via POST: {}", workOrder);
-      
-      if (workOrder == null || workOrder.trim().isEmpty()) {
-          return ResponseEntity.badRequest().body("Work order is required");
-      }
-      
-      // Use your existing SQL approach to find work order
-      try (Connection connection = dataSource.getConnection()) {
-          String sql = """
-              SELECT order_id, work_order, plant_location, department, work_location,
-                     work_order_date, completion_date, ld_applicable,
-                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
-                     creation_date, created_by, last_update_date, last_updated_by
-              FROM bits_po_entry_header
-              WHERE work_order = ?
-              LIMIT 1
-              """;
-              
-          try (PreparedStatement statement = connection.prepareStatement(sql)) {
-              statement.setString(1, workOrder);
-              
-              try (ResultSet resultSet = statement.executeQuery()) {
-                  if (resultSet.next()) {
-                      Map<String, Object> response = new HashMap<>();
-                      response.put("orderId", resultSet.getLong("order_id"));
-                      response.put("workOrder", resultSet.getString("work_order"));
-                      response.put("plantLocation", resultSet.getString("plant_location"));
-                      response.put("department", resultSet.getString("department"));
-                      response.put("workLocation", resultSet.getString("work_location"));
-                      
-                      // Handle dates safely
-                      try {
-                          if (resultSet.getDate("work_order_date") != null) {
-                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing work_order_date for work order {}", workOrder);
-                      }
-                      
-                      try {
-                          if (resultSet.getDate("completion_date") != null) {
-                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing completion_date for work order {}", workOrder);
-                      }
-                      
-                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
-                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
-                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
-                      
-                      LOG.info("Successfully fetched details for POST work order: {} with order_id: {}", 
-                              workOrder, resultSet.getLong("order_id"));
-                      return ResponseEntity.ok(response);
-                  } else {
-                      LOG.warn("No work order found with POST number: {}", workOrder);
-                      return ResponseEntity.notFound().build();
-                  }
-              }
-          }
-      }
-  } catch (Exception e) {
-      LOG.error("Error processing POST work order request: {}", e.getMessage());
-      return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
-  }
-}
-
-//FIXED: Enhanced method to handle special characters in path variables
-@GetMapping(value = "/getworkorder/number/{workOrder:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<?> getWorkOrderByNumberEnhanced(@PathVariable String workOrder) {
-  try {
-      LOG.info("Received work order with enhanced path matching: {}", workOrder);
-      
-      // Try to URL decode if needed
-      String decodedWorkOrder = URLDecoder.decode(workOrder, StandardCharsets.UTF_8);
-      LOG.info("Decoded work order: {}", decodedWorkOrder);
-      
-      // Use your existing SQL approach to find work order
-      try (Connection connection = dataSource.getConnection()) {
-          String sql = """
-              SELECT order_id, work_order, plant_location, department, work_location,
-                     work_order_date, completion_date, ld_applicable,
-                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type,
-                     creation_date, created_by, last_update_date, last_updated_by
-              FROM bits_po_entry_header
-              WHERE work_order = ?
-              LIMIT 1
-              """;
-              
-          try (PreparedStatement statement = connection.prepareStatement(sql)) {
-              statement.setString(1, decodedWorkOrder);
-              
-              try (ResultSet resultSet = statement.executeQuery()) {
-                  if (resultSet.next()) {
-                      Map<String, Object> response = new HashMap<>();
-                      response.put("orderId", resultSet.getLong("order_id"));
-                      response.put("workOrder", resultSet.getString("work_order"));
-                      response.put("plantLocation", resultSet.getString("plant_location"));
-                      response.put("department", resultSet.getString("department"));
-                      response.put("workLocation", resultSet.getString("work_location"));
-                      
-                      // Handle dates safely
-                      try {
-                          if (resultSet.getDate("work_order_date") != null) {
-                              response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing work_order_date for work order {}", decodedWorkOrder);
-                      }
-                      
-                      try {
-                          if (resultSet.getDate("completion_date") != null) {
-                              response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
-                          }
-                      } catch (Exception dateEx) {
-                          LOG.warn("Error parsing completion_date for work order {}", decodedWorkOrder);
-                      }
-                      
-                      response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                      response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
-                      response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
-                      response.put("materialIssueType", resultSet.getString("material_issue_type"));
-                      
-                      LOG.info("Successfully fetched details for enhanced work order: {} with order_id: {}", 
-                              decodedWorkOrder, resultSet.getLong("order_id"));
-                      return ResponseEntity.ok(response);
-                  } else {
-                      // Try with original (non-decoded) work order
-                      statement.setString(1, workOrder);
-                      try (ResultSet resultSet2 = statement.executeQuery()) {
-                          if (resultSet2.next()) {
-                              Map<String, Object> response = new HashMap<>();
-                              response.put("orderId", resultSet2.getLong("order_id"));
-                              response.put("workOrder", resultSet2.getString("work_order"));
-                              response.put("plantLocation", resultSet2.getString("plant_location"));
-                              response.put("department", resultSet2.getString("department"));
-                              response.put("workLocation", resultSet2.getString("work_location"));
-                              
-                              // Handle dates safely
-                              try {
-                                  if (resultSet2.getDate("work_order_date") != null) {
-                                      response.put("workOrderDate", resultSet2.getDate("work_order_date").toLocalDate().toString());
-                                  }
-                              } catch (Exception dateEx) {
-                                  LOG.warn("Error parsing work_order_date for work order {}", workOrder);
-                              }
-                              
-                              try {
-                                  if (resultSet2.getDate("completion_date") != null) {
-                                      response.put("completionDate", resultSet2.getDate("completion_date").toLocalDate().toString());
-                                  }
-                              } catch (Exception dateEx) {
-                                  LOG.warn("Error parsing completion_date for work order {}", workOrder);
-                              }
-                              
-                              response.put("ldApplicable", resultSet2.getBoolean("ld_applicable"));
-                              response.put("scrapAllowanceVisiblePercent", resultSet2.getString("scrap_allowance_visible_percent"));
-                              response.put("scrapAllowanceInvisiblePercent", resultSet2.getString("scrap_allowance_invisible_percent"));
-                              response.put("materialIssueType", resultSet2.getString("material_issue_type"));
-                              
-                              LOG.info("Successfully fetched details for original work order: {} with order_id: {}", 
-                                      workOrder, resultSet2.getLong("order_id"));
-                              return ResponseEntity.ok(response);
-                          }
-                      }
-                      return ResponseEntity.notFound().build();
-                  }
-              }
-          }
-      }
-  } catch (Exception e) {
-      LOG.error("Error processing enhanced work order: {}", e.getMessage());
-      return ResponseEntity.internalServerError().body("Error processing request: " + e.getMessage());
-  }
-}
-
-//NEW: Search work order with special character handling
-@GetMapping(value = "/getworkorder/search/{searchTerm:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<?> searchWorkOrderWithSpecialChars(@PathVariable String searchTerm) {
-  try {
-      LOG.info("Searching work order with special characters: {}", searchTerm);
-      
-      // Try multiple decoding strategies
-      String[] searchVariants = {
-          searchTerm,
-          URLDecoder.decode(searchTerm, StandardCharsets.UTF_8),
-          searchTerm.replace("_SLASH_", "/").replace("_BACKSLASH_", "\\"),
-          searchTerm.replace("%2F", "/").replace("%5C", "\\")
-      };
-      
-      try (Connection connection = dataSource.getConnection()) {
-          String sql = """
-              SELECT order_id, work_order, plant_location, department, work_location,
-                     work_order_date, completion_date, ld_applicable,
-                     scrap_allowance_visible_percent, scrap_allowance_invisible_percent, material_issue_type
-              FROM bits_po_entry_header
-              WHERE work_order = ?
-              LIMIT 1
-              """;
-              
-          try (PreparedStatement statement = connection.prepareStatement(sql)) {
-              for (String variant : searchVariants) {
-                  LOG.info("Trying search variant: {}", variant);
-                  statement.setString(1, variant);
-                  
-                  try (ResultSet resultSet = statement.executeQuery()) {
-                      if (resultSet.next()) {
-                          Map<String, Object> response = new HashMap<>();
-                          response.put("orderId", resultSet.getLong("order_id"));
-                          response.put("workOrder", resultSet.getString("work_order"));
-                          response.put("plantLocation", resultSet.getString("plant_location"));
-                          response.put("department", resultSet.getString("department"));
-                          response.put("workLocation", resultSet.getString("work_location"));
-                          
-                          // Handle dates safely
-                          try {
-                              if (resultSet.getDate("work_order_date") != null) {
-                                  response.put("workOrderDate", resultSet.getDate("work_order_date").toLocalDate().toString());
-                              }
-                          } catch (Exception dateEx) {
-                              LOG.warn("Error parsing work_order_date for work order {}", variant);
-                          }
-                          
-                          try {
-                              if (resultSet.getDate("completion_date") != null) {
-                                  response.put("completionDate", resultSet.getDate("completion_date").toLocalDate().toString());
-                              }
-                          } catch (Exception dateEx) {
-                              LOG.warn("Error parsing completion_date for work order {}", variant);
-                          }
-                          
-                          response.put("ldApplicable", resultSet.getBoolean("ld_applicable"));
-                          response.put("scrapAllowanceVisiblePercent", resultSet.getString("scrap_allowance_visible_percent"));
-                          response.put("scrapAllowanceInvisiblePercent", resultSet.getString("scrap_allowance_invisible_percent"));
-                          response.put("materialIssueType", resultSet.getString("material_issue_type"));
-                          
-                          LOG.info("Successfully found work order using variant: {} -> {}", variant, resultSet.getString("work_order"));
-                          return ResponseEntity.ok(response);
-                      }
-                  }
-              }
-              
-              LOG.warn("No work order found for any search variant of: {}", searchTerm);
-              return ResponseEntity.notFound().build();
-          }
-      }
-  } catch (Exception e) {
-      LOG.error("Error searching work order with special characters: {}", e.getMessage());
-      return ResponseEntity.internalServerError().body("Error processing search: " + e.getMessage());
-  }
-}
-
- 
- 
- 
- 
-}
- 
