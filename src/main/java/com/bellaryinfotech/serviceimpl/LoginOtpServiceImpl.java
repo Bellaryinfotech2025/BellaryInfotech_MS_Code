@@ -114,7 +114,7 @@ public class LoginOtpServiceImpl implements LoginOtpService {
             );
 
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("mdkhaja50489@gmail.com");
+            message.setFrom("bellaryinfotechsolutions@gmail.com");
             message.setTo(toEmail);
             message.setSubject("Login OTP - Bellary Billing Solutions");
             message.setText(emailBody);
