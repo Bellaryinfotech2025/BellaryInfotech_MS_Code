@@ -8,7 +8,6 @@ import com.bellaryinfotech.model.BitsLinesAll;
 import com.bellaryinfotech.repo.BitsLinesRepository;
 import com.bellaryinfotech.service.BitsLinesService;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -21,12 +20,11 @@ import org.slf4j.LoggerFactory;
 @Service
 @Transactional
 public class BitsLinesServiceImpl implements BitsLinesService {
-
     private static final Logger LOG = LoggerFactory.getLogger(BitsLinesServiceImpl.class);
 
     @Autowired
     private BitsLinesRepository linesRepository;
-    
+        
     @Autowired
     private BitsHeaderRepository headerRepository;
 
@@ -46,48 +44,48 @@ public class BitsLinesServiceImpl implements BitsLinesService {
     @Transactional
     public BitsLinesDto createLine(BitsLinesDto lineDto, Long orderId) {
         LOG.info("Creating line with DTO: {} for orderId: {}", lineDto, orderId);
-        
+                
         // Validate that the order exists
         if (!headerRepository.existsById(orderId)) {
             throw new RuntimeException("Work order not found with id: " + orderId);
         }
-        
+                
         BitsLinesAll line = convertToEntity(lineDto);
-        
+                
         // Set the order ID (foreign key)
         line.setOrderId(orderId);
-        
+                
         // Get the next line number for this work order
         BigDecimal nextLineNumber = linesRepository.getNextLineNumber(orderId);
         line.setLineNumber(nextLineNumber);
-        
+                
         // Set audit fields
         line.setCreationDate(Timestamp.from(Instant.now()));
         line.setLastUpdateDate(Timestamp.from(Instant.now()));
         line.setCreatedBy(1L); // Default user
         line.setLastUpdatedBy(1L); // Default user
         line.setTenantId(1); // Default tenant
-        
+                
         // Calculate total price if not provided
         if (line.getTotalPrice() == null && line.getQty() != null && line.getUnitPrice() != null) {
             BigDecimal totalPrice = line.getQty().multiply(line.getUnitPrice());
             line.setTotalPrice(totalPrice);
         }
-        
+                
         // NEW: Calculate and set GST values if GST selection is provided
         if (lineDto.getGstType() != null && !lineDto.getGstType().isEmpty()) {
             BigDecimal subTotal = line.getTotalPrice() != null ? line.getTotalPrice() : BigDecimal.ZERO;
             line.setSubTotal(subTotal);
-            
+                        
             // Parse GST rate and calculate GST amounts
             BigDecimal gstRate = parseGSTRate(lineDto.getGstType());
-            
+                        
             if (lineDto.getGstType().contains("CGST") && lineDto.getGstType().contains("SGST")) {
                 // For CGST & SGST, split the rate
                 BigDecimal halfRate = gstRate.divide(BigDecimal.valueOf(2), 4, BigDecimal.ROUND_HALF_UP);
                 BigDecimal cgstAmount = subTotal.multiply(halfRate).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
                 BigDecimal sgstAmount = subTotal.multiply(halfRate).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
-                
+                                
                 line.setCgstTotal(cgstAmount);
                 line.setSgstTotal(sgstAmount);
                 line.setTotalIncGst(subTotal.add(cgstAmount).add(sgstAmount));
@@ -105,34 +103,34 @@ public class BitsLinesServiceImpl implements BitsLinesService {
             line.setSgstTotal(BigDecimal.ZERO);
             line.setTotalIncGst(line.getTotalPrice());
         }
-        
+                
         LOG.info("Saving line entity with orderId: {}, lineNumber: {}", line.getOrderId(), line.getLineNumber());
-        
+                
         BitsLinesAll savedLine = linesRepository.save(line);
-        
+                
         LOG.info("Saved line with ID: {}, orderId: {}, lineNumber: {}",
                 savedLine.getLineId(), savedLine.getOrderId(), savedLine.getLineNumber());
-        
+                
         return convertToDto(savedLine);
     }
 
     // Legacy method for backward compatibility
     public BitsLinesDto createLine(BitsLinesDto lineDto) {
         LOG.info("Creating line with legacy method - DTO: {}", lineDto);
-        
+                
         BitsLinesAll line = convertToEntity(lineDto);
         line.setCreationDate(Timestamp.from(Instant.now()));
         line.setLastUpdateDate(Timestamp.from(Instant.now()));
         line.setCreatedBy(1L);
         line.setLastUpdatedBy(1L);
         line.setTenantId(1);
-        
+                
         // Calculate total price if not provided
         if (line.getTotalPrice() == null && line.getQty() != null && line.getUnitPrice() != null) {
             BigDecimal totalPrice = line.getQty().multiply(line.getUnitPrice());
             line.setTotalPrice(totalPrice);
         }
-        
+                
         // If orderId is provided in DTO, use it and get next line number
         if (lineDto.getOrderId() != null) {
             if (!headerRepository.existsById(lineDto.getOrderId())) {
@@ -141,32 +139,81 @@ public class BitsLinesServiceImpl implements BitsLinesService {
             BigDecimal nextLineNumber = linesRepository.getNextLineNumber(lineDto.getOrderId());
             line.setLineNumber(nextLineNumber);
         }
-        
+                
         LOG.info("Saving line entity with attribute1V: {}", line.getAttribute1V());
-        
+                
         BitsLinesAll savedLine = linesRepository.save(line);
-        
+                
         LOG.info("Saved line with ID: {}, attribute1V: {}", savedLine.getLineId(), savedLine.getAttribute1V());
-        
+                
         return convertToDto(savedLine);
     }
 
     @Transactional
     public BitsLinesDto updateLine(Long id, BitsLinesDto lineDto) {
+        LOG.info("Updating line with ID: {} and data: {}", id, lineDto);
+        
         Optional<BitsLinesAll> existingLine = linesRepository.findById(id);
         if (existingLine.isPresent()) {
             BitsLinesAll line = existingLine.get();
-            updateEntityFromDto(line, lineDto);
-            line.setLastUpdateDate(Timestamp.from(Instant.now()));
-            line.setLastUpdatedBy(1L);
             
-            // Recalculate total price
-            if (line.getQty() != null && line.getUnitPrice() != null) {
-                BigDecimal totalPrice = line.getQty().multiply(line.getUnitPrice());
-                line.setTotalPrice(totalPrice);
+            // FIXED: Preserve existing values and only update provided ones
+            if (lineDto.getSerNo() != null) {
+                line.setSerNo(lineDto.getSerNo());
+            }
+            if (lineDto.getServiceCode() != null) {
+                line.setServiceCode(lineDto.getServiceCode());
+            }
+            if (lineDto.getServiceDesc() != null) {
+                line.setServiceDesc(lineDto.getServiceDesc());
+            }
+            if (lineDto.getQty() != null) {
+                line.setQty(lineDto.getQty());
+            }
+            if (lineDto.getUom() != null) {
+                line.setUom(lineDto.getUom());
+            }
+            if (lineDto.getUnitPrice() != null) {
+                line.setUnitPrice(lineDto.getUnitPrice());
+            }
+            if (lineDto.getTotalPrice() != null) {
+                line.setTotalPrice(lineDto.getTotalPrice());
             }
             
+            // FIXED: Recalculate total price only if qty or unitPrice changed
+            if (lineDto.getQty() != null || lineDto.getUnitPrice() != null) {
+                if (line.getQty() != null && line.getUnitPrice() != null) {
+                    BigDecimal calculatedTotal = line.getQty().multiply(line.getUnitPrice());
+                    line.setTotalPrice(calculatedTotal);
+                    LOG.info("Recalculated total price: {}", calculatedTotal);
+                }
+            }
+            
+            // Update GST fields if provided
+            if (lineDto.getGstType() != null) {
+                line.setGstType(lineDto.getGstType());
+            }
+            if (lineDto.getSubTotal() != null) {
+                line.setSubTotal(lineDto.getSubTotal());
+            }
+            if (lineDto.getCgstTotal() != null) {
+                line.setCgstTotal(lineDto.getCgstTotal());
+            }
+            if (lineDto.getSgstTotal() != null) {
+                line.setSgstTotal(lineDto.getSgstTotal());
+            }
+            if (lineDto.getTotalIncGst() != null) {
+                line.setTotalIncGst(lineDto.getTotalIncGst());
+            }
+            
+            // Update audit fields
+            line.setLastUpdateDate(Timestamp.from(Instant.now()));
+            line.setLastUpdatedBy(1L);
+                        
             BitsLinesAll updatedLine = linesRepository.save(line);
+            LOG.info("Successfully updated line with ID: {}, unitPrice: {}, totalPrice: {}", 
+                    id, updatedLine.getUnitPrice(), updatedLine.getTotalPrice());
+            
             return convertToDto(updatedLine);
         }
         throw new RuntimeException("Line not found with id: " + id);
@@ -211,83 +258,83 @@ public class BitsLinesServiceImpl implements BitsLinesService {
     // Enhanced method to get service orders by work order number
     public List<BitsLinesDto> getLinesByWorkOrder(String workOrder) {
         LOG.info("Searching for lines with work order: '{}'", workOrder);
-        
+                
         // Use the new query method that joins with header table
         List<BitsLinesAll> lines = linesRepository.findByWorkOrderNumber(workOrder);
         LOG.info("Found {} lines for work order: {}", lines.size(), workOrder);
-        
+                
         // If no results with new method, try legacy method for backward compatibility
         if (lines.isEmpty()) {
             LOG.info("No lines found with new method, trying legacy method");
             lines = linesRepository.findByAttribute1V(workOrder);
             LOG.info("Legacy method found {} lines", lines.size());
         }
-        
+                
         return lines.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-    
+        
     // Bulk create method for better performance
     @Transactional
     public List<BitsLinesDto> createMultipleLines(List<BitsLinesDto> lineDtos, Long orderId) {
         LOG.info("Creating {} lines for orderId: {}", lineDtos.size(), orderId);
-        
+                
         // Validate that the order exists
         if (!headerRepository.existsById(orderId)) {
             throw new RuntimeException("Work order not found with id: " + orderId);
         }
-        
+                
         // Get the starting line number
         BigDecimal currentLineNumber = linesRepository.getNextLineNumber(orderId);
-        
+                
         List<BitsLinesAll> linesToSave = lineDtos.stream()
                 .map(dto -> {
                     BitsLinesAll line = convertToEntity(dto);
                     line.setOrderId(orderId);
                     line.setLineNumber(currentLineNumber);
-                    
+                                        
                     // Set audit fields
                     line.setCreationDate(Timestamp.from(Instant.now()));
                     line.setLastUpdateDate(Timestamp.from(Instant.now()));
                     line.setCreatedBy(1L);
                     line.setLastUpdatedBy(1L);
                     line.setTenantId(1);
-                    
+                                        
                     // Calculate total price
                     if (line.getTotalPrice() == null && line.getQty() != null && line.getUnitPrice() != null) {
                         BigDecimal totalPrice = line.getQty().multiply(line.getUnitPrice());
                         line.setTotalPrice(totalPrice);
                     }
-                    
+                                        
                     return line;
                 })
                 .collect(Collectors.toList());
-        
+                
         // Increment line numbers for each subsequent line
         for (int i = 1; i < linesToSave.size(); i++) {
             linesToSave.get(i).setLineNumber(currentLineNumber.add(BigDecimal.valueOf(i)));
         }
-        
+                
         List<BitsLinesAll> savedLines = linesRepository.saveAll(linesToSave);
-        
+                
         LOG.info("Successfully saved {} lines for orderId: {}", savedLines.size(), orderId);
-        
+                
         return savedLines.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-    
+        
     // Debug method
     public List<BitsLinesDto> getAllLinesWithAttributes() {
         List<BitsLinesAll> lines = linesRepository.findAll();
         LOG.info("Debug: Total lines in database: {}", lines.size());
-        
+                
         for (BitsLinesAll line : lines) {
             LOG.info("Debug: Line ID: {}, orderId: {}, lineNumber: {}, attribute1V: '{}'",
                     line.getLineId(), line.getOrderId(), line.getLineNumber(), line.getAttribute1V());
         }
-        
+                
         return lines.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -312,16 +359,18 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setServiceDesc(entity.getServiceDesc());
         dto.setQty(entity.getQty());
         dto.setUom(entity.getUom());
+        
+        // FIXED: Ensure proper mapping of price fields
         dto.setUnitPrice(entity.getUnitPrice());
         dto.setTotalPrice(entity.getTotalPrice());
-        
+                
         // NEW: Map GST fields
         dto.setGstType(entity.getGstType());
         dto.setSubTotal(entity.getSubTotal());
         dto.setCgstTotal(entity.getCgstTotal());
         dto.setSgstTotal(entity.getSgstTotal());
         dto.setTotalIncGst(entity.getTotalIncGst());
-        
+                
         // Attribute mappings (maintain backward compatibility)
         dto.setWorkOrderRef(entity.getAttribute1V());
         dto.setAttribute2V(entity.getAttribute2V());
@@ -338,7 +387,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         dto.setAttribute3D(entity.getAttribute3D());
         dto.setAttribute4D(entity.getAttribute4D());
         dto.setAttribute5D(entity.getAttribute5D());
-        
+                
         return dto;
     }
 
@@ -352,16 +401,18 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setServiceDesc(dto.getServiceDesc());
         entity.setQty(dto.getQty());
         entity.setUom(dto.getUom());
+        
+        // FIXED: Ensure proper mapping of price fields
         entity.setUnitPrice(dto.getUnitPrice());
         entity.setTotalPrice(dto.getTotalPrice());
-        
+                
         // NEW: Map GST fields
         entity.setGstType(dto.getGstType());
         entity.setSubTotal(dto.getSubTotal());
         entity.setCgstTotal(dto.getCgstTotal());
         entity.setSgstTotal(dto.getSgstTotal());
         entity.setTotalIncGst(dto.getTotalIncGst());
-        
+                
         // Attribute mappings (maintain backward compatibility)
         entity.setAttribute1V(dto.getWorkOrderRef());
         entity.setAttribute2V(dto.getAttribute2V());
@@ -378,41 +429,21 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         entity.setAttribute3D(dto.getAttribute3D());
         entity.setAttribute4D(dto.getAttribute4D());
         entity.setAttribute5D(dto.getAttribute5D());
-        
+                
         return entity;
     }
-
-    private void updateEntityFromDto(BitsLinesAll entity, BitsLinesDto dto) {
-        entity.setSerNo(dto.getSerNo());
-        entity.setServiceCode(dto.getServiceCode());
-        entity.setServiceDesc(dto.getServiceDesc());
-        entity.setQty(dto.getQty());
-        entity.setUom(dto.getUom());
-        entity.setUnitPrice(dto.getUnitPrice());
-        entity.setTotalPrice(dto.getTotalPrice());
         
-        // NEW: Update GST fields
-        entity.setGstType(dto.getGstType());
-        entity.setSubTotal(dto.getSubTotal());
-        entity.setCgstTotal(dto.getCgstTotal());
-        entity.setSgstTotal(dto.getSgstTotal());
-        entity.setTotalIncGst(dto.getTotalIncGst());
-        
-        // Don't update orderId and lineNumber during updates to maintain integrity
-        // Don't update workOrderRef during updates to maintain the link
-    }
-    
     // Helper method to parse GST rate from selection string
     private BigDecimal parseGSTRate(String gstSelection) {
         if (gstSelection == null || gstSelection.isEmpty()) {
             return BigDecimal.ZERO;
         }
-        
+                
         try {
             // Extract percentage from strings like "18%", "IGST 18%", "CGST 9% & SGST 9%"
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)");
             java.util.regex.Matcher matcher = pattern.matcher(gstSelection);
-            
+                        
             if (gstSelection.contains("CGST") && gstSelection.contains("SGST")) {
                 // For CGST & SGST, sum both percentages
                 java.util.List<String> matches = new java.util.ArrayList<>();
@@ -430,7 +461,7 @@ public class BitsLinesServiceImpl implements BitsLinesService {
         } catch (Exception e) {
             LOG.warn("Error parsing GST rate from: {}", gstSelection, e);
         }
-        
+                
         return BigDecimal.ZERO;
     }
 }
