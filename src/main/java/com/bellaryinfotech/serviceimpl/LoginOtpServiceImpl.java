@@ -142,19 +142,6 @@ public class LoginOtpServiceImpl implements LoginOtpService {
             	    "  </div>" +
             	    "  <div class='footer'>This is an automated message. Please do not reply directly to this email.</div>" +
             	    "</div>" +
-
-            	    // Copy button script
-            	    "<script>" +
-            	    "  function copyOTP() {" +
-            	    "    var otpText = document.getElementById('otpValue').innerText;" +
-            	    "    navigator.clipboard.writeText(otpText).then(function() {" +
-            	    "      alert('OTP copied to clipboard ✅');" +
-            	    "    }, function(err) {" +
-            	    "      alert('Failed to copy OTP');" +
-            	    "    });" +
-            	    "  }" +
-            	    "</script>" +
-
             	    "</body>" +
             	    "</html>", otp
             	);
