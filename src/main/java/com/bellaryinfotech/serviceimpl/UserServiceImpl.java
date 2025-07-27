@@ -36,9 +36,9 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userRegistrationDTO.getPhoneNumber());
         user.setRegisterTime(LocalDateTime.now());
         user.setRegisterDate(LocalDate.now());
-        user.setVerified(true); // Set as verified since OTP was verified
+        user.setVerified(true);  
         
-        // Save user
+       
         User savedUser = userRepository.save(user);
         
         // Convert to response DTO
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
         
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            // Check if user is verified
+             
             if (!user.getVerified()) {
                 throw new RuntimeException("Email not verified. Please verify your email first.");
             }

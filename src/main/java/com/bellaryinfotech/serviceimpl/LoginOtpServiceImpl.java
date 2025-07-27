@@ -102,21 +102,28 @@ public class LoginOtpServiceImpl implements LoginOtpService {
             logger.info("Sending login OTP email to: {}", toEmail);
 
             String emailBody = String.format(
-                "Dear User,\n\n" +
-                "You are attempting to sign in to your Bellary Infotech Solutions account.\n\n" +
-                "To complete your login, please use the following One-Time Password (OTP):\n\n" +
-                "OTP: %s\n\n" +
-                "This OTP is valid for 5 minutes only. Please do not share this code with anyone.\n\n" +
-                "If you did not request this login, please ignore this email.\n\n" +
-                "Regards,\n" +
-                "Bellary InfoTech Solutions\n" +
-                "www.bellaryinfotech.com\n", otp
-            );
+            	    "Dear User,\n\n" +
+            	    "We noticed a login attempt to your Bellary Infotech Solutions account. To ensure the security of your account, " +
+            	    "please use the following One-Time Password (OTP) to complete your sign-in process:\n\n" +
+            	    "🔐 OTP: %s\n\n" +
+            	    "This OTP is valid for 5 minutes only.\n" +
+            	    "Please do NOT share this code with anyone. Bellary Infotech Solutions will never ask you for your OTP via email, phone, or chat.\n\n" +
+            	    "If you did not initiate this request or believe this was a mistake, please disregard this email or contact our support team immediately.\n\n" +
+            	    "Thank you for choosing Bellary Infotech Solutions — powering innovation with trust and security.\n\n" +
+            	    "Warm regards,\n" +
+            	    "Security Team\n" +
+            	    "Bellary Infotech Solutions\n" +
+            	    "📧 info@bellaryinfotech.com\n" +
+            	    "🌐 www.bellaryinfotech.com\n" +
+            	    "---------------------------------------------\n" +
+            	    "This is an automated message. Please do not reply directly to this email.",
+            	    otp
+            	);
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom("bellaryinfotechsolutions@gmail.com");
             message.setTo(toEmail);
-            message.setSubject("Login OTP - Bellary Billing Solutions");
+            message.setSubject("One-Time Password (OTP) for Your Bellary Infotech Solutions Login");
             message.setText(emailBody);
 
             mailSender.send(message);

@@ -29,22 +29,27 @@ public class EmailServiceImpl implements EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("Email Verification - Bellary Billing Solutions");
+            message.setSubject("Email Verification - Bellary Infotech Solutions");
             
             String emailBody = String.format(
-                "Dear User,\n\n" +
-                "Welcome to Bellary Billing Solutions!\n\n" +
-                "To complete your registration and verify your email address, please use the following One-Time Password (OTP):\n\n" +
-                "OTP: %s\n\n" +
-                "This OTP is valid for 5 minutes only. Please do not share this code with anyone.\n\n" +
-                "If you did not request this verification, please ignore this email.\n\n" +
-                "Thank you for choosing Bellary Billing Solutions for your business needs.\n\n" +
-                "Best regards,\n" +
-                "Bellary InfoTech Solutions Team\n" +
-                "Email: bellaryinfotechsolutions@gmail.com\n" +
-                "Website: www.bellaryinfotech.com",
-                otp
-            );
+            	    "Subject: Email Verification - Bellary Infotech Solutions\n\n" +
+            	    "Dear User,\n\n" +
+            	    "Welcome to **Bellary Infotech Solutions**!\n\n" +
+            	    "We’re excited to have you on board. To complete your registration and verify your email address, please use the One-Time Password (OTP) provided below:\n\n" +
+            	    "🔐 OTP: %s\n\n" +
+            	    "This OTP is valid for the next **5 minutes**.\n" +
+            	    "For your security, please do **not share this code** with anyone. Bellary Infotech Solutions will never request this information via email, phone, or message.\n\n" +
+            	    "If you did not request this verification, please disregard this email or contact our support team.\n\n" +
+            	    "Thank you for choosing Bellary Infotech Solutions — delivering innovation, trust,billing solutions and excellence.\n\n" +
+            	    "Warm regards,\n" +
+            	    "Bellary Infotech Solutions\n" +
+            	    "📧 Email: bellaryinfotechsolutions@gmail.com\n" +
+            	    "🌐 Website: www.bellaryinfotech.com\n" +
+            	    "---------------------------------------------\n" +
+            	    "This is an automated message. Please do not reply directly to this email.",
+            	    otp
+            	);
+
             
             message.setText(emailBody);
             mailSender.send(message);
