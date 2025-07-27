@@ -57,7 +57,7 @@ public class EmailServiceImpl implements EmailService {
             	    "  <p>Thank you for registering with <strong>Bellary Infotech Solutions</strong>. To verify your email address and complete your registration, please use the One-Time Password (OTP) provided below:</p>" +
             	    "  <div class='otp-box' id='otpValue'>%s</div>" +
             	    "  <div class='copy-btn'>" +
-            	    "    <button onclick='copyOTP()'>📋 Copy OTP</button>" +
+            	    "    <button onclick='copyOTP()'>Congratulations</button>" +
             	    "  </div>" +
             	    "  <p>This OTP is valid for <strong>5 minutes</strong>. Please do not share this code with anyone. Bellary Infotech will never ask for it via email, phone, or chat.</p>" +
             	    "  <p>If you did not request this verification, you may safely ignore this message.</p>" +
