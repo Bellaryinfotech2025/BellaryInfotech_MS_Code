@@ -112,29 +112,26 @@ public class LoginOtpServiceImpl implements LoginOtpService {
             	    "<meta charset='UTF-8'>" +
             	    "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
             	    "<style>" +
-            	    "  body { margin: 0; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f2f4f8; }" +
-            	    "  .container { max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }" +
-            	    "  h2 { color: #1f2e44; }" +
-            	    "  p { color: #333; line-height: 1.6; font-size: 16px; }" +
-            	    "  .otp-box { background-color: #0b2b5c; padding: 20px; text-align: center; border-radius: 8px; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 3px; }" +
-            	    "  .copy-btn { margin-top: 15px; text-align: center; }" +
-            	    "  .copy-btn button { background-color: #0b2b5c; color: #ffffff; border: none; padding: 10px 20px; border-radius: 5px; font-size: 14px; cursor: pointer; }" +
-            	    "  .copy-btn button:active { background-color: #092246; }" +
-            	    "  .footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; }" +
-            	    "  .contact { margin-top: 20px; font-size: 14px; }" +
+            	    "  body { margin: 0; padding: 20px; background-color: #f9f9f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }" +
+            	    "  .card { max-width: 500px; background: #ffffff; margin: 20px auto; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }" +
+            	    "  .logo { text-align: center; font-size: 32px; margin-bottom: 20px; }" +
+            	    "  h2 { text-align: center; color: #111827; font-weight: 600; font-size: 20px; margin-bottom: 20px; }" +
+            	    "  p { color: #333; font-size: 14px; line-height: 1.6; }" +
+            	    "  .otp-box { background-color: #f3f4f6; padding: 12px; text-align: center; font-size: 24px; font-weight: bold; border-radius: 6px; letter-spacing: 2px; margin: 20px 0; }" +
+            	    "  .footer { font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; text-align: center; }" +
+            	    "  .contact { font-size: 13px; margin-top: 20px; color: #444; }" +
+            	    "  a { color: #2563eb; text-decoration: none; word-break: break-word; }" +
             	    "</style>" +
             	    "</head>" +
             	    "<body>" +
-            	    "<div class='container'>" +
-            	    "  <h2>Your Account Login Requires Verification</h2>" +
+            	    "<div class='card'>" +
+            	    "  <div class='logo'>🔐</div>" +
+            	    "  <h2>Verify your email to sign in to Bellary Infotech Solutions</h2>" +
             	    "  <p>Dear User,</p>" +
-            	    "  <p>We noticed a login attempt to your <strong>Bellary Infotech Solutions</strong> account. To ensure your account security, please use the following One-Time Password (OTP) to complete your sign-in process:</p>" +
-            	    "  <div class='otp-box' id='otpValue'>%s</div>" +
-            	    "  <div class='copy-btn'>" +
-            	    "    <button onclick='copyOTP()'>Congratulations!!</button>" +
-            	    "  </div>" +
-            	    "  <p>This OTP is valid for <strong>5 minutes</strong>. Do not share this code with anyone. Bellary Infotech Solutions will never ask you for your OTP via email, phone, or chat.</p>" +
-            	    "  <p>If you did not initiate this request or believe this was a mistake, please disregard this message or contact our support team immediately.</p>" +
+            	    "  <p>We noticed a login attempt to your <strong>Bellary Infotech Solutions</strong> account. To ensure your account's security, please use the following One-Time Password (OTP) to complete your sign-in process:</p>" +
+            	    "  <div class='otp-box'>%s</div>" +
+            	    "  <p>This OTP is valid for <strong>5 minutes</strong>. Do not share this code with anyone. Bellary Infotech Solutions will never ask for your OTP via email, phone, or chat.</p>" +
+            	    "  <p>If you did not request this login or believe this was a mistake, please disregard this message or contact our support team.</p>" +
             	    "  <div class='contact'>" +
             	    "    <p>Warm regards,<br><strong>Security Team</strong><br>Bellary Infotech Solutions</p>" +
             	    "    <p>📧 Email: <a href='mailto:info@bellaryinfotech.com'>info@bellaryinfotech.com</a><br>" +
@@ -145,6 +142,7 @@ public class LoginOtpServiceImpl implements LoginOtpService {
             	    "</body>" +
             	    "</html>", otp
             	);
+
 
 
             // Use MimeMessage instead of SimpleMailMessage
