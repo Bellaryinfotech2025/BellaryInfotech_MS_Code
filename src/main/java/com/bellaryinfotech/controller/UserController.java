@@ -5,6 +5,7 @@ import com.bellaryinfotech.model.User;
 import com.bellaryinfotech.repo.UserRepository;
 import com.bellaryinfotech.service.LoginOtpService;
 import com.bellaryinfotech.service.OtpService;
+import com.bellaryinfotech.service.PasswordResetService;
 import com.bellaryinfotech.service.UserService;
 import com.bellaryinfotech.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -13,14 +14,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping(UserController.BASE_URL)
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserController {
+	
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	
+	@Autowired 
+	private PasswordResetService passwordResetService;
+	
+	
+	
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -33,6 +47,11 @@ public class UserController {
     public static final String RESEND_LOGIN_OTP = "/resend/login/otp";
     public static final String REGISTER_USER = "/register";
     public static final String VALIDATE_TOKEN = "/validate/token";
+    
+    //password reset backend code
+    public static final String LOGIN_PASSWORD = "/login/password";
+    public static final String FORGOT_PASSWORD = "/forgot-password";
+    public static final String RESET_PASSWORD = "/reset-password";
 
     @Autowired private UserService userService;
     @Autowired private OtpService otpService;
@@ -168,4 +187,73 @@ public class UserController {
             return ResponseEntity.status(401).body("Token validation failed: " + e.getMessage());
         }
     }
-}
+    
+    
+    
+    
+    //Backend code for the reset password and confirm password
+    
+    @PostMapping(value = LOGIN_PASSWORD, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> loginWithPassword(@Valid @RequestBody UserLoginDTO userLoginDTO) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(userLoginDTO.getEmail());
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("Email not found. Please register first.");
+            }
+            
+            User user = userOptional.get();
+            if (!user.getVerified()) {
+                return ResponseEntity.badRequest().body("Email not verified. Please complete registration first.");
+            }
+            
+            // Check password
+            if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+                return ResponseEntity.badRequest().body("Invalid email or password.");
+            }
+            
+            String token = jwtUtil.generateToken(user.getEmail(), user.getUsername(), user.getRole());
+            LoginResponseDTO response = new LoginResponseDTO(
+                    token, user.getEmail(), user.getUsername(), user.getFullname(), user.getRole(), "Login successful"
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Login failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping(value = FORGOT_PASSWORD, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody EmailVerificationDTO emailVerificationDTO) {
+        try {
+            String message = passwordResetService.generatePasswordResetToken(emailVerificationDTO.getEmail());
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to send reset link: " + e.getMessage());
+        }
+    }
+
+    @PostMapping(value = RESET_PASSWORD, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String token = request.get("token");
+            String newPassword = request.get("newPassword");
+            
+            if (email == null || token == null || newPassword == null) {
+                return ResponseEntity.badRequest().body("Missing required fields");
+            }
+            
+            if (newPassword.length() < 8) {
+                return ResponseEntity.badRequest().body("Password must be at least 8 characters");
+            }
+            
+            boolean success = passwordResetService.resetPassword(email, token, newPassword);
+            return success ? ResponseEntity.ok("Password reset successfully")
+                           : ResponseEntity.badRequest().body("Invalid or expired reset token");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Password reset failed: " + e.getMessage());
+        }
+    
+    
+    
+    }
+    }
