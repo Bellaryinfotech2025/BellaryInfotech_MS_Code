@@ -3,6 +3,7 @@ package com.bellaryinfotech.controller;
 import com.bellaryinfotech.DTO.*;
 import com.bellaryinfotech.model.User;
 import com.bellaryinfotech.repo.UserRepository;
+import com.bellaryinfotech.service.AdminDashboardService;
 import com.bellaryinfotech.service.LoginOtpService;
 import com.bellaryinfotech.service.OtpService;
 import com.bellaryinfotech.service.PasswordResetService;
@@ -32,6 +33,10 @@ public class UserController {
 	
 	@Autowired 
 	private PasswordResetService passwordResetService;
+	
+	
+	@Autowired
+	private AdminDashboardService adminDashboardService;
 	
 	
 	
@@ -115,6 +120,7 @@ public class UserController {
         }
     }
 
+ // Updated LOGIN_USER_OTP method for admin dashboard 
     @PostMapping(value = LOGIN_USER_OTP, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> loginWithOtp(@Valid @RequestBody LoginOtpDTO loginOtpDTO) {
         try {
@@ -128,6 +134,22 @@ public class UserController {
             }
 
             User user = userOptional.get();
+            
+            // Check admin approval for non-admin users
+            if (!"info@bellaryinfotech.com".equals(loginOtpDTO.getEmail())) {
+                if (adminDashboardService.isUserRejected(loginOtpDTO.getEmail())) {
+                    return ResponseEntity.status(403).body("Access denied. Your login request has been rejected by the administrator.");
+                }
+                
+                if (!adminDashboardService.isUserApproved(loginOtpDTO.getEmail())) {
+                    // Create login request if it doesn't exist
+                    if (!adminDashboardService.hasUserRequestedLogin(loginOtpDTO.getEmail())) {
+                        adminDashboardService.createLoginRequest(loginOtpDTO.getEmail());
+                    }
+                    return ResponseEntity.status(403).body("Your login request is pending admin approval. Please wait for administrator confirmation.");
+                }
+            }
+
             String token = jwtUtil.generateToken(user.getEmail(), user.getUsername(), user.getRole());
             LoginResponseDTO response = new LoginResponseDTO(
                     token, user.getEmail(), user.getUsername(), user.getFullname(), user.getRole(), "Login successful"
@@ -193,6 +215,7 @@ public class UserController {
     
     //Backend code for the reset password and confirm password
     
+ // Updated LOGIN_PASSWORD method for admin dashboard
     @PostMapping(value = LOGIN_PASSWORD, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> loginWithPassword(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         try {
@@ -200,17 +223,32 @@ public class UserController {
             if (!userOptional.isPresent()) {
                 return ResponseEntity.badRequest().body("Email not found. Please register first.");
             }
-            
+                        
             User user = userOptional.get();
             if (!user.getVerified()) {
                 return ResponseEntity.badRequest().body("Email not verified. Please complete registration first.");
             }
-            
+                        
             // Check password
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
                 return ResponseEntity.badRequest().body("Invalid email or password.");
             }
             
+            // Check admin approval for non-admin users
+            if (!"info@bellaryinfotech.com".equals(userLoginDTO.getEmail())) {
+                if (adminDashboardService.isUserRejected(userLoginDTO.getEmail())) {
+                    return ResponseEntity.status(403).body("Access denied. Your login request has been rejected by the administrator.");
+                }
+                
+                if (!adminDashboardService.isUserApproved(userLoginDTO.getEmail())) {
+                    // Create login request if it doesn't exist
+                    if (!adminDashboardService.hasUserRequestedLogin(userLoginDTO.getEmail())) {
+                        adminDashboardService.createLoginRequest(userLoginDTO.getEmail());
+                    }
+                    return ResponseEntity.status(403).body("Your login request is pending admin approval. Please wait for administrator confirmation.");
+                }
+            }
+                        
             String token = jwtUtil.generateToken(user.getEmail(), user.getUsername(), user.getRole());
             LoginResponseDTO response = new LoginResponseDTO(
                     token, user.getEmail(), user.getUsername(), user.getFullname(), user.getRole(), "Login successful"
