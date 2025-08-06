@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BitsDrawingEntryDto {
-
     @JsonProperty("lineId")
     private Long lineId; // Changed from String to Long
 
@@ -159,8 +158,7 @@ public class BitsDrawingEntryDto {
 
     @JsonProperty("finishingStage")
     private String finishingStage = "N";
-    
-    private String raNo;
+        private String raNo;
 
     // Default constructor
     public BitsDrawingEntryDto() {}
@@ -526,13 +524,10 @@ public class BitsDrawingEntryDto {
     public void setFinishingStage(String finishingStage) {
         this.finishingStage = finishingStage != null ? finishingStage : "N";
     }
-
 	public String getRaNo() {
 		return raNo;
 	}
-
 	public void setRaNo(String raNo) {
 		this.raNo = raNo;
 	}
-    
 }

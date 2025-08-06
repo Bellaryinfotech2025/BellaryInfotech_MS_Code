@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BitsDrawingEntryService {
-
     /**
      * Create a new drawing entry with marked quantity logic
      * If markedQty is n, create n entries in the database
@@ -61,9 +60,9 @@ public interface BitsDrawingEntryService {
     /**
      * Search drawing entries by multiple criteria
      */
-    Page<BitsDrawingEntryDto> searchDrawingEntries(String drawingNo, String markNo, 
-                                                   String sessionCode, String tenantId, 
-                                                   Pageable pageable);
+    Page<BitsDrawingEntryDto> searchDrawingEntries(String drawingNo, String markNo,
+                                                    String sessionCode, String tenantId,
+                                                    Pageable pageable);
 
     /**
      * Get drawing entries created between dates
@@ -159,21 +158,12 @@ public interface BitsDrawingEntryService {
      * Get drawing entry statistics by drawing number
      */
     BitsDrawingEntryStatsDto getDrawingEntryStats(String drawingNo);
-    
-    
-    
-    /**
+                /**
      * Get distinct RA numbers
      */
     List<String> getDistinctRaNumbers();
-    
-    
-    
-    
-    //newly added request
-    
- // ADD these new methods to your existing BitsDrawingEntryService.java interface
-
+                    //newly added request
+    // ADD these new methods to your existing BitsDrawingEntryService.java interface
     /**
      * Get distinct work orders (attribute1V) from bits_drawing_entry
      */
@@ -192,5 +182,12 @@ public interface BitsDrawingEntryService {
     /**
      * Get distinct mark numbers filtered by work order and building name
      */
-    List<String> getDistinctMarkNumbersByAttributes(String workOrder, String buildingName);
+    List<String> getDistinctMarkNumbersByAttributes(String workOrder, String buildingName, String drawingNo);
+
+    /**
+     * Get a single drawing entry by work order, building name, drawing number, and mark number
+     */
+    Optional<BitsDrawingEntryDto> getDrawingEntryDetailsByAttributes(String workOrder, String buildingName, String drawingNo, String markNo);
+
+	void deleteByMarkNo(String markNo);
 }

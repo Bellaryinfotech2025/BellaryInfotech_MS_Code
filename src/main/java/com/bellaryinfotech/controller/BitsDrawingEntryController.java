@@ -4,8 +4,6 @@ import com.bellaryinfotech.DTO.BitsDrawingEntryDto;
 import com.bellaryinfotech.DTO.BitsDrawingEntryStatsDto;
 import com.bellaryinfotech.service.BitsDrawingEntryService;
 import jakarta.validation.Valid;
-
- 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/V2.0")
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class BitsDrawingEntryController {
-
     @Autowired
     private BitsDrawingEntryService bitsDrawingEntryService;
 
@@ -66,14 +63,11 @@ public class BitsDrawingEntryController {
     public static final String GET_DRAWING_ENTRY_STATS = "/getBitsDrawingEntryStats/details";
     public static final String GET_DRAWING_NUMBERS = "/getDrawingNumbers";
     public static final String GET_DRAWING_DETAILS = "/getDrawingDetails/{drawingNo}";
-    
-/**
- * Get distinct RA numbers for dropdown
- */
-public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEntryRaNumbers/details";
+    /** * Get distinct RA numbers for dropdown */
+    public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEntryRaNumbers/details";
+    public static final String GET_DRAWING_ENTRY_DETAILS_BY_ATTRIBUTES = "/getDrawingEntryDetailsByAttributes/details"; // NEW API
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsDrawingEntryController.class);
-    
     private static final Logger logger = LoggerFactory.getLogger(BitsDrawingEntryController.class);
 
     /**
@@ -87,12 +81,10 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             @RequestParam(defaultValue = "desc") String sortDir) {
         try {
             LOG.info("Fetching all bits drawing entries with pagination");
-            
-            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+                        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, size, sort);
-            
-            Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.getAllDrawingEntries(pageable);
+                        Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.getAllDrawingEntries(pageable);
             return ResponseEntity.ok(drawingEntries);
         } catch (Exception e) {
             LOG.error("Error getting all drawing entries", e);
@@ -109,25 +101,20 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
     public ResponseEntity<?> getUniqueDrawingEntries() {
         try {
             LOG.info("Fetching unique bits drawing entries for fabrication search");
-            
-            // Get all drawing entries
+                        // Get all drawing entries
             List<BitsDrawingEntryDto> allEntries = bitsDrawingEntryService.getAllDrawingEntries();
-            
-            // Group by drawing_no + mark_no combination and aggregate quantities
+                        // Group by drawing_no + mark_no combination and aggregate quantities
             Map<String, BitsDrawingEntryDto> uniqueEntriesMap = new LinkedHashMap<>();
-            
-            for (BitsDrawingEntryDto entry : allEntries) {
-                String key = (entry.getDrawingNo() != null ? entry.getDrawingNo() : "") + "_" + 
-                           (entry.getMarkNo() != null ? entry.getMarkNo() : "");
-                
-                if (uniqueEntriesMap.containsKey(key)) {
+                        for (BitsDrawingEntryDto entry : allEntries) {
+                String key = (entry.getDrawingNo() != null ? entry.getDrawingNo() : "") + "_" +
+                            (entry.getMarkNo() != null ? entry.getMarkNo() : "");
+                                if (uniqueEntriesMap.containsKey(key)) {
                     // Aggregate quantities for existing entry
                     BitsDrawingEntryDto existingEntry = uniqueEntriesMap.get(key);
                     BigDecimal currentQty = existingEntry.getMarkedQty() != null ? existingEntry.getMarkedQty() : BigDecimal.ZERO;
                     BigDecimal newQty = entry.getMarkedQty() != null ? entry.getMarkedQty() : BigDecimal.ZERO;
                     existingEntry.setMarkedQty(currentQty.add(newQty));
-                    
-                    // Update total weight if available
+                                        // Update total weight if available
                     if (entry.getTotalMarkedWgt() != null) {
                         BigDecimal currentWeight = existingEntry.getTotalMarkedWgt() != null ? existingEntry.getTotalMarkedWgt() : BigDecimal.ZERO;
                         existingEntry.setTotalMarkedWgt(currentWeight.add(entry.getTotalMarkedWgt()));
@@ -137,13 +124,10 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     uniqueEntriesMap.put(key, entry);
                 }
             }
-            
-            List<BitsDrawingEntryDto> uniqueEntries = new ArrayList<>(uniqueEntriesMap.values());
-            
-            LOG.info("Returning {} unique drawing entries out of {} total entries", uniqueEntries.size(), allEntries.size());
+                        List<BitsDrawingEntryDto> uniqueEntries = new ArrayList<>(uniqueEntriesMap.values());
+                        LOG.info("Returning {} unique drawing entries out of {} total entries", uniqueEntries.size(), allEntries.size());
             return ResponseEntity.ok(uniqueEntries);
-            
-        } catch (Exception e) {
+                    } catch (Exception e) {
             LOG.error("Error getting unique drawing entries", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to get unique drawing entries: " + e.getMessage());
@@ -158,8 +142,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
         try {
             LOG.info("Fetching bits drawing entry by line ID: {}", lineId);
             Optional<BitsDrawingEntryDto> drawingEntry = bitsDrawingEntryService.getDrawingEntryById(lineId);
-            
-            if (drawingEntry.isPresent()) {
+                        if (drawingEntry.isPresent()) {
                 return ResponseEntity.ok(drawingEntry.get());
             } else {
                 return ResponseEntity.notFound().build();
@@ -220,18 +203,15 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             @Valid @RequestBody BitsDrawingEntryDto drawingEntryDto) {
         try {
             LOG.info("Updating drawing entry with line ID: {}", lineId);
-        
-            // Validate lineId
+                    // Validate lineId
             if (lineId == null || lineId.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Line ID cannot be null or empty");
             }
-        
-            // Validate DTO
+                    // Validate DTO
             if (drawingEntryDto == null) {
                 return ResponseEntity.badRequest().body("Drawing entry data cannot be null");
             }
-        
-            BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, drawingEntryDto);
+                    BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, drawingEntryDto);
             return ResponseEntity.ok(updatedEntry);
         } catch (IllegalArgumentException e) {
             LOG.error("Invalid input for updating drawing entry: {}", e.getMessage());
@@ -257,56 +237,44 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
     public ResponseEntity<?> updateFabricationStages(@RequestBody Map<String, Object> requestBody) {
         try {
             LOG.info("Updating fabrication stages");
-            
-            @SuppressWarnings("unchecked")
+                        @SuppressWarnings("unchecked")
             List<Map<String, Object>> fabricationUpdates = (List<Map<String, Object>>) requestBody.get("fabricationStages");
-            
-            if (fabricationUpdates == null || fabricationUpdates.isEmpty()) {
+                        if (fabricationUpdates == null || fabricationUpdates.isEmpty()) {
                 return ResponseEntity.badRequest().body("No fabrication stage updates provided");
             }
-            
-            List<BitsDrawingEntryDto> updatedEntries = new ArrayList<>();
-            
-            for (Map<String, Object> update : fabricationUpdates) {
+                        List<BitsDrawingEntryDto> updatedEntries = new ArrayList<>();
+                        for (Map<String, Object> update : fabricationUpdates) {
                 String lineId = (String) update.get("lineId");
                 String cuttingStage = (String) update.get("cuttingStage");
                 String fitUpStage = (String) update.get("fitUpStage");
                 String weldingStage = (String) update.get("weldingStage");
                 String finishingStage = (String) update.get("finishingStage");
-                
-                if (lineId == null || lineId.trim().isEmpty()) {
+                                if (lineId == null || lineId.trim().isEmpty()) {
                     continue; // Skip invalid entries
                 }
-                
-                // Get existing entry
+                                // Get existing entry
                 Optional<BitsDrawingEntryDto> existingEntryOpt = bitsDrawingEntryService.getDrawingEntryById(lineId);
                 if (existingEntryOpt.isPresent()) {
                     BitsDrawingEntryDto existingEntry = existingEntryOpt.get();
-                    
-                    // Update only fabrication stages
+                                        // Update only fabrication stages
                     existingEntry.setCuttingStage(cuttingStage != null ? cuttingStage : "N");
                     existingEntry.setFitUpStage(fitUpStage != null ? fitUpStage : "N");
                     existingEntry.setWeldingStage(weldingStage != null ? weldingStage : "N");
                     existingEntry.setFinishingStage(finishingStage != null ? finishingStage : "N");
                     existingEntry.setLastUpdatedBy("fabrication_system");
-                    
-                    // Update the entry
+                                        // Update the entry
                     BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, existingEntry);
                     updatedEntries.add(updatedEntry);
                 }
             }
-            
-            LOG.info("Successfully updated fabrication stages for {} entries", updatedEntries.size());
-            
-            Map<String, Object> response = new HashMap<>();
+                        LOG.info("Successfully updated fabrication stages for {} entries", updatedEntries.size());
+                        Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Fabrication stages updated successfully");
             response.put("updatedCount", updatedEntries.size());
             response.put("updatedEntries", updatedEntries);
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
+                        return ResponseEntity.ok(response);
+                    } catch (Exception e) {
             LOG.error("Error updating fabrication stages", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to update fabrication stages: " + e.getMessage());
@@ -324,59 +292,45 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             String drawingNo = requestBody.get("drawingNo") != null ? String.valueOf(requestBody.get("drawingNo")) : null;
             String markNo = requestBody.get("markNo") != null ? String.valueOf(requestBody.get("markNo")) : null;
             String raNo = requestBody.get("raNo") != null ? String.valueOf(requestBody.get("raNo")) : null;
-        
-            LOG.info("Updating RA.NO for line ID: {}, drawing: {}, mark: {}, RA.NO: {}", lineId, drawingNo, markNo, raNo);
-        
-            // Validate required fields
+                    LOG.info("Updating RA.NO for line ID: {}, drawing: {}, mark: {}, RA.NO: {}", lineId, drawingNo, markNo, raNo);
+                    // Validate required fields
             if (lineId == null || lineId.trim().isEmpty() || "null".equals(lineId)) {
                 return ResponseEntity.badRequest().body("Line ID is required");
             }
-        
-            if (raNo == null || raNo.trim().isEmpty() || "null".equals(raNo)) {
+                    if (raNo == null || raNo.trim().isEmpty() || "null".equals(raNo)) {
                 return ResponseEntity.badRequest().body("RA.NO value is required");
             }
-        
-            // Get existing entry
+                    // Get existing entry
             Optional<BitsDrawingEntryDto> existingEntryOpt = bitsDrawingEntryService.getDrawingEntryById(lineId);
             if (!existingEntryOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-        
-            BitsDrawingEntryDto existingEntry = existingEntryOpt.get();
-        
-            // Validate that the drawing no and mark no match (if provided)
+                    BitsDrawingEntryDto existingEntry = existingEntryOpt.get();
+                    // Validate that the drawing no and mark no match (if provided)
             if (drawingNo != null && !"null".equals(drawingNo) && !drawingNo.equals(existingEntry.getDrawingNo())) {
                 return ResponseEntity.badRequest().body("Drawing number mismatch");
             }
-        
-            if (markNo != null && !"null".equals(markNo) && !markNo.equals(existingEntry.getMarkNo())) {
+                    if (markNo != null && !"null".equals(markNo) && !markNo.equals(existingEntry.getMarkNo())) {
                 return ResponseEntity.badRequest().body("Mark number mismatch");
             }
-        
-            // Update only the RA.NO field
+                    // Update only the RA.NO field
             existingEntry.setRaNo(raNo.trim());
             existingEntry.setLastUpdatedBy("ra_no_system");
-        
-            // Save the updated entry
+                    // Save the updated entry
             BitsDrawingEntryDto updatedEntry = bitsDrawingEntryService.updateDrawingEntry(lineId, existingEntry);
-        
-            LOG.info("Successfully updated RA.NO for line ID: {}", lineId);
-        
-            Map<String, Object> response = new HashMap<>();
+                    LOG.info("Successfully updated RA.NO for line ID: {}", lineId);
+                    Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "RA.NO updated successfully");
             response.put("lineId", lineId);
             response.put("raNo", raNo.trim());
             response.put("updatedEntry", updatedEntry);
-        
-            return ResponseEntity.ok(response);
-        
-    } catch (Exception e) {
+                    return ResponseEntity.ok(response);
+            } catch (Exception e) {
         LOG.error("Error updating RA.NO", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Failed to update RA.NO: " + e.getMessage());
-    }
-}
+    }}
 
     /**
      * Handle OPTIONS requests for CORS preflight
@@ -432,7 +386,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
     public ResponseEntity<?> deleteDrawingEntriesByMarkNo(@RequestParam String markNo) {
         try {
             LOG.info("Deleting drawing entries by mark number: {}", markNo);
-            bitsDrawingEntryService.deleteDrawingEntriesByMarkNo(markNo);
+            bitsDrawingEntryService.deleteByMarkNo(markNo);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             LOG.error("Error deleting drawing entries by mark number: {}", markNo, e);
@@ -517,12 +471,10 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             @RequestParam(defaultValue = "desc") String sortDir) {
         try {
             LOG.info("Searching drawing entries by tenant ID: {}", tenantId);
-            
-            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+                        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, size, sort);
-            
-            Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.getDrawingEntriesByTenantId(tenantId, pageable);
+                        Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.getDrawingEntriesByTenantId(tenantId, pageable);
             return ResponseEntity.ok(drawingEntries);
         } catch (Exception e) {
             LOG.error("Error getting drawing entries by tenant ID: {}", tenantId, e);
@@ -546,12 +498,10 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
             @RequestParam(defaultValue = "desc") String sortDir) {
         try {
             LOG.info("Searching drawing entries with multiple criteria");
-            
-            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
-                    Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+                        Sort sort = sortDir.equalsIgnoreCase("desc") ?
+                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             Pageable pageable = PageRequest.of(page, size, sort);
-            
-            Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.searchDrawingEntries(
+                        Page<BitsDrawingEntryDto> drawingEntries = bitsDrawingEntryService.searchDrawingEntries(
                     drawingNo, markNo, sessionCode, tenantId, pageable);
             return ResponseEntity.ok(drawingEntries);
         } catch (Exception e) {
@@ -747,8 +697,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
         try {
             LOG.info("Getting latest drawing entry by drawing number: {}", drawingNo);
             Optional<BitsDrawingEntryDto> drawingEntry = bitsDrawingEntryService.getLatestByDrawingNo(drawingNo);
-            
-            if (drawingEntry.isPresent()) {
+                        if (drawingEntry.isPresent()) {
                 return ResponseEntity.ok(drawingEntry.get());
             } else {
                 return ResponseEntity.notFound().build();
@@ -768,8 +717,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
         try {
             LOG.info("Getting latest drawing entry by mark number: {}", markNo);
             Optional<BitsDrawingEntryDto> drawingEntry = bitsDrawingEntryService.getLatestByMarkNo(markNo);
-            
-            if (drawingEntry.isPresent()) {
+                        if (drawingEntry.isPresent()) {
                 return ResponseEntity.ok(drawingEntry.get());
             } else {
                 return ResponseEntity.notFound().build();
@@ -812,8 +760,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     .body("Failed to get drawing numbers: " + e.getMessage());
         }
     }
-    
-    /**
+        /**
      * Get details for a specific drawing number
      */
     @RequestMapping(value = GET_DRAWING_DETAILS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
@@ -833,8 +780,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     .body("Failed to get drawing details: " + e.getMessage());
         }
     }
-    
-    @RequestMapping(value = GET_DISTINCT_RA_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+        @RequestMapping(value = GET_DISTINCT_RA_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getDistinctRaNumbers() {
         try {
             LOG.info("Getting distinct RA numbers");
@@ -846,8 +792,8 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     .body("Failed to get distinct RA numbers: " + e.getMessage());
         }
     }
-//Newly added apis that fetch the work order from the  bits_drawing_entry
 
+    //Newly added apis that fetch the work order from the  bits_drawing_entry
     /**
      * Get distinct work orders from bits_drawing_entry
      */
@@ -881,7 +827,7 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
      */
     @GetMapping("/getDistinctDrawingNumbersByAttributes/details")
     public ResponseEntity<List<String>> getDistinctDrawingNumbersByAttributes(
-            @RequestParam String workOrder, 
+            @RequestParam String workOrder,
             @RequestParam String buildingName) {
         try {
             List<String> drawingNumbers = bitsDrawingEntryService.getDistinctDrawingNumbersByAttributes(workOrder, buildingName);
@@ -893,14 +839,15 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
     }
 
     /**
-     * Get distinct mark numbers filtered by work order and building name
+     * Get distinct mark numbers filtered by work order, building name, and drawing number
      */
     @GetMapping("/getDistinctMarkNumbersByAttributes/details")
     public ResponseEntity<List<String>> getDistinctMarkNumbersByAttributes(
-            @RequestParam String workOrder, 
-            @RequestParam String buildingName) {
+            @RequestParam String workOrder,
+            @RequestParam String buildingName,
+            @RequestParam String drawingNo) {
         try {
-            List<String> markNumbers = bitsDrawingEntryService.getDistinctMarkNumbersByAttributes(workOrder, buildingName);
+            List<String> markNumbers = bitsDrawingEntryService.getDistinctMarkNumbersByAttributes(workOrder, buildingName, drawingNo);
             return ResponseEntity.ok(markNumbers);
         } catch (Exception e) {
             logger.error("Error getting distinct mark numbers by attributes", e);
@@ -908,4 +855,29 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
         }
     }
 
+    /**
+     * Get a single drawing entry's details (including markedQty and length) by work order, building name, drawing number, and mark number
+     */
+    @GetMapping(GET_DRAWING_ENTRY_DETAILS_BY_ATTRIBUTES)
+    public ResponseEntity<?> getDrawingEntryDetailsByAttributes(
+            @RequestParam String workOrder,
+            @RequestParam String buildingName,
+            @RequestParam String drawingNo,
+            @RequestParam String markNo) {
+        try {
+            LOG.info("Fetching drawing entry details by attributes: workOrder={}, buildingName={}, drawingNo={}, markNo={}",
+                    workOrder, buildingName, drawingNo, markNo);
+            Optional<BitsDrawingEntryDto> entryDto = bitsDrawingEntryService.getDrawingEntryDetailsByAttributes(
+                    workOrder, buildingName, drawingNo, markNo);
+            if (entryDto.isPresent()) {
+                return ResponseEntity.ok(entryDto.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching drawing entry details by attributes", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch drawing entry details: " + e.getMessage());
+        }
+    }
 }
