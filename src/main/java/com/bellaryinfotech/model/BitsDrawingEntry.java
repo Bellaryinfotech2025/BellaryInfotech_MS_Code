@@ -8,11 +8,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bits_drawing_entry")
 public class BitsDrawingEntry {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "line_id", nullable = false)
-    private Long lineId;
-      @Version
+    private Long lineId;  
+
+    @Version
     @Column(name = "version", nullable = false)
     private Long version = 0L;
 
@@ -118,7 +120,8 @@ public class BitsDrawingEntry {
 
     @Column(name = "attribute5_d")
     private LocalDate attribute5D;
-        @Column(name = "drawing_weight", precision = 19, scale = 4)
+    
+    @Column(name = "drawing_weight", precision = 19, scale = 4)
     private BigDecimal drawingWeight;
 
     @Column(name = "mark_weight", precision = 19, scale = 4)
@@ -142,7 +145,8 @@ public class BitsDrawingEntry {
 
     @Column(name = "finishing_stage", length = 1)
     private String finishingStage = "N";
-        @Column(name = "ra_no")
+    
+    @Column(name = "ra_no")
     private String raNo;
 
     // Default constructor
@@ -446,7 +450,8 @@ public class BitsDrawingEntry {
     public void setAttribute5D(LocalDate attribute5D) {
         this.attribute5D = attribute5D;
     }
-        public BigDecimal getDrawingWeight() {
+    
+    public BigDecimal getDrawingWeight() {
         return drawingWeight;
     }
 
@@ -510,8 +515,15 @@ public class BitsDrawingEntry {
     public void setFinishingStage(String finishingStage) {
         this.finishingStage = finishingStage != null ? finishingStage : "N";
     }
-        public String getRaNo() {		return raNo;	}
-	public void setRaNo(String raNo) {		this.raNo = raNo;	}
+    
+
+    public String getRaNo() {
+		return raNo;
+	}
+
+	public void setRaNo(String raNo) {
+		this.raNo = raNo;
+	}
 
 	@PrePersist
     protected void onCreate() {
@@ -519,7 +531,8 @@ public class BitsDrawingEntry {
             creationDate = LocalDateTime.now();
         }
         lastUpdatingDate = LocalDateTime.now();
-                // Ensure fabrication stages have default values
+        
+        // Ensure fabrication stages have default values
         if (cuttingStage == null) cuttingStage = "N";
         if (fitUpStage == null) fitUpStage = "N";
         if (weldingStage == null) weldingStage = "N";
@@ -551,9 +564,9 @@ public class BitsDrawingEntry {
                 ", totalItemWeight=" + totalItemWeight +
                 ", tenantId='" + tenantId + '\'' +
                 ", creationDate=" + creationDate +
-                ", createdBy=" + createdBy +
+                ", createdBy='" + createdBy + '\'' +
                 ", lastUpdatingDate=" + lastUpdatingDate +
-                ", lastUpdatedBy=" + lastUpdatedBy +
+                ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
                 ", poLineReferenceId=" + poLineReferenceId +
                 ", cuttingStage='" + cuttingStage + '\'' +
                 ", fitUpStage='" + fitUpStage + '\'' +

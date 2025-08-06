@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEntry, Long> { // Changed from String to Long
+
     /**
      * Find all entries by drawing number
      */
@@ -177,12 +178,30 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
      * Find latest entry by order ID
      */
     Optional<BitsDrawingEntry> findTopByOrderIdOrderByCreationDateDesc(Long orderId);
-                /**
+    
+    
+    
+    /**
      * Find distinct RA numbers
      */
     @Query("SELECT DISTINCT bde.raNo FROM BitsDrawingEntry bde WHERE bde.raNo IS NOT NULL AND bde.raNo != '' ORDER BY bde.raNo")
     List<String> findDistinctRaNumbers();
-                                                //newly functionaity from requested // ADD these new methods to your existing BitsDrawingEntryRepository.java
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    //newly functionaity from requested
+ // ADD these new methods to your existing BitsDrawingEntryRepository.java
+
     /**
      * Get distinct attribute1V (Work Orders) from bits_drawing_entry
      */
@@ -202,18 +221,18 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
     List<String> findDistinctDrawingNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
 
     /**
-     * Get distinct mark numbers filtered by attribute1V, attribute2V, and drawingNo
+     * Get distinct mark numbers filtered by attribute1V and attribute2V
      */
-    @Query("SELECT DISTINCT bde.markNo FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V = :attribute2V AND bde.drawingNo = :drawingNo AND bde.markNo IS NOT NULL AND bde.markNo != '' ORDER BY bde.markNo")
-    List<String> findDistinctMarkNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V, @Param("drawingNo") String drawingNo);
+    @Query("SELECT DISTINCT bde.markNo FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V = :attribute2V AND bde.markNo IS NOT NULL AND bde.markNo != '' ORDER BY bde.markNo")
+    List<String> findDistinctMarkNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    /**
-     * Find a single drawing entry by work order, building name, drawing number, and mark number
-     */
-    @Query("SELECT bde FROM BitsDrawingEntry bde WHERE bde.attribute1V = :workOrder AND bde.attribute2V = :buildingName AND bde.drawingNo = :drawingNo AND bde.markNo = :markNo")
-    Optional<BitsDrawingEntry> findByWorkOrderAndBuildingAndDrawingAndMark(
-            @Param("workOrder") String workOrder,
-            @Param("buildingName") String buildingName,
-            @Param("drawingNo") String drawingNo,
-            @Param("markNo") String markNo);
 }
