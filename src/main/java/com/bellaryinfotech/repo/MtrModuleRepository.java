@@ -27,5 +27,7 @@ public interface MtrModuleRepository extends JpaRepository<MtrModule, Long> {
     List<String> findDistinctBuildingNamesByWorkOrder(@Param("workOrder") String workOrder);
     
     void deleteByMarkNo(String markNo);
+    
+    
 }
 

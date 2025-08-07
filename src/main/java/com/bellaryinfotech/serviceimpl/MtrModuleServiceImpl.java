@@ -127,4 +127,7 @@ public class MtrModuleServiceImpl implements MtrModuleService {
     public void deleteMeterModulesByMarkNo(String markNo) {
         mtrModuleRepository.deleteByMarkNo(markNo);
     }
+    
+    
+    
 }

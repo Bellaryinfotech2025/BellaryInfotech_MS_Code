@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.bellaryinfotech.DTO.BitsLinesDto;
 import com.bellaryinfotech.service.BitsLinesService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,13 +151,21 @@ public class BitsLinesController {
         return ResponseEntity.ok(lines);
     }
 
-    // Enhanced endpoint to get service orders by work order number
+    // ENHANCED: Enhanced endpoint to get service orders by work order number
     @RequestMapping(value = GET_LINES_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getLinesByWorkOrder(@RequestParam String workOrder) {
         LOG.info("Fetching bits lines by work order: {}", workOrder);
         try {
             List<BitsLinesDto> lines = linesService.getLinesByWorkOrder(workOrder);
             LOG.info("Found {} lines for work order: {}", lines.size(), workOrder);
+            
+            // Enhanced logging for debugging
+            if (!lines.isEmpty()) {
+                BitsLinesDto sample = lines.get(0);
+                LOG.info("Sample line data - ServiceDesc: {}, UOM: {}, WorkOrderRef: {}", 
+                    sample.getServiceDesc(), sample.getUom(), sample.getWorkOrderRef());
+            }
+            
             return ResponseEntity.ok(lines);
         } catch (Exception e) {
             LOG.error("Error fetching bits lines by work order: {}", workOrder, e);
