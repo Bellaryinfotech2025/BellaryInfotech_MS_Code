@@ -261,6 +261,10 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
             if (mtrFabModuleDto.getFitUpStage() != null) existingEntity.setFitUpStage(mtrFabModuleDto.getFitUpStage());
             if (mtrFabModuleDto.getWeldingStage() != null) existingEntity.setWeldingStage(mtrFabModuleDto.getWeldingStage());
             if (mtrFabModuleDto.getFinishingStage() != null) existingEntity.setFinishingStage(mtrFabModuleDto.getFinishingStage());
+            // NEW: Update serviceDescription, uom, dataModule
+            if (mtrFabModuleDto.getServiceDescription() != null) existingEntity.setServiceDescription(mtrFabModuleDto.getServiceDescription());
+            if (mtrFabModuleDto.getUom() != null) existingEntity.setUom(mtrFabModuleDto.getUom());
+            if (mtrFabModuleDto.getDataModule() != null) existingEntity.setDataModule(mtrFabModuleDto.getDataModule());
             
             existingEntity.setLastUpdatedBy(mtrFabModuleDto.getLastUpdatedBy());
             existingEntity.setLastUpdatedDate(LocalDateTime.now());
@@ -437,6 +441,11 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
         entity.setFitUpStage(dto.getFitUpStage() != null ? dto.getFitUpStage() : "N");
         entity.setWeldingStage(dto.getWeldingStage() != null ? dto.getWeldingStage() : "N");
         entity.setFinishingStage(dto.getFinishingStage() != null ? dto.getFinishingStage() : "N");
+        // NEW: Set serviceDescription, uom, dataModule
+        entity.setServiceDescription(dto.getServiceDescription());
+        entity.setUom(dto.getUom());
+        entity.setDataModule(dto.getDataModule());
+
         entity.setCreatedBy(dto.getCreatedBy() != null ? dto.getCreatedBy() : "system");
         entity.setLastUpdatedBy(dto.getLastUpdatedBy() != null ? dto.getLastUpdatedBy() : "system");
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : ACTIVE_STATUS);
@@ -466,6 +475,11 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
         dto.setFitUpStage(entity.getFitUpStage());
         dto.setWeldingStage(entity.getWeldingStage());
         dto.setFinishingStage(entity.getFinishingStage());
+        // NEW: Get serviceDescription, uom, dataModule
+        dto.setServiceDescription(entity.getServiceDescription());
+        dto.setUom(entity.getUom());
+        dto.setDataModule(entity.getDataModule());
+
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setCreatedDate(entity.getCreatedDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());

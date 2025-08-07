@@ -65,6 +65,16 @@ public class MtrFabModuleDto {
     @JsonProperty("finishingStage")
     private String finishingStage;
 
+    // NEW: Add serviceDescription, uom, dataModule properties
+    @JsonProperty("serviceDescription")
+    private String serviceDescription;
+
+    @JsonProperty("uom")
+    private String uom;
+
+    @JsonProperty("dataModule")
+    private String dataModule;
+
     @JsonProperty("createdBy")
     private String createdBy;
 
@@ -144,7 +154,7 @@ public class MtrFabModuleDto {
         this.markQty = markQty;
     }
 
-     
+    
 
     public String getRaNo() {
         return raNo;
@@ -222,6 +232,31 @@ public class MtrFabModuleDto {
         this.finishingStage = finishingStage;
     }
 
+    // NEW: Getters and Setters for serviceDescription, uom, dataModule
+    public String getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+
+    public String getUom() {
+        return uom;
+    }
+
+    public void setUom(String uom) {
+        this.uom = uom;
+    }
+
+    public String getDataModule() {
+        return dataModule;
+    }
+
+    public void setDataModule(String dataModule) {
+        this.dataModule = dataModule;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -261,7 +296,6 @@ public class MtrFabModuleDto {
     public void setStatus(String status) {
         this.status = status;
     }
-    
     
     
     
@@ -309,6 +343,9 @@ public class MtrFabModuleDto {
                 ", raNo='" + raNo + '\'' +
                 ", itemNo='" + itemNo + '\'' +
                 ", section='" + section + '\'' +
+                ", serviceDescription='" + serviceDescription + '\'' +
+                ", uom='" + uom + '\'' +
+                ", dataModule='" + dataModule + '\'' +
                 ", status='" + status + '\'' +
                 '}';
     }

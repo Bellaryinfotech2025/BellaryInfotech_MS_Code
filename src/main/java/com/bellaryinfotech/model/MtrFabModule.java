@@ -1,5 +1,4 @@
 package com.bellaryinfotech.model;
- 
 
 import jakarta.persistence.*;
 
@@ -35,7 +34,7 @@ public class MtrFabModule {
 
     @Column(name = "total_mark_length", precision = 10, scale = 3)
     private BigDecimal totalMarkLength;
-    
+
     @Column(name = "ra_no", length = 100)
     private String raNo;
 
@@ -68,6 +67,16 @@ public class MtrFabModule {
 
     @Column(name = "finishing_stage", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
     private String finishingStage = "N";
+
+    // NEW: Add service_description, uom, data_module columns
+    @Column(name = "service_description", length = 255)
+    private String serviceDescription;
+
+    @Column(name = "uom", length = 50)
+    private String uom;
+
+    @Column(name = "data_module", length = 100)
+    private String dataModule;
 
     @Column(name = "created_by", length = 100)
     private String createdBy;
@@ -174,8 +183,8 @@ public class MtrFabModule {
     public void setSection(String section) {
         this.section = section;
     }
- 
 
+     
     public Integer getItemQty() {
         return itemQty;
     }
@@ -184,7 +193,7 @@ public class MtrFabModule {
         this.itemQty = itemQty;
     }
 
-    
+     
 
     public String getRemarks() {
         return remarks;
@@ -226,6 +235,31 @@ public class MtrFabModule {
         this.finishingStage = finishingStage;
     }
 
+    // NEW: Getters and Setters for serviceDescription, uom, dataModule
+    public String getServiceDescription() {
+        return serviceDescription;
+    }
+
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+
+    public String getUom() {
+        return uom;
+    }
+
+    public void setUom(String uom) {
+        this.uom = uom;
+    }
+
+    public String getDataModule() {
+        return dataModule;
+    }
+
+    public void setDataModule(String dataModule) {
+        this.dataModule = dataModule;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -265,7 +299,6 @@ public class MtrFabModule {
     public void setStatus(String status) {
         this.status = status;
     }
-    
     
     
     
@@ -318,8 +351,10 @@ public class MtrFabModule {
                 ", raNo='" + raNo + '\'' +
                 ", itemNo='" + itemNo + '\'' +
                 ", section='" + section + '\'' +
+                ", serviceDescription='" + serviceDescription + '\'' +
+                ", uom='" + uom + '\'' +
+                ", dataModule='" + dataModule + '\'' +
                 ", status='" + status + '\'' +
                 '}';
     }
 }
-

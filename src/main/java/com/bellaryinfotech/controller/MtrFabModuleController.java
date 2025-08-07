@@ -203,7 +203,8 @@ public class MtrFabModuleController {
             LOG.info("Found {} MtrFabModule records", modules.size());
             
             return ResponseEntity.ok(modules);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             LOG.error("Error fetching MtrFabModule records: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error fetching records: " + e.getMessage());
         }
