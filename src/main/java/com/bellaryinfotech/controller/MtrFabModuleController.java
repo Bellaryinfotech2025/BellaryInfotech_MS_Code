@@ -49,7 +49,7 @@ public class MtrFabModuleController {
     public static final String GET_DISTINCT_MARK_NOS_FROM_FAB_MODULE = "/getDistinctMarkNosFromFabModule/details";
     public static final String GET_DISTINCT_RA_NUMBERS_FROM_FAB_MODULE = "/getDistinctRaNumbersFromFabModule/details";
     
-    // Statistics endpoints
+    
     public static final String GET_FAB_MODULE_STATISTICS = "/getFabModuleStatistics/details";
 
     /**
