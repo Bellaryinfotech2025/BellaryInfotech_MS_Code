@@ -1,13 +1,11 @@
 package com.bellaryinfotech.controller;
- 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.bellaryinfotech.DTO.MtrModuleDTO;
 import com.bellaryinfotech.service.MtrModuleService;
-
 import java.util.List;
 
 @RestController
@@ -18,6 +16,7 @@ public class MtrModuleController {
     @Autowired
     private MtrModuleService mtrModuleService;
 
+    // Existing endpoints...
     @PostMapping("/createMeterModule/details")
     public ResponseEntity<MtrModuleDTO> createMeterModule(@RequestBody MtrModuleDTO mtrModuleDTO) {
         try {
@@ -105,6 +104,7 @@ public class MtrModuleController {
         }
     }
 
+    // NEW: Required endpoints for FabWrapper integration
     @GetMapping("/getDistinctWorkOrdersFromMeterModule/details")
     public ResponseEntity<List<String>> getDistinctWorkOrders() {
         try {
@@ -125,6 +125,51 @@ public class MtrModuleController {
         }
     }
 
+    @GetMapping("/getDistinctDrawingNosByWorkOrderAndBuildingFromMeterModule/details")
+    public ResponseEntity<List<String>> getDistinctDrawingNosByWorkOrderAndBuilding(@RequestParam String workOrder, @RequestParam String buildingName) {
+        try {
+            List<String> drawingNos = mtrModuleService.getDistinctDrawingNosByWorkOrderAndBuildingName(workOrder, buildingName);
+            return new ResponseEntity<>(drawingNos, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctMarkNosByWorkOrderBuildingDrawingFromMeterModule/details")
+    public ResponseEntity<List<String>> getDistinctMarkNosByWorkOrderBuildingDrawing(@RequestParam String workOrder, @RequestParam String buildingName, @RequestParam String drawingNo) {
+        try {
+            List<String> markNos = mtrModuleService.getDistinctMarkNosByWorkOrderAndBuildingNameAndDrawingNo(workOrder, buildingName, drawingNo);
+            return new ResponseEntity<>(markNos, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctServiceDescriptionsByWorkOrderFromMeterModule/details")
+    public ResponseEntity<List<String>> getDistinctServiceDescriptionsByWorkOrder(@RequestParam String workOrder) {
+        try {
+            List<String> serviceDescriptions = mtrModuleService.getDistinctServiceDescriptionsByWorkOrder(workOrder);
+            return new ResponseEntity<>(serviceDescriptions, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // NEW: Endpoint for MeterFabrication to get data by work order, building, drawing, mark
+    @GetMapping("/getMeterModulesByWorkOrderBuildingDrawingMark/details")
+    public ResponseEntity<List<MtrModuleDTO>> getMeterModulesByWorkOrderBuildingDrawingMark(
+            @RequestParam String workOrder, 
+            @RequestParam String buildingName, 
+            @RequestParam String drawingNo, 
+            @RequestParam String markNo) {
+        try {
+            List<MtrModuleDTO> modules = mtrModuleService.getMeterModulesByWorkOrderBuildingDrawingMark(workOrder, buildingName, drawingNo, markNo);
+            return new ResponseEntity<>(modules, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @DeleteMapping("/deleteMeterModulesByMarkNo/details")
     public ResponseEntity<String> deleteMeterModulesByMarkNo(@RequestParam String markNo) {
         try {
@@ -134,8 +179,4 @@ public class MtrModuleController {
             return new ResponseEntity<>("Error deleting MeterModules", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    
-     
 }
-

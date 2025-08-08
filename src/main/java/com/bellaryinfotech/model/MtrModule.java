@@ -5,91 +5,92 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "mtr_module")
 public class MtrModule {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "order_id")
     private String orderId;
-    
+
     @Column(name = "client_name")
     private String clientName;
-    
+
     @Column(name = "work_order")
     private String workOrder;
-    
+
     @Column(name = "service_description")
     private String serviceDescription;
-    
+
     @Column(name = "uom")
     private String uom;
-    
+
     @Column(name = "department")
     private String department;
-    
+
     @Column(name = "work_location")
     private String workLocation;
-    
+
     @Column(name = "data_module")
     private String dataModule;
-    
+
     @Column(name = "building_name")
     private String buildingName;
-    
+
     @Column(name = "drawing_no")
     private String drawingNo;
-    
+
     @Column(name = "mark_no")
     private String markNo;
-    
+
     @Column(name = "mark_qty")
     private String markQty;
-    
+
     @Column(name = "each_mark_length")
     private String eachMarkLength;
-    
+
     @Column(name = "total_mark_length")
     private String totalMarkLength;
-    
+
     @Column(name = "item_no")
     private String itemNo;
-    
+
     @Column(name = "section")
     private String section;
-    
+
     @Column(name = "length_mm")
     private String lengthMm;
-    
+
     @Column(name = "item_qty")
     private String itemQty;
-    
+
     @Column(name = "total_length")
     private String totalLength;
-    
+
     @Column(name = "remarks")
     private String remarks;
-    
+
     @Column(name = "tenant_id")
     private String tenantId;
-    
+
     @Column(name = "attribute1_v")
     private String attribute1V;
-    
+
     @Column(name = "attribute2_v")
     private String attribute2V;
-    
+
     @Column(name = "attribute3_v")
     private String attribute3V;
-    
+
     @Column(name = "attribute4_v")
     private String attribute4V;
-    
+
     @Column(name = "attribute5_v")
     private String attribute5V;
 
+    // Default constructor
     public MtrModule() {}
 
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
