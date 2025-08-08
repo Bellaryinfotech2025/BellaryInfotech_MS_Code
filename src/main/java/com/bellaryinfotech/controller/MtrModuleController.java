@@ -16,7 +16,7 @@ public class MtrModuleController {
     @Autowired
     private MtrModuleService mtrModuleService;
 
-    // Existing endpoints...
+    
     @PostMapping("/createMeterModule/details")
     public ResponseEntity<MtrModuleDTO> createMeterModule(@RequestBody MtrModuleDTO mtrModuleDTO) {
         try {

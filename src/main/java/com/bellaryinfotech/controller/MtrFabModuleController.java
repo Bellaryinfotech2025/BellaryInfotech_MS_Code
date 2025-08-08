@@ -24,7 +24,7 @@ public class MtrFabModuleController {
     @Autowired
     private MtrFabModuleService mtrFabModuleService;
 
-    // Endpoint constants
+    
     public static final String CREATE_MTR_FAB_MODULE = "/createMtrFabModule/details";
     public static final String CREATE_MULTIPLE_MTR_FAB_MODULES = "/createMtrFabModuleEntries/details";
     public static final String GET_ALL_MTR_FAB_MODULES = "/getAllMtrFabModules/details";
@@ -34,7 +34,7 @@ public class MtrFabModuleController {
     public static final String DELETE_MTR_FAB_MODULE = "/deleteMtrFabModule/details";
     public static final String SOFT_DELETE_MTR_FAB_MODULE = "/softDeleteMtrFabModule/details";
     
-    // Search endpoints
+     
     public static final String GET_MTR_FAB_MODULES_BY_WORK_ORDER = "/getMtrFabModulesByWorkOrder/details";
     public static final String GET_MTR_FAB_MODULES_BY_WORK_ORDER_AND_BUILDING = "/getMtrFabModulesByWorkOrderAndBuilding/details";
     public static final String GET_MTR_FAB_MODULES_BY_WORK_ORDER_BUILDING_DRAWING = "/getMtrFabModulesByWorkOrderBuildingDrawing/details";
@@ -42,7 +42,7 @@ public class MtrFabModuleController {
     public static final String GET_MTR_FAB_MODULES_BY_RA_NO = "/getMtrFabModulesByRaNo/details";
     public static final String SEARCH_MTR_FAB_MODULES = "/searchMtrFabModules/details";
     
-    // Utility endpoints
+     
     public static final String GET_DISTINCT_WORK_ORDERS_FROM_FAB_MODULE = "/getDistinctWorkOrdersFromFabModule/details";
     public static final String GET_DISTINCT_BUILDING_NAMES_FROM_FAB_MODULE = "/getDistinctBuildingNamesFromFabModule/details";
     public static final String GET_DISTINCT_DRAWING_NOS_FROM_FAB_MODULE = "/getDistinctDrawingNosFromFabModule/details";
@@ -52,9 +52,7 @@ public class MtrFabModuleController {
     
     public static final String GET_FAB_MODULE_STATISTICS = "/getFabModuleStatistics/details";
 
-    /**
-     * CREATE - Single MtrFabModule
-     */
+     
     @PostMapping(value = CREATE_MTR_FAB_MODULE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMtrFabModule(@RequestBody MtrFabModuleDto mtrFabModuleDto) {
         LOG.info("Creating new MtrFabModule: {}", mtrFabModuleDto);
@@ -80,9 +78,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * CREATE - Multiple MtrFabModules (Bulk Insert)
-     */
+     
     @PostMapping(value = CREATE_MULTIPLE_MTR_FAB_MODULES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMultipleMtrFabModules(@RequestBody List<MtrFabModuleDto> mtrFabModuleDtos) {
         LOG.info("Creating {} MtrFabModule entries", mtrFabModuleDtos.size());
@@ -109,9 +105,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get all MtrFabModules
-     */
+    
     @GetMapping(value = GET_ALL_MTR_FAB_MODULES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllMtrFabModules() {
         LOG.info("Fetching all MtrFabModule records");
@@ -132,9 +126,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModule by ID
-     */
+     
     @GetMapping(value = GET_MTR_FAB_MODULE_BY_ID, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModuleById(@RequestParam Long id) {
         LOG.info("Fetching MtrFabModule by ID: {}", id);
@@ -155,9 +147,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModules by Work Order
-     */
+    
     @GetMapping(value = GET_MTR_FAB_MODULES_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModulesByWorkOrder(@RequestParam String workOrder) {
         LOG.info("Fetching MtrFabModule records by work order: {}", workOrder);
@@ -173,9 +163,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModules by Work Order and Building Name
-     */
+     
     @GetMapping(value = GET_MTR_FAB_MODULES_BY_WORK_ORDER_AND_BUILDING, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModulesByWorkOrderAndBuilding(@RequestParam String workOrder, @RequestParam String buildingName) {
         LOG.info("Fetching MtrFabModule records by work order: {} and building name: {}", workOrder, buildingName);
@@ -191,9 +179,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModules by Work Order, Building Name, and Drawing No
-     */
+     
     @GetMapping(value = GET_MTR_FAB_MODULES_BY_WORK_ORDER_BUILDING_DRAWING, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModulesByWorkOrderBuildingDrawing(@RequestParam String workOrder, @RequestParam String buildingName, @RequestParam String drawingNo) {
         LOG.info("Fetching MtrFabModule records by work order: {}, building name: {}, drawing no: {}", workOrder, buildingName, drawingNo);
@@ -210,9 +196,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModules by Work Order, Building Name, Drawing No, and Mark No
-     */
+     
     @GetMapping(value = GET_MTR_FAB_MODULES_BY_WORK_ORDER_BUILDING_DRAWING_MARK, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModulesByWorkOrderBuildingDrawingMark(@RequestParam String workOrder, @RequestParam String buildingName, @RequestParam String drawingNo, @RequestParam String markNo) {
         LOG.info("Fetching MtrFabModule records by work order: {}, building name: {}, drawing no: {}, mark no: {}", workOrder, buildingName, drawingNo, markNo);
@@ -228,9 +212,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Get MtrFabModules by RA No
-     */
+  
     @GetMapping(value = GET_MTR_FAB_MODULES_BY_RA_NO, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMtrFabModulesByRaNo(@RequestParam String raNo) {
         LOG.info("Fetching MtrFabModule records by RA No: {}", raNo);
@@ -246,9 +228,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * READ - Search MtrFabModules with multiple criteria
-     */
+    
     @GetMapping(value = SEARCH_MTR_FAB_MODULES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> searchMtrFabModules(
             @RequestParam(required = false) String workOrder,
@@ -270,9 +250,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * UPDATE - Update MtrFabModule
-     */
+    
     @PutMapping(value = UPDATE_MTR_FAB_MODULE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateMtrFabModule(@RequestParam Long id, @RequestBody MtrFabModuleDto mtrFabModuleDto) {
         LOG.info("Updating MtrFabModule with ID: {}", id);
@@ -295,10 +273,7 @@ public class MtrFabModuleController {
             return ResponseEntity.badRequest().body("Error updating record: " + e.getMessage());
         }
     }
-
-    /**
-     * UPDATE - Update MtrFabModule Fabrication Stages
-     */
+ 
     @PutMapping(value = UPDATE_MTR_FAB_MODULE_STAGES, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateMtrFabModuleStages(
             @RequestParam Long id,
@@ -327,9 +302,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * DELETE - Hard delete MtrFabModule
-     */
+    
     @DeleteMapping(value = DELETE_MTR_FAB_MODULE)
     public ResponseEntity<?> deleteMtrFabModule(@RequestParam Long id) {
         LOG.info("Deleting MtrFabModule with ID: {}", id);
@@ -352,9 +325,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * DELETE - Soft delete MtrFabModule
-     */
+     
     @PutMapping(value = SOFT_DELETE_MTR_FAB_MODULE)
     public ResponseEntity<?> softDeleteMtrFabModule(@RequestParam Long id) {
         LOG.info("Soft deleting MtrFabModule with ID: {}", id);
@@ -377,9 +348,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * UTILITY - Get distinct work orders from fab module
-     */
+     
     @GetMapping(value = GET_DISTINCT_WORK_ORDERS_FROM_FAB_MODULE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDistinctWorkOrdersFromFabModule() {
         LOG.info("Fetching distinct work orders from MtrFabModule");
@@ -395,9 +364,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * UTILITY - Get distinct building names by work order from fab module
-     */
+     
     @GetMapping(value = GET_DISTINCT_BUILDING_NAMES_FROM_FAB_MODULE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDistinctBuildingNamesFromFabModule(@RequestParam String workOrder) {
         LOG.info("Fetching distinct building names for work order: {}", workOrder);
@@ -413,9 +380,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * UTILITY - Get distinct drawing numbers by work order and building name from fab module
-     */
+    
     @GetMapping(value = GET_DISTINCT_DRAWING_NOS_FROM_FAB_MODULE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDistinctDrawingNosFromFabModule(@RequestParam String workOrder, @RequestParam String buildingName) {
         LOG.info("Fetching distinct drawing numbers for work order: {} and building name: {}", workOrder, buildingName);
@@ -431,9 +396,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * UTILITY - Get distinct mark numbers by work order, building name, and drawing no from fab module
-     */
+     
     @GetMapping(value = GET_DISTINCT_MARK_NOS_FROM_FAB_MODULE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDistinctMarkNosFromFabModule(@RequestParam String workOrder, @RequestParam String buildingName, @RequestParam String drawingNo) {
         LOG.info("Fetching distinct mark numbers for work order: {}, building name: {}, drawing no: {}", workOrder, buildingName, drawingNo);
@@ -448,10 +411,7 @@ public class MtrFabModuleController {
             return ResponseEntity.badRequest().body("Error fetching mark numbers: " + e.getMessage());
         }
     }
-
-    /**
-     * UTILITY - Get distinct RA numbers from fab module
-     */
+ 
     @GetMapping(value = GET_DISTINCT_RA_NUMBERS_FROM_FAB_MODULE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getDistinctRaNumbersFromFabModule() {
         LOG.info("Fetching distinct RA numbers from MtrFabModule");
@@ -467,9 +427,7 @@ public class MtrFabModuleController {
         }
     }
 
-    /**
-     * STATISTICS - Get fab module statistics
-     */
+     
     @GetMapping(value = GET_FAB_MODULE_STATISTICS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFabModuleStatistics(
             @RequestParam(required = false) String workOrder,
