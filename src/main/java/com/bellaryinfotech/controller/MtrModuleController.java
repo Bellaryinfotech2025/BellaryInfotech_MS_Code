@@ -104,7 +104,7 @@ public class MtrModuleController {
         }
     }
 
-    // NEW: Required endpoints for FabWrapper integration
+     
     @GetMapping("/getDistinctWorkOrdersFromMeterModule/details")
     public ResponseEntity<List<String>> getDistinctWorkOrders() {
         try {
@@ -155,7 +155,7 @@ public class MtrModuleController {
         }
     }
 
-    // NEW: Endpoint for MeterFabrication to get data by work order, building, drawing, mark
+    
     @GetMapping("/getMeterModulesByWorkOrderBuildingDrawingMark/details")
     public ResponseEntity<List<MtrModuleDTO>> getMeterModulesByWorkOrderBuildingDrawingMark(
             @RequestParam String workOrder, 
