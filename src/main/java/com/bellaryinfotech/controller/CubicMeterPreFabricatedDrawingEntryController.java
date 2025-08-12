@@ -140,4 +140,37 @@ public class CubicMeterPreFabricatedDrawingEntryController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getDistinctServiceDescriptionsByWorkOrderFromCubicMeterPreFabricated/details")
+    public ResponseEntity<List<String>> getDistinctServiceDescriptionsByWorkOrderFromCubicMeterModule(@RequestParam String workOrder) {
+        try {
+            List<String> serviceDescriptions = service.getDistinctServiceDescriptionsByWorkOrder(workOrder);
+            return new ResponseEntity<>(serviceDescriptions, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctWorkOrdersFromCubicMeterPreFabricated/details")
+    public ResponseEntity<List<String>> getDistinctWorkOrdersFromCubicMeterModule() {
+        try {
+            List<String> workOrders = service.getDistinctWorkOrders();
+            return new ResponseEntity<>(workOrders, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getCubicMeterPreFabricatedModulesByWorkOrder/details")
+    public ResponseEntity<List<CubicMeterPreFabricatedDrawingEntry>> getCubicMeterModulesByWorkOrder(@RequestParam String workOrder) {
+        try {
+            List<CubicMeterPreFabricatedDrawingEntry> entries = service.getCubicMeterPreFabricatedEntriesByWorkOrder(workOrder);
+            return new ResponseEntity<>(entries, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

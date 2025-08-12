@@ -122,4 +122,9 @@ public class CubicMeterPreFabricatedDrawingEntryServiceImpl implements CubicMete
     public List<String> getDistinctWorkOrders() {
         return repository.findDistinctWorkOrders();
     }
+
+    @Override
+    public List<String> getDistinctServiceDescriptionsByWorkOrder(String workOrder) {
+        return repository.findDistinctServiceDescriptionsByWorkOrder(workOrder);
+    }
 }

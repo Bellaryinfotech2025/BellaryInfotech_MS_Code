@@ -28,4 +28,6 @@ public interface CubicMeterPreFabricatedDrawingEntryService {
     void deleteCubicMeterPreFabricatedEntriesByMarkNo(String markNo);
     
     List<String> getDistinctWorkOrders();
+
+    List<String> getDistinctServiceDescriptionsByWorkOrder(String workOrder);
 }

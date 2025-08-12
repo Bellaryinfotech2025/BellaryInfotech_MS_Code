@@ -24,6 +24,9 @@ public interface CubicMeterPreFabricatedDrawingEntryRepository extends JpaReposi
     @Query("SELECT DISTINCT c.workOrder FROM CubicMeterPreFabricatedDrawingEntry c")
     List<String> findDistinctWorkOrders();
     
+    @Query("SELECT DISTINCT c.serviceDescription FROM CubicMeterPreFabricatedDrawingEntry c WHERE c.workOrder = :workOrder")
+    List<String> findDistinctServiceDescriptionsByWorkOrder(@Param("workOrder") String workOrder);
+    
     void deleteByWorkOrder(String workOrder);
     
     void deleteByMarkNo(String markNo);
