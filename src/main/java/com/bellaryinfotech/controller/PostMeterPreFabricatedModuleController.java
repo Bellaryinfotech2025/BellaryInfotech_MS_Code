@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -90,6 +91,23 @@ public class PostMeterPreFabricatedModuleController {
         try {
             List<String> raNumbers = service.getDistinctRaNosByWorkOrder(workOrder);
             return new ResponseEntity<>(raNumbers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GetMapping("/getRaNoByWorkOrderAndServiceDescription/details")
+    public ResponseEntity<String> getRaNoByWorkOrderAndServiceDescription(
+            @RequestParam String workOrder, @RequestParam String serviceDescription) {
+        try {
+            List<PostMeterPreFabricatedModule> modules = service.getPostMeterPreFabricatedModulesByWorkOrder(workOrder);
+            Optional<String> raNo = modules.stream()
+                    .filter(module -> module.getServiceDescription().equals(serviceDescription) && module.getRaNo() != null)
+                    .map(PostMeterPreFabricatedModule::getRaNo)
+                    .findFirst();
+            return raNo.map(no -> new ResponseEntity<>(no, HttpStatus.OK))
+                    .orElseGet(() -> new ResponseEntity<>("", HttpStatus.OK));
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

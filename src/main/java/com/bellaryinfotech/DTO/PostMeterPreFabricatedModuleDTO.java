@@ -83,18 +83,25 @@ public class PostMeterPreFabricatedModuleDTO {
         private Integer markQty;
         private Double totalMarkLength;
         private String remarks;
+        private String vehicleNumber;
+        private String loadNumber;
+        private String plotNumber;
         
         // Constructors
         public PostMeterPreFabricatedEntryRowDTO() {}
         
         public PostMeterPreFabricatedEntryRowDTO(String drawingNo, String markNo, Double eachMarkLength, 
-                                               Integer markQty, Double totalMarkLength, String remarks) {
+                                               Integer markQty, Double totalMarkLength, String remarks,
+                                               String vehicleNumber, String loadNumber, String plotNumber) {
             this.drawingNo = drawingNo;
             this.markNo = markNo;
             this.eachMarkLength = eachMarkLength;
             this.markQty = markQty;
             this.totalMarkLength = totalMarkLength;
             this.remarks = remarks;
+            this.vehicleNumber = vehicleNumber;
+            this.loadNumber = loadNumber;
+            this.plotNumber = plotNumber;
         }
         
         // Getters and Setters
@@ -115,5 +122,14 @@ public class PostMeterPreFabricatedModuleDTO {
         
         public String getRemarks() { return remarks; }
         public void setRemarks(String remarks) { this.remarks = remarks; }
+        
+        public String getVehicleNumber() { return vehicleNumber; }
+        public void setVehicleNumber(String vehicleNumber) { this.vehicleNumber = vehicleNumber; }
+        
+        public String getLoadNumber() { return loadNumber; }
+        public void setLoadNumber(String loadNumber) { this.loadNumber = loadNumber; }
+        
+        public String getPlotNumber() { return plotNumber; }
+        public void setPlotNumber(String plotNumber) { this.plotNumber = plotNumber; }
     }
 }

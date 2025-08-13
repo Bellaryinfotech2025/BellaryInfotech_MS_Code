@@ -23,6 +23,17 @@ public class PostMeterPreFabricatedModuleServiceImpl implements PostMeterPreFabr
     public List<PostMeterPreFabricatedModule> savePostMeterPreFabricatedModule(PostMeterPreFabricatedModuleDTO dto) {
         List<PostMeterPreFabricatedModule> savedModules = new ArrayList<>();
         
+        // Use top-level fields, but fall back to first entry's fields if empty
+        String vehicleNumber = dto.getVehicleNumber() != null && !dto.getVehicleNumber().isEmpty() 
+            ? dto.getVehicleNumber() 
+            : (dto.getEntries() != null && !dto.getEntries().isEmpty() ? dto.getEntries().get(0).getVehicleNumber() : "");
+        String loadNumber = dto.getLoadNumber() != null && !dto.getLoadNumber().isEmpty() 
+            ? dto.getLoadNumber() 
+            : (dto.getEntries() != null && !dto.getEntries().isEmpty() ? dto.getEntries().get(0).getLoadNumber() : "");
+        String plotNumber = dto.getPlotNumber() != null && !dto.getPlotNumber().isEmpty() 
+            ? dto.getPlotNumber() 
+            : (dto.getEntries() != null && !dto.getEntries().isEmpty() ? dto.getEntries().get(0).getPlotNumber() : "");
+        
         // Save each entry row
         for (PostMeterPreFabricatedModuleDTO.PostMeterPreFabricatedEntryRowDTO entryRow : dto.getEntries()) {
             PostMeterPreFabricatedModule entity = new PostMeterPreFabricatedModule();
@@ -35,9 +46,9 @@ public class PostMeterPreFabricatedModuleServiceImpl implements PostMeterPreFabr
             entity.setUom(dto.getUom());
             entity.setDepartment(dto.getDepartment());
             entity.setWorkLocation(dto.getWorkLocation());
-            entity.setVehicleNumber(dto.getVehicleNumber());
-            entity.setLoadNumber(dto.getLoadNumber());
-            entity.setPlotNumber(dto.getPlotNumber());
+            entity.setVehicleNumber(vehicleNumber);
+            entity.setLoadNumber(loadNumber);
+            entity.setPlotNumber(plotNumber);
             entity.setRaNo(dto.getRaNo());
             
             // Set entry row specific data
