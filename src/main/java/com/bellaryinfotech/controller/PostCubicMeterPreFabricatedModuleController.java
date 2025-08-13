@@ -1,8 +1,8 @@
 package com.bellaryinfotech.controller;
 
-import com.bellaryinfotech.DTO.PostInchMeterPreFabricatedModuleDTO;
-import com.bellaryinfotech.model.PostInchMeterPreFabricatedModule;
-import com.bellaryinfotech.service.PostInchMeterPreFabricatedModuleService;
+import com.bellaryinfotech.DTO.PostCubicMeterPreFabricatedModuleDTO;
+import com.bellaryinfotech.model.PostCubicMeterPreFabricatedModule;
+import com.bellaryinfotech.service.PostCubicMeterPreFabricatedModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,81 +13,81 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/V2.0")
 @CrossOrigin(origins = "*")
-public class PostInchMeterPreFabricatedModuleController {
-    
+public class PostCubicMeterPreFabricatedModuleController {
+
     @Autowired
-    private PostInchMeterPreFabricatedModuleService service;
-    
-    @PostMapping("/savePostInchMeterPreFabricatedModule/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> savePostInchMeterPreFabricatedModule(@RequestBody PostInchMeterPreFabricatedModuleDTO dto) {
+    private PostCubicMeterPreFabricatedModuleService service;
+
+    @PostMapping("/savePostCubicMeterPreFabricatedModule/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> savePostCubicMeterPreFabricatedModule(@RequestBody PostCubicMeterPreFabricatedModuleDTO dto) {
         try {
-            List<PostInchMeterPreFabricatedModule> savedModules = service.savePostInchMeterPreFabricatedModule(dto);
+            List<PostCubicMeterPreFabricatedModule> savedModules = service.savePostCubicMeterPreFabricatedModule(dto);
             return new ResponseEntity<>(savedModules, HttpStatus.CREATED);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getPostInchMeterPreFabricatedByWorkOrderAndServiceDesc/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> getPostInchMeterPreFabricatedByWorkOrderAndServiceDesc(
+
+    @GetMapping("/getPostCubicMeterPreFabricatedByWorkOrderAndServiceDesc/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> getPostCubicMeterPreFabricatedByWorkOrderAndServiceDesc(
             @RequestParam String workOrder, @RequestParam String serviceDescription) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.getPostInchMeterPreFabricatedByWorkOrderAndServiceDesc(workOrder, serviceDescription);
+            List<PostCubicMeterPreFabricatedModule> modules = service.getPostCubicMeterPreFabricatedByWorkOrderAndServiceDesc(workOrder, serviceDescription);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getPostInchMeterPreFabricatedModulesByWorkOrder/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> getPostInchMeterPreFabricatedModulesByWorkOrder(@RequestParam String workOrder) {
+
+    @GetMapping("/getPostCubicMeterPreFabricatedModulesByWorkOrder/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> getPostCubicMeterPreFabricatedModulesByWorkOrder(@RequestParam String workOrder) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.getPostInchMeterPreFabricatedModulesByWorkOrder(workOrder);
+            List<PostCubicMeterPreFabricatedModule> modules = service.getPostCubicMeterPreFabricatedModulesByWorkOrder(workOrder);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getPostInchMeterPreFabricatedModulesByWorkOrderAndRaNo/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> getPostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(
+
+    @GetMapping("/getPostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> getPostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(
             @RequestParam String workOrder, @RequestParam String raNo) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.getPostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(workOrder, raNo);
+            List<PostCubicMeterPreFabricatedModule> modules = service.getPostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(workOrder, raNo);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getPostInchMeterPreFabricatedModulesByRaNo/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> getPostInchMeterPreFabricatedModulesByRaNo(@RequestParam String raNo) {
+
+    @GetMapping("/getPostCubicMeterPreFabricatedModulesByRaNo/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> getPostCubicMeterPreFabricatedModulesByRaNo(@RequestParam String raNo) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.getPostInchMeterPreFabricatedModulesByRaNo(raNo);
+            List<PostCubicMeterPreFabricatedModule> modules = service.getPostCubicMeterPreFabricatedModulesByRaNo(raNo);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/searchPostInchMeterPreFabricatedModulesByMarkNo/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> searchPostInchMeterPreFabricatedModulesByMarkNo(@RequestParam String markNo) {
+
+    @GetMapping("/searchPostCubicMeterPreFabricatedModulesByMarkNo/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> searchPostCubicMeterPreFabricatedModulesByMarkNo(@RequestParam String markNo) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.getPostInchMeterPreFabricatedModulesByMarkNo(markNo);
+            List<PostCubicMeterPreFabricatedModule> modules = service.getPostCubicMeterPreFabricatedModulesByMarkNo(markNo);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getDistinctPostInchMeterPreFabricatedWorkOrders/details")
-    public ResponseEntity<List<String>> getDistinctPostInchMeterPreFabricatedWorkOrders() {
+
+    @GetMapping("/getDistinctPostCubicMeterPreFabricatedWorkOrders/details")
+    public ResponseEntity<List<String>> getDistinctPostCubicMeterPreFabricatedWorkOrders() {
         try {
             List<String> workOrders = service.getDistinctWorkOrders();
             return new ResponseEntity<>(workOrders, HttpStatus.OK);
@@ -96,8 +96,8 @@ public class PostInchMeterPreFabricatedModuleController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @GetMapping("/getDistinctRaNosByWorkOrder/details/inch")
+
+    @GetMapping("/getDistinctRaNosByWorkOrder/details/cubic")
     public ResponseEntity<List<String>> getDistinctRaNosByWorkOrder(@RequestParam String workOrder) {
         try {
             List<String> raNumbers = service.getDistinctRaNosByWorkOrder(workOrder);
@@ -107,61 +107,60 @@ public class PostInchMeterPreFabricatedModuleController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @PutMapping("/updatePostInchMeterPreFabricatedModule/details")
-    public ResponseEntity<PostInchMeterPreFabricatedModule> updatePostInchMeterPreFabricatedModule(
-            @RequestParam Long id, @RequestBody PostInchMeterPreFabricatedModule updatedModule) {
+
+    @PutMapping("/updatePostCubicMeterPreFabricatedModule/details")
+    public ResponseEntity<PostCubicMeterPreFabricatedModule> updatePostCubicMeterPreFabricatedModule(
+            @RequestParam Long id, @RequestBody PostCubicMeterPreFabricatedModule updatedModule) {
         try {
-            PostInchMeterPreFabricatedModule updated = service.updatePostInchMeterPreFabricatedModule(id, updatedModule);
+            PostCubicMeterPreFabricatedModule updated = service.updatePostCubicMeterPreFabricatedModule(id, updatedModule);
             return new ResponseEntity<>(updated, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @DeleteMapping("/deletePostInchMeterPreFabricatedModule/details")
-    public ResponseEntity<String> deletePostInchMeterPreFabricatedModule(@RequestParam Long id) {
+
+    @DeleteMapping("/deletePostCubicMeterPreFabricatedModule/details")
+    public ResponseEntity<String> deletePostCubicMeterPreFabricatedModule(@RequestParam Long id) {
         try {
-            service.deletePostInchMeterPreFabricatedModule(id);
+            service.deletePostCubicMeterPreFabricatedModule(id);
             return new ResponseEntity<>("Module deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Failed to delete module", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @DeleteMapping("/deletePostInchMeterPreFabricatedModulesByWorkOrder/details")
-    public ResponseEntity<String> deletePostInchMeterPreFabricatedModulesByWorkOrder(@RequestParam String workOrder) {
+
+    @DeleteMapping("/deletePostCubicMeterPreFabricatedModulesByWorkOrder/details")
+    public ResponseEntity<String> deletePostCubicMeterPreFabricatedModulesByWorkOrder(@RequestParam String workOrder) {
         try {
-            service.deletePostInchMeterPreFabricatedModulesByWorkOrder(workOrder);
+            service.deletePostCubicMeterPreFabricatedModulesByWorkOrder(workOrder);
             return new ResponseEntity<>("Modules deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Failed to delete modules", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    @DeleteMapping("/deletePostInchMeterPreFabricatedModulesByWorkOrderAndRaNo/details")
-    public ResponseEntity<String> deletePostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(
+
+    @DeleteMapping("/deletePostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo/details")
+    public ResponseEntity<String> deletePostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(
             @RequestParam String workOrder, @RequestParam String raNo) {
         try {
-            service.deletePostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(workOrder, raNo);
+            service.deletePostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(workOrder, raNo);
             return new ResponseEntity<>("Modules deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>("Failed to delete modules", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    // NEW: Search endpoint for workOrder, serviceDescription, and optional raNo
-    @GetMapping("/searchPostInchMeterPreFabricatedModules/details")
-    public ResponseEntity<List<PostInchMeterPreFabricatedModule>> searchPostInchMeterPreFabricatedModules(
+
+    @GetMapping("/searchPostCubicMeterPreFabricatedModules/details")
+    public ResponseEntity<List<PostCubicMeterPreFabricatedModule>> searchPostCubicMeterPreFabricatedModules(
             @RequestParam String workOrder, 
             @RequestParam String serviceDescription,
             @RequestParam(required = false) String raNo) {
         try {
-            List<PostInchMeterPreFabricatedModule> modules = service.searchPostInchMeterPreFabricatedModules(workOrder, serviceDescription, raNo);
+            List<PostCubicMeterPreFabricatedModule> modules = service.searchPostCubicMeterPreFabricatedModules(workOrder, serviceDescription, raNo);
             return new ResponseEntity<>(modules, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();

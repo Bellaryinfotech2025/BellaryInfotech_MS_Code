@@ -15,6 +15,8 @@ public interface PostInchMeterPreFabricatedModuleRepository extends JpaRepositor
     
     List<PostInchMeterPreFabricatedModule> findByWorkOrderAndRaNo(String workOrder, String raNo);
     
+    List<PostInchMeterPreFabricatedModule> findByWorkOrderAndServiceDescription(@Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+    
     List<PostInchMeterPreFabricatedModule> findByRaNo(String raNo);
     
     List<PostInchMeterPreFabricatedModule> findByMarkNo(String markNo);
@@ -40,4 +42,11 @@ public interface PostInchMeterPreFabricatedModuleRepository extends JpaRepositor
     void deleteByWorkOrder(String workOrder);
     
     void deleteByWorkOrderAndRaNo(String workOrder, String raNo);
+    
+    // NEW: Query for searching by workOrder, serviceDescription, and raNo
+    @Query("SELECT p FROM PostInchMeterPreFabricatedModule p WHERE p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo = :raNo")
+    List<PostInchMeterPreFabricatedModule> findByWorkOrderAndServiceDescriptionAndRaNo(
+            @Param("workOrder") String workOrder, 
+            @Param("serviceDescription") String serviceDescription, 
+            @Param("raNo") String raNo);
 }

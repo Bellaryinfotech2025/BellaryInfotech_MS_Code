@@ -1,9 +1,9 @@
 package com.bellaryinfotech.serviceimpl;
 
-import com.bellaryinfotech.DTO.PostInchMeterPreFabricatedModuleDTO;
-import com.bellaryinfotech.model.PostInchMeterPreFabricatedModule;
-import com.bellaryinfotech.repo.PostInchMeterPreFabricatedModuleRepository;
-import com.bellaryinfotech.service.PostInchMeterPreFabricatedModuleService;
+import com.bellaryinfotech.DTO.PostCubicMeterPreFabricatedModuleDTO;
+import com.bellaryinfotech.model.PostCubicMeterPreFabricatedModule;
+import com.bellaryinfotech.repo.PostCubicMeterPreFabricatedModuleRepository;
+import com.bellaryinfotech.service.PostCubicMeterPreFabricatedModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,15 +14,15 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMeterPreFabricatedModuleService {
-    
+public class PostCubicMeterPreFabricatedModuleServiceImpl implements PostCubicMeterPreFabricatedModuleService {
+
     @Autowired
-    private PostInchMeterPreFabricatedModuleRepository repository;
-    
+    private PostCubicMeterPreFabricatedModuleRepository repository;
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> savePostInchMeterPreFabricatedModule(PostInchMeterPreFabricatedModuleDTO dto) {
-        List<PostInchMeterPreFabricatedModule> savedModules = new ArrayList<>();
-        
+    public List<PostCubicMeterPreFabricatedModule> savePostCubicMeterPreFabricatedModule(PostCubicMeterPreFabricatedModuleDTO dto) {
+        List<PostCubicMeterPreFabricatedModule> savedModules = new ArrayList<>();
+
         // Use top-level fields, but fall back to first entry's fields if empty
         String vehicleNumber = dto.getVehicleNumber() != null && !dto.getVehicleNumber().isEmpty() 
             ? dto.getVehicleNumber() 
@@ -33,11 +33,11 @@ public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMete
         String plotNumber = dto.getPlotNumber() != null && !dto.getPlotNumber().isEmpty() 
             ? dto.getPlotNumber() 
             : (dto.getEntries() != null && !dto.getEntries().isEmpty() ? dto.getEntries().get(0).getPlotNumber() : "");
-        
+
         // Save each entry row
-        for (PostInchMeterPreFabricatedModuleDTO.PostInchMeterPreFabricatedEntryRowDTO entryRow : dto.getEntries()) {
-            PostInchMeterPreFabricatedModule entity = new PostInchMeterPreFabricatedModule();
-            
+        for (PostCubicMeterPreFabricatedModuleDTO.PostCubicMeterPreFabricatedEntryRowDTO entryRow : dto.getEntries()) {
+            PostCubicMeterPreFabricatedModule entity = new PostCubicMeterPreFabricatedModule();
+
             // Set work order information (same for all rows)
             entity.setWorkOrder(dto.getWorkOrder());
             entity.setOrderId(dto.getOrderId());
@@ -50,7 +50,7 @@ public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMete
             entity.setLoadNumber(loadNumber);
             entity.setPlotNumber(plotNumber);
             entity.setRaNo(dto.getRaNo());
-            
+
             // Set entry row specific data
             entity.setDrawingNo(entryRow.getDrawingNo());
             entity.setMarkNo(entryRow.getMarkNo());
@@ -58,75 +58,75 @@ public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMete
             entity.setMarkQty(entryRow.getMarkQty());
             entity.setTotalMarkLength(entryRow.getTotalMarkLength());
             entity.setRemarks(entryRow.getRemarks());
-            
-            PostInchMeterPreFabricatedModule savedEntity = repository.save(entity);
+
+            PostCubicMeterPreFabricatedModule savedEntity = repository.save(entity);
             savedModules.add(savedEntity);
         }
-        
+
         return savedModules;
     }
-    
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedByWorkOrderAndServiceDesc(String workOrder, String serviceDescription) {
+    public List<PostCubicMeterPreFabricatedModule> getPostCubicMeterPreFabricatedByWorkOrderAndServiceDesc(String workOrder, String serviceDescription) {
         return repository.findByWorkOrderAndServiceDescription(workOrder, serviceDescription);
     }
-    
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByWorkOrder(String workOrder) {
+    public List<PostCubicMeterPreFabricatedModule> getPostCubicMeterPreFabricatedModulesByWorkOrder(String workOrder) {
         return repository.findByWorkOrder(workOrder);
     }
-    
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo) {
+    public List<PostCubicMeterPreFabricatedModule> getPostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo) {
         return repository.findByWorkOrderAndRaNo(workOrder, raNo);
     }
-    
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByRaNo(String raNo) {
+    public List<PostCubicMeterPreFabricatedModule> getPostCubicMeterPreFabricatedModulesByRaNo(String raNo) {
         return repository.findByRaNo(raNo);
     }
-    
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByMarkNo(String markNo) {
+    public List<PostCubicMeterPreFabricatedModule> getPostCubicMeterPreFabricatedModulesByMarkNo(String markNo) {
         return repository.findByMarkNo(markNo);
     }
-    
+
     @Override
     public List<String> getDistinctWorkOrders() {
         return repository.findDistinctWorkOrders();
     }
-    
+
     @Override
     public List<String> getDistinctRaNosByWorkOrder(String workOrder) {
         return repository.findDistinctRaNosByWorkOrder(workOrder);
     }
-    
+
     @Override
     public List<String> getDistinctServiceDescriptionsByWorkOrder(String workOrder) {
         return repository.findDistinctServiceDescriptionsByWorkOrder(workOrder);
     }
-    
+
     @Override
     public List<String> getDistinctVehicleNumbersByWorkOrder(String workOrder) {
         return repository.findDistinctVehicleNumbersByWorkOrder(workOrder);
     }
-    
+
     @Override
     public List<String> getDistinctLoadNumbersByWorkOrder(String workOrder) {
         return repository.findDistinctLoadNumbersByWorkOrder(workOrder);
     }
-    
+
     @Override
     public List<String> getDistinctPlotNumbersByWorkOrder(String workOrder) {
         return repository.findDistinctPlotNumbersByWorkOrder(workOrder);
     }
-    
+
     @Override
-    public PostInchMeterPreFabricatedModule updatePostInchMeterPreFabricatedModule(Long id, PostInchMeterPreFabricatedModule updatedModule) {
-        Optional<PostInchMeterPreFabricatedModule> existingModule = repository.findById(id);
+    public PostCubicMeterPreFabricatedModule updatePostCubicMeterPreFabricatedModule(Long id, PostCubicMeterPreFabricatedModule updatedModule) {
+        Optional<PostCubicMeterPreFabricatedModule> existingModule = repository.findById(id);
         if (existingModule.isPresent()) {
-            PostInchMeterPreFabricatedModule entity = existingModule.get();
-            
+            PostCubicMeterPreFabricatedModule entity = existingModule.get();
+
             entity.setWorkOrder(updatedModule.getWorkOrder());
             entity.setOrderId(updatedModule.getOrderId());
             entity.setClientName(updatedModule.getClientName());
@@ -144,30 +144,29 @@ public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMete
             entity.setMarkQty(updatedModule.getMarkQty());
             entity.setTotalMarkLength(updatedModule.getTotalMarkLength());
             entity.setRemarks(updatedModule.getRemarks());
-            
+
             return repository.save(entity);
         }
-        throw new RuntimeException("PostInchMeterPreFabricatedModule not found with id: " + id);
+        throw new RuntimeException("PostCubicMeterPreFabricatedModule not found with id: " + id);
     }
-    
+
     @Override
-    public void deletePostInchMeterPreFabricatedModule(Long id) {
+    public void deletePostCubicMeterPreFabricatedModule(Long id) {
         repository.deleteById(id);
     }
-    
+
     @Override
-    public void deletePostInchMeterPreFabricatedModulesByWorkOrder(String workOrder) {
+    public void deletePostCubicMeterPreFabricatedModulesByWorkOrder(String workOrder) {
         repository.deleteByWorkOrder(workOrder);
     }
-    
+
     @Override
-    public void deletePostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo) {
+    public void deletePostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo) {
         repository.deleteByWorkOrderAndRaNo(workOrder, raNo);
     }
-    
-    // NEW: Implementation for search by workOrder, serviceDescription, and optional raNo
+
     @Override
-    public List<PostInchMeterPreFabricatedModule> searchPostInchMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo) {
+    public List<PostCubicMeterPreFabricatedModule> searchPostCubicMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo) {
         if (raNo != null && !raNo.isEmpty()) {
             return repository.findByWorkOrderAndServiceDescriptionAndRaNo(workOrder, serviceDescription, raNo);
         }

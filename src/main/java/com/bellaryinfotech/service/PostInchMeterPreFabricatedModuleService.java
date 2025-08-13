@@ -11,6 +11,8 @@ public interface PostInchMeterPreFabricatedModuleService {
     
     List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByWorkOrder(String workOrder);
     
+    List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedByWorkOrderAndServiceDesc(String workOrder, String serviceDescription);
+    
     List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo);
     
     List<PostInchMeterPreFabricatedModule> getPostInchMeterPreFabricatedModulesByRaNo(String raNo);
@@ -36,4 +38,7 @@ public interface PostInchMeterPreFabricatedModuleService {
     void deletePostInchMeterPreFabricatedModulesByWorkOrder(String workOrder);
     
     void deletePostInchMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo);
+    
+    // NEW: Search method for workOrder, serviceDescription, and optional raNo
+    List<PostInchMeterPreFabricatedModule> searchPostInchMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo);
 }
