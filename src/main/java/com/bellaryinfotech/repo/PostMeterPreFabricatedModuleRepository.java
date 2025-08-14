@@ -40,4 +40,13 @@ public interface PostMeterPreFabricatedModuleRepository extends JpaRepository<Po
     void deleteByWorkOrder(String workOrder);
     
     void deleteByWorkOrderAndRaNo(String workOrder, String raNo);
+    
+    
+    
+    
+
+    
+
+    @Query("SELECT DISTINCT p.raNo FROM PostMeterPreFabricatedModule p WHERE p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription")
+    String findRaNoByWorkOrderAndServiceDescription(String workOrder, String serviceDescription);
 }

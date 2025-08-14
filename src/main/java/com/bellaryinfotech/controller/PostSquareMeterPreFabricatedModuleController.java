@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/V2.0")
@@ -162,6 +164,22 @@ public class PostSquareMeterPreFabricatedModuleController {
         try {
             List<PostSquareMeterPreFabricatedModule> modules = service.searchPostSquareMeterPreFabricatedModules(workOrder, serviceDescription, raNo);
             return new ResponseEntity<>(modules, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // New API to fetch distinct vehicleNumber, loadNumber, plotNumber, and raNo for a workOrder
+    @GetMapping("/getDistinctFiltersByWorkOrder/details")
+    public ResponseEntity<Map<String, List<String>>> getDistinctFiltersByWorkOrder(@RequestParam String workOrder) {
+        try {
+            Map<String, List<String>> filters = new HashMap<>();
+            filters.put("vehicleNumbers", service.getDistinctVehicleNumbersByWorkOrder(workOrder));
+            filters.put("loadNumbers", service.getDistinctLoadNumbersByWorkOrder(workOrder));
+            filters.put("plotNumbers", service.getDistinctPlotNumbersByWorkOrder(workOrder));
+            filters.put("raNos", service.getDistinctRaNosByWorkOrder(workOrder));
+            return new ResponseEntity<>(filters, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
