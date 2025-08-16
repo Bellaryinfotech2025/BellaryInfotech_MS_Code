@@ -44,6 +44,9 @@ public class BitsLinesDto {
     private BigDecimal cgstTotal;
     private BigDecimal sgstTotal;
     private BigDecimal totalIncGst;
+    
+     
+    private String assignedLevel;
 
     // Default constructor
     public BitsLinesDto() {}
@@ -171,4 +174,15 @@ public class BitsLinesDto {
     public void setTotalIncGst(BigDecimal totalIncGst) {
         this.totalIncGst = totalIncGst;
     }
+
+	public String getAssignedLevel() {
+		return assignedLevel;
+	}
+
+	public void setAssignedLevel(String assignedLevel) {
+		this.assignedLevel = assignedLevel;
+	}
+    
+    
+    
 }

@@ -33,16 +33,15 @@ public class BitsLinesController {
     public static final String SEARCH_BY_SERVICEDESC = "/searchBitsLinesByServiceDesc/details";
     public static final String GET_LINES_BY_WORK_ORDER = "/getBitsLinesByWorkOrder/details";
     public static final String DEBUG_LINES = "/debugBitsLines/details";
-    
-    // Enhanced endpoints using proper foreign key relationships
     public static final String CREATE_LINE_WITH_ORDER = "/createBitsLineWithOrder/details";
     public static final String GET_LINES_BY_ORDER_ID = "/getBitsLinesByOrderId/details";
     public static final String CREATE_MULTIPLE_LINES = "/createMultipleBitsLines/details";
-    // to get the lines details for invoice
     public static final String GET_INVOICE_DATA = "/getInvoiceData/details";
-    
-    // NEW: Endpoint for distinct serial numbers
     public static final String GET_DISTINCT_SERIAL_NUMBERS = "/getDistinctSerialNumbers/details";
+    
+    // NEW: Assigned Level endpoints
+    public static final String SAVE_ASSIGNED_LEVELS = "/saveAssignedLevels/details";
+    public static final String GET_WORK_ORDERS_WITH_ASSIGNMENTS = "/getWorkOrdersWithAssignments/details";
 
     private static final Logger LOG = LoggerFactory.getLogger(BitsLinesController.class);
 
@@ -61,7 +60,6 @@ public class BitsLinesController {
                    .orElse(ResponseEntity.notFound().build());
     }
 
-    // Legacy create method (maintains backward compatibility)
     @PostMapping(value = CREATE_LINE, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createLine(@RequestBody BitsLinesDto lineDto) {
         LOG.info("Creating a new bits line with data: {}", lineDto);
@@ -75,7 +73,6 @@ public class BitsLinesController {
         }
     }
 
-    // Enhanced create method with explicit order ID
     @PostMapping(value = CREATE_LINE_WITH_ORDER, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createLineWithOrder(@RequestParam Long orderId, @RequestBody BitsLinesDto lineDto) {
         LOG.info("Creating a new bits line for orderId: {} with data: {}", orderId, lineDto);
@@ -89,7 +86,6 @@ public class BitsLinesController {
         }
     }
 
-    // Bulk create method
     @PostMapping(value = CREATE_MULTIPLE_LINES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createMultipleLines(@RequestParam Long orderId, @RequestBody List<BitsLinesDto> lineDtos) {
         LOG.info("Creating {} bits lines for orderId: {}", lineDtos.size(), orderId);
@@ -151,7 +147,6 @@ public class BitsLinesController {
         return ResponseEntity.ok(lines);
     }
 
-    // ENHANCED: Enhanced endpoint to get service orders by work order number
     @RequestMapping(value = GET_LINES_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getLinesByWorkOrder(@RequestParam String workOrder) {
         LOG.info("Fetching bits lines by work order: {}", workOrder);
@@ -159,7 +154,6 @@ public class BitsLinesController {
             List<BitsLinesDto> lines = linesService.getLinesByWorkOrder(workOrder);
             LOG.info("Found {} lines for work order: {}", lines.size(), workOrder);
             
-            // Enhanced logging for debugging
             if (!lines.isEmpty()) {
                 BitsLinesDto sample = lines.get(0);
                 LOG.info("Sample line data - ServiceDesc: {}, UOM: {}, WorkOrderRef: {}", 
@@ -173,7 +167,6 @@ public class BitsLinesController {
         }
     }
     
-    // Get lines by order ID (proper foreign key relationship)
     @RequestMapping(value = GET_LINES_BY_ORDER_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getLinesByOrderId(@RequestParam Long orderId) {
         LOG.info("Fetching bits lines by orderId: {}", orderId);
@@ -187,7 +180,6 @@ public class BitsLinesController {
         }
     }
     
-    // Debug endpoint
     @RequestMapping(value = DEBUG_LINES, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> debugLines() {
         LOG.info("Debug: Fetching all bits lines with attributes");
@@ -201,16 +193,13 @@ public class BitsLinesController {
         }
     }
     
-    // Get api to get the lines related for invoice
     @RequestMapping(value = GET_INVOICE_DATA, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getInvoiceData(@RequestParam Long orderId) {
         LOG.info("Fetching invoice data for orderId: {}", orderId);
         
         try {
-            // Use the existing service method to get lines by order ID
             List<BitsLinesDto> lines = linesService.getLinesByOrderId(orderId);
             
-            // Transform the data to include only the fields needed for invoice (including GST fields)
             List<Map<String, Object>> invoiceData = lines.stream()
                     .map(line -> {
                         Map<String, Object> invoiceItem = new HashMap<>();
@@ -223,7 +212,6 @@ public class BitsLinesController {
                         invoiceItem.put("unitPrice", line.getUnitPrice());
                         invoiceItem.put("totalPrice", line.getTotalPrice());
                         
-                        // NEW: Include GST fields in invoice data
                         invoiceItem.put("gstType", line.getGstType());
                         invoiceItem.put("subTotal", line.getSubTotal());
                         invoiceItem.put("cgstTotal", line.getCgstTotal());
@@ -243,16 +231,12 @@ public class BitsLinesController {
         }
     }
 
-    /**
-     * NEW: Get distinct serial numbers from bits_po_entry_lines table
-     */
     @RequestMapping(value = GET_DISTINCT_SERIAL_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public ResponseEntity<?> getDistinctSerialNumbers() {
         LOG.info("Fetching distinct serial numbers from bits_po_entry_lines");
         try {
             List<BitsLinesDto> allLines = linesService.getAllLines();
             
-            // Extract distinct serial numbers, filtering out null and empty values
             List<String> distinctSerialNumbers = allLines.stream()
                     .map(BitsLinesDto::getSerNo)
                     .filter(serNo -> serNo != null && !serNo.trim().isEmpty())
@@ -266,6 +250,38 @@ public class BitsLinesController {
         } catch (Exception e) {
             LOG.error("Error fetching distinct serial numbers", e);
             return ResponseEntity.badRequest().body("Error fetching serial numbers: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Save assigned levels for service lines
+     */
+    @PostMapping(value = SAVE_ASSIGNED_LEVELS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> saveAssignedLevels(@RequestBody List<Map<String, Object>> assignmentData) {
+        LOG.info("Saving assigned levels for {} services", assignmentData.size());
+        try {
+            List<BitsLinesDto> updatedLines = linesService.saveAssignedLevels(assignmentData);
+            LOG.info("Successfully saved assigned levels for {} services", updatedLines.size());
+            return ResponseEntity.ok(updatedLines);
+        } catch (Exception e) {
+            LOG.error("Error saving assigned levels", e);
+            return ResponseEntity.badRequest().body("Error saving assigned levels: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Get work orders that have assigned levels
+     */
+    @RequestMapping(value = GET_WORK_ORDERS_WITH_ASSIGNMENTS, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getWorkOrdersWithAssignments() {
+        LOG.info("Fetching work orders with assigned levels");
+        try {
+            List<Map<String, Object>> workOrdersWithAssignments = linesService.getWorkOrdersWithAssignments();
+            LOG.info("Found {} work orders with assignments", workOrdersWithAssignments.size());
+            return ResponseEntity.ok(workOrdersWithAssignments);
+        } catch (Exception e) {
+            LOG.error("Error fetching work orders with assignments", e);
+            return ResponseEntity.badRequest().body("Error fetching work orders with assignments: " + e.getMessage());
         }
     }
 }

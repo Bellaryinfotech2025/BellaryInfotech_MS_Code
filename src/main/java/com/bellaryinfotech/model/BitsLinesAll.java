@@ -118,6 +118,11 @@ public class BitsLinesAll {
     
     @Column(name = "total_inc_gst")
     private BigDecimal totalIncGst;
+    
+ // NEW: Assigned Level field
+    @Column(name = "assigned_level")
+    private String assignedLevel;
+    
 
     // Default constructor
     public BitsLinesAll() {}
@@ -411,6 +416,16 @@ public class BitsLinesAll {
 	public void setTotalIncGst(BigDecimal totalIncGst) {
 		this.totalIncGst = totalIncGst;
 	}
+
+	public String getAssignedLevel() {
+		return assignedLevel;
+	}
+
+	public void setAssignedLevel(String assignedLevel) {
+		this.assignedLevel = assignedLevel;
+	}
+	
+	
     
     
 }
