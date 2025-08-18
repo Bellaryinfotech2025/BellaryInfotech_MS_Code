@@ -265,6 +265,8 @@ public class InchMeterFabModuleServiceImpl implements InchMeterFabModuleService 
             if (inchMeterFabModuleDto.getServiceDescription() != null) existingEntity.setServiceDescription(inchMeterFabModuleDto.getServiceDescription());
             if (inchMeterFabModuleDto.getUom() != null) existingEntity.setUom(inchMeterFabModuleDto.getUom());
             if (inchMeterFabModuleDto.getDataModule() != null) existingEntity.setDataModule(inchMeterFabModuleDto.getDataModule());
+            if (inchMeterFabModuleDto.getOrderId() != null) existingEntity.setOrderId(inchMeterFabModuleDto.getOrderId());
+            if (inchMeterFabModuleDto.getClientName() != null) existingEntity.setClientName(inchMeterFabModuleDto.getClientName());
             
             existingEntity.setLastUpdatedBy(inchMeterFabModuleDto.getLastUpdatedBy());
             existingEntity.setLastUpdatedDate(LocalDateTime.now());
@@ -453,6 +455,8 @@ public class InchMeterFabModuleServiceImpl implements InchMeterFabModuleService 
         entity.setServiceDescription(dto.getServiceDescription());
         entity.setUom(dto.getUom());
         entity.setDataModule(dto.getDataModule());
+        entity.setOrderId(dto.getOrderId());
+        entity.setClientName(dto.getClientName());
         entity.setCreatedBy(dto.getCreatedBy() != null ? dto.getCreatedBy() : "system");
         entity.setLastUpdatedBy(dto.getLastUpdatedBy() != null ? dto.getLastUpdatedBy() : "system");
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : ACTIVE_STATUS);
@@ -486,6 +490,8 @@ public class InchMeterFabModuleServiceImpl implements InchMeterFabModuleService 
         dto.setServiceDescription(entity.getServiceDescription());
         dto.setUom(entity.getUom());
         dto.setDataModule(entity.getDataModule());
+        dto.setOrderId(entity.getOrderId());
+        dto.setClientName(entity.getClientName());
         dto.setCreatedBy(entity.getCreatedBy());
         dto.setCreatedDate(entity.getCreatedDate());
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());

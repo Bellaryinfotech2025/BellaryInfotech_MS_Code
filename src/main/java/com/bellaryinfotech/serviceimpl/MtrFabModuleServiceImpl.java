@@ -423,6 +423,8 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
         MtrFabModule entity = new MtrFabModule();
         
         entity.setId(dto.getId());
+        entity.setOrderId(dto.getOrderId());
+        entity.setClientName(dto.getClientName());
         entity.setWorkOrder(dto.getWorkOrder());
         entity.setBuildingName(dto.getBuildingName());
         entity.setDrawingNo(dto.getDrawingNo());
@@ -457,6 +459,8 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
         MtrFabModuleDto dto = new MtrFabModuleDto();
         
         dto.setId(entity.getId());
+        dto.setOrderId(entity.getOrderId());
+        dto.setClientName(entity.getClientName());
         dto.setWorkOrder(entity.getWorkOrder());
         dto.setBuildingName(entity.getBuildingName());
         dto.setDrawingNo(entity.getDrawingNo());

@@ -60,7 +60,215 @@ public class BitsHeaderController {
     public static final String GET_WORKORDER_DETAILS = "/getworkorder/number/{workOrderNumber}";
     public static final String GET_LINES_BY_WORKORDER = "/getBitsLinesByWorkOrderNumberHere/details";
 
-    // ============ WORKING GET ENDPOINTS ============
+    // NEW: Production Management Endpoints
+    public static final String GET_DISTINCT_PLANT_LOCATIONS_AS_CLIENTS = "/getDistinctPlantLocationsAsClients/details";
+    public static final String GET_WORK_ORDERS_BY_PLANT_LOCATION = "/getWorkOrdersByPlantLocation/details";
+    public static final String GET_SERVICE_DESCRIPTIONS_BY_WORK_ORDER = "/getServiceDescriptionsByWorkOrder/details";
+    public static final String GET_RA_NUMBERS_BY_WORK_ORDER = "/getRaNumbersByWorkOrder/details";
+    public static final String SEARCH_FABRICATION_ENTRIES_BY_WORK_ORDER_AND_RA_NO = "/searchFabricationEntriesByWorkOrderAndRaNo/details";
+
+    // ============ NEW PRODUCTION MANAGEMENT ENDPOINTS ============
+    
+    // NEW: Get distinct plant locations as client names
+    @GetMapping(value = GET_DISTINCT_PLANT_LOCATIONS_AS_CLIENTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctPlantLocationsAsClients() {
+        List<String> clientNames = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT DISTINCT plant_location 
+                FROM bits_po_entry_header 
+                WHERE plant_location IS NOT NULL 
+                AND plant_location != ''
+                AND plant_location != 'null'
+                ORDER BY plant_location
+                """;
+                        
+            try (PreparedStatement statement = connection.prepareStatement(sql);
+                 ResultSet resultSet = statement.executeQuery()) {
+                              
+                while (resultSet.next()) {
+                    String plantLocation = resultSet.getString("plant_location");
+                    if (plantLocation != null && !plantLocation.trim().isEmpty()) {
+                        clientNames.add(plantLocation.trim());
+                    }
+                }
+                                
+                LOG.info("Successfully fetched {} client names (plant locations) from bits_po_entry_header table", clientNames.size());
+                return ResponseEntity.ok(clientNames);
+                          
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching client names (plant locations) from bits_po_entry_header table", e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // NEW: Get work orders by plant location (client name)
+    @GetMapping(value = GET_WORK_ORDERS_BY_PLANT_LOCATION, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getWorkOrdersByPlantLocation(@RequestParam String plantLocation) {
+        List<String> workOrders = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT DISTINCT work_order 
+                FROM bits_po_entry_header 
+                WHERE plant_location = ?
+                AND work_order IS NOT NULL 
+                AND work_order != ''
+                AND work_order != 'null'
+                ORDER BY work_order
+                """;
+                        
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, plantLocation);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String workOrder = resultSet.getString("work_order");
+                        if (workOrder != null && !workOrder.trim().isEmpty()) {
+                            workOrders.add(workOrder.trim());
+                        }
+                    }
+                                    
+                    LOG.info("Successfully fetched {} work orders for plant location: {}", workOrders.size(), plantLocation);
+                    return ResponseEntity.ok(workOrders);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching work orders for plant location: {}", plantLocation, e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // NEW: Get service descriptions by work order from bits_po_entry_lines
+    @GetMapping(value = GET_SERVICE_DESCRIPTIONS_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getServiceDescriptionsByWorkOrder(@RequestParam String workOrder) {
+        List<String> serviceDescriptions = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT DISTINCT bpl.service_desc 
+                FROM bits_po_entry_lines bpl
+                INNER JOIN bits_po_entry_header bph ON bpl.order_id = bph.order_id
+                WHERE bph.work_order = ?
+                AND bpl.service_desc IS NOT NULL 
+                AND bpl.service_desc != ''
+                AND bpl.service_desc != 'null'
+                ORDER BY bpl.service_desc
+                """;
+                        
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, workOrder);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String serviceDesc = resultSet.getString("service_desc");
+                        if (serviceDesc != null && !serviceDesc.trim().isEmpty()) {
+                            serviceDescriptions.add(serviceDesc.trim());
+                        }
+                    }
+                                    
+                    LOG.info("Successfully fetched {} service descriptions for work order: {}", serviceDescriptions.size(), workOrder);
+                    return ResponseEntity.ok(serviceDescriptions);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching service descriptions for work order: {}", workOrder, e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // NEW: Get RA numbers by work order from fabrication_drawing_entry
+    @GetMapping(value = GET_RA_NUMBERS_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getRaNumbersByWorkOrder(@RequestParam String workOrder) {
+        List<String> raNumbers = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT DISTINCT fde.ra_no 
+                FROM fabrication_drawing_entry fde
+                INNER JOIN bits_po_entry_header bph ON fde.order_id = bph.order_id
+                WHERE bph.work_order = ?
+                AND fde.ra_no IS NOT NULL 
+                AND fde.ra_no != ''
+                AND fde.ra_no != 'null'
+                ORDER BY fde.ra_no
+                """;
+                        
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, workOrder);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String raNo = resultSet.getString("ra_no");
+                        if (raNo != null && !raNo.trim().isEmpty()) {
+                            raNumbers.add(raNo.trim());
+                        }
+                    }
+                                    
+                    LOG.info("Successfully fetched {} RA numbers for work order: {}", raNumbers.size(), workOrder);
+                    return ResponseEntity.ok(raNumbers);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching RA numbers for work order: {}", workOrder, e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // NEW: Search fabrication entries by work order and RA number
+    @GetMapping(value = SEARCH_FABRICATION_ENTRIES_BY_WORK_ORDER_AND_RA_NO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Map<String, Object>>> searchFabricationEntriesByWorkOrderAndRaNo(
+            @RequestParam String workOrder, 
+            @RequestParam String raNo) {
+        List<Map<String, Object>> results = new ArrayList<>();
+                
+        try (Connection connection = dataSource.getConnection()) {
+            String sql = """
+                SELECT fde.id, fde.drawing_no, fde.mark_no, fde.marked_qty, fde.total_marked_wgt,
+                       fde.ra_no, fde.work_order, fde.building_name, fde.order_id, fde.line_id
+                FROM fabrication_drawing_entry fde
+                INNER JOIN bits_po_entry_header bph ON fde.order_id = bph.order_id
+                WHERE bph.work_order = ? AND fde.ra_no = ?
+                ORDER BY fde.id
+                """;
+                        
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, workOrder);
+                statement.setString(2, raNo);
+                
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    int sNo = 1;
+                    while (resultSet.next()) {
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("sNo", sNo++);
+                        result.put("id", resultSet.getLong("id"));
+                        result.put("drawingNo", resultSet.getString("drawing_no"));
+                        result.put("markNo", resultSet.getString("mark_no"));
+                        result.put("markedQty", resultSet.getInt("marked_qty"));
+                        result.put("totalMarkedWgt", resultSet.getDouble("total_marked_wgt"));
+                        result.put("raNo", resultSet.getString("ra_no"));
+                        result.put("workOrder", resultSet.getString("work_order"));
+                        result.put("buildingName", resultSet.getString("building_name"));
+                        result.put("orderId", resultSet.getLong("order_id"));
+                        result.put("lineId", resultSet.getLong("line_id"));
+                        
+                        results.add(result);
+                    }
+                                    
+                    LOG.info("Successfully fetched {} fabrication entries for work order: {} and RA number: {}", 
+                            results.size(), workOrder, raNo);
+                    return ResponseEntity.ok(results);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error fetching fabrication entries for work order: {} and RA number: {}", workOrder, raNo, e);
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    // ============ EXISTING ENDPOINTS (All your original functionality) ============
     
     // Get work order numbers from bits_po_entry_header table - WORKING
     @GetMapping(value = GET_WORKORDER_NUMBERS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1111,8 +1319,7 @@ public class BitsHeaderController {
         }
     }
       
-    
- // ADDED: Implementing the endpoint for service lines by work order
+    // ADDED: Implementing the endpoint for service lines by work order
     @GetMapping(value = GET_LINES_BY_WORKORDER, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Map<String, Object>>> getLinesByWorkOrder(@RequestParam String workOrder) {
         LOG.info("Fetching service lines by work order: {}", workOrder);
@@ -1159,9 +1366,7 @@ public class BitsHeaderController {
 
     // ============ ADDITIONAL UTILITY ENDPOINTS ============
     
-    
-    
-     // NEW: Get all distinct plant locations 
+    // NEW: Get all distinct plant locations 
     @GetMapping(value = "/getAllPlantLocations/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getAllPlantLocations() {
         List<String> plantLocations = new ArrayList<>();
@@ -1227,35 +1432,7 @@ public class BitsHeaderController {
         }
     }
 
-    // Health check endpoint
-    @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> healthCheck() {
-        try {
-            Map<String, Object> health = new HashMap<>();
-            health.put("status", "UP");
-            health.put("timestamp", java.time.LocalDateTime.now().toString());
-            health.put("service", "BitsHeaderController");
-                        
-            try (Connection connection = dataSource.getConnection()) {
-                health.put("database", "CONNECTED");
-            } catch (Exception e) {
-                health.put("database", "DISCONNECTED");
-                health.put("databaseError", e.getMessage());
-            }
-                        
-            return ResponseEntity.ok(health);
-                    
-        } catch (Exception e) {
-            LOG.error("Error in health check", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Health check failed: " + e.getMessage());
-        }
-    }
-    
-    //===============================================================================================
-    
-    
- // NEW: Update RA.NO for drawing entry
+    // NEW: Update RA.NO for drawing entry
     @PutMapping("/updateDrawingEntryRaNo/details")
     public ResponseEntity<?> updateDrawingEntryRaNo(@RequestParam Long lineId, @RequestParam String raNo) {
         LOG.info("Updating RA.NO for lineId: {} with value: {}", lineId, raNo);
@@ -1275,9 +1452,7 @@ public class BitsHeaderController {
         }
     }
     
-    
-    
- // NEW: Update customer for a work order
+    // NEW: Update customer for a work order
     @PutMapping(value = "/updateCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateCustomerForWorkOrder(@RequestParam Long orderId, @RequestParam Long customerId) {
         LOG.info("Updating customer for order ID: {} with customer ID: {}", orderId, customerId);
@@ -1322,55 +1497,8 @@ public class BitsHeaderController {
                 .body("Error updating customer: " + e.getMessage());
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //extra adding the code 
- // ============ NEW ENDPOINTS FOR ORDER_ID MAPPING ============
+
+    // ============ NEW ENDPOINTS FOR ORDER_ID MAPPING ============
     
     // NEW: Get work order by order ID
     @GetMapping(value = "/getworkorder/order/{orderId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1554,13 +1682,6 @@ public class BitsHeaderController {
                     .body("Error validating order ID: " + e.getMessage());
         }
     }
-    
-    
-    
-    
-    // the new ly added code snippets after comparing
-    
-    
 
     // NEW: Get work order with customer details
     @GetMapping(value = "/getWorkOrderWithCustomer/details", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1657,10 +1778,7 @@ public class BitsHeaderController {
         }
     }
     
-    
-    
-    
-  //FIXED: Enhanced method to handle special characters in path variables
+    //FIXED: Enhanced method to handle special characters in path variables
     @GetMapping(value = "/getworkorder/number/{workOrder:.+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getWorkOrderByNumberEnhanced(@PathVariable String workOrder) {
         try {
@@ -1859,7 +1977,28 @@ public class BitsHeaderController {
         }
     }
     
-    
-    
-    
+    // Health check endpoint
+    @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> healthCheck() {
+        try {
+            Map<String, Object> health = new HashMap<>();
+            health.put("status", "UP");
+            health.put("timestamp", java.time.LocalDateTime.now().toString());
+            health.put("service", "BitsHeaderController");
+                        
+            try (Connection connection = dataSource.getConnection()) {
+                health.put("database", "CONNECTED");
+            } catch (Exception e) {
+                health.put("database", "DISCONNECTED");
+                health.put("databaseError", e.getMessage());
+            }
+                        
+            return ResponseEntity.ok(health);
+                    
+        } catch (Exception e) {
+            LOG.error("Error in health check", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Health check failed: " + e.getMessage());
+        }
+    }
 }

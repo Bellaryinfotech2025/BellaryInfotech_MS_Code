@@ -12,6 +12,12 @@ public class InchMeterFabModule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    
+    @Column(name = "order_id", length = 100)
+    private String orderId;
+
+    @Column(name = "client_name", length = 200)
+    private String clientName;
 
     @Column(name = "work_order", length = 100)
     private String workOrder;
@@ -110,8 +116,24 @@ public class InchMeterFabModule {
         this.raNo = raNo;
     }
 
-    // Getters and Setters
-    public Long getId() {
+    
+    public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+	public Long getId() {
         return id;
     }
 

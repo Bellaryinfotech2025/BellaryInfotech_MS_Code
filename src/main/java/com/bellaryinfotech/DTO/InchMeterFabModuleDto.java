@@ -9,6 +9,11 @@ public class InchMeterFabModuleDto {
     
     @JsonProperty("id")
     private Long id;
+    @JsonProperty("orderId")
+    private String orderId;
+    
+    @JsonProperty("clientName")
+    private String clientName;
     
     @JsonProperty("workOrder")
     private String workOrder;
@@ -331,7 +336,24 @@ public class InchMeterFabModuleDto {
         this.status = status;
     }
     
-    @Override
+    
+    public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+	@Override
     public String toString() {
         return "InchMeterFabModuleDto{" +
                 "id=" + id +

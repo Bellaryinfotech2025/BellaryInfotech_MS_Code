@@ -13,6 +13,13 @@ public class MtrFabModuleDto {
 
     @JsonProperty("workOrder")
     private String workOrder;
+    
+
+    @JsonProperty("orderId")
+    private Long orderId;
+
+    @JsonProperty("clientName")
+    private String clientName;
 
     @JsonProperty("buildingName")
     private String buildingName;
@@ -299,6 +306,7 @@ public class MtrFabModuleDto {
     
     
     
+    
 
     public BigDecimal getEachMarkLength() {
 		return eachMarkLength;
@@ -330,6 +338,24 @@ public class MtrFabModuleDto {
 
 	public void setTotalLength(BigDecimal totalLength) {
 		this.totalLength = totalLength;
+	}
+	
+	
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
 	}
 
 	@Override

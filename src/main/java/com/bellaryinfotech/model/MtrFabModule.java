@@ -16,6 +16,11 @@ public class MtrFabModule {
 
     @Column(name = "work_order", length = 100)
     private String workOrder;
+    
+    @Column(name = "order_id")
+    private Long orderId;
+    @Column(name = "client_name", length = 200)
+    private String clientName;
 
     @Column(name = "building_name", length = 200)
     private String buildingName;
@@ -29,10 +34,10 @@ public class MtrFabModule {
     @Column(name = "mark_qty")
     private Integer markQty;
 
-    @Column(name = "each_mark_length", precision = 10, scale = 3)
+    @Column(name = "each_mark_length")
     private BigDecimal eachMarkLength;
 
-    @Column(name = "total_mark_length", precision = 10, scale = 3)
+    @Column(name = "total_mark_length")
     private BigDecimal totalMarkLength;
 
     @Column(name = "ra_no", length = 100)
@@ -44,17 +49,17 @@ public class MtrFabModule {
     @Column(name = "section", length = 100)
     private String section;
 
-    @Column(name = "length_mm", precision = 10, scale = 3)
+    @Column(name = "length_mm")
     private BigDecimal lengthMm;
 
     @Column(name = "item_qty")
     private Integer itemQty;
 
-    @Column(name = "total_length", precision = 10, scale = 3)
+    @Column(name = "total_length")
     private BigDecimal totalLength;
 
     @Column(name = "remarks", length = 500)
-    private String remarks;
+    private String remarks; 
 
     @Column(name = "cutting_stage", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
     private String cuttingStage = "N";
@@ -333,6 +338,23 @@ public class MtrFabModule {
 
 	public void setTotalLength(BigDecimal totalLength) {
 		this.totalLength = totalLength;
+	}
+	
+
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
 	}
 
 	@PreUpdate
