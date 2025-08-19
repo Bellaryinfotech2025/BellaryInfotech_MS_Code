@@ -13,6 +13,12 @@ public class SquareMeterFabModule {
     @Column(name = "id")
     private Long id;
 
+
+    @Column(name = "order_id")
+    private Long orderId;
+    @Column(name = "client_name", length = 200)
+    private String clientName;
+    
     @Column(name = "work_order", length = 100)
     private String workOrder;
 
