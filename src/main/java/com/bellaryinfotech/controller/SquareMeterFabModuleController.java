@@ -24,7 +24,7 @@ public class SquareMeterFabModuleController {
     @Autowired
     private SquareMeterFabModuleService squareMeterFabModuleService;
     
-    // Endpoint constants
+    
     public static final String CREATE_SQUARE_METER_FAB_MODULE = "/createSquareMeterFabModule/details";
     public static final String CREATE_MULTIPLE_SQUARE_METER_FAB_MODULES = "/createSquareMeterFabModuleEntries/details";
     public static final String GET_ALL_SQUARE_METER_FAB_MODULES = "/getAllSquareMeterFabModules/details";
@@ -34,7 +34,7 @@ public class SquareMeterFabModuleController {
     public static final String DELETE_SQUARE_METER_FAB_MODULE = "/deleteSquareMeterFabModule/details";
     public static final String SOFT_DELETE_SQUARE_METER_FAB_MODULE = "/softDeleteSquareMeterFabModule/details";
     
-    // Search endpoints
+    
     public static final String GET_SQUARE_METER_FAB_MODULES_BY_WORK_ORDER = "/getSquareMeterFabModulesByWorkOrder/details";
     public static final String GET_SQUARE_METER_FAB_MODULES_BY_WORK_ORDER_AND_BUILDING = "/getSquareMeterFabModulesByWorkOrderAndBuilding/details";
     public static final String GET_SQUARE_METER_FAB_MODULES_BY_WORK_ORDER_BUILDING_DRAWING = "/getSquareMeterFabModulesByWorkOrderBuildingDrawing/details";
@@ -42,7 +42,7 @@ public class SquareMeterFabModuleController {
     public static final String GET_SQUARE_METER_FAB_MODULES_BY_RA_NO = "/getSquareMeterFabModulesByRaNo/details";
     public static final String SEARCH_SQUARE_METER_FAB_MODULES = "/searchSquareMeterFabModules/details";
     
-    // Utility endpoints
+     
     public static final String GET_DISTINCT_WORK_ORDERS_FROM_SQUARE_METER_FAB_MODULE = "/getDistinctWorkOrdersFromSquareMeterFabModule/details";
     public static final String GET_DISTINCT_BUILDING_NAMES_FROM_SQUARE_METER_FAB_MODULE = "/getDistinctBuildingNamesFromSquareMeterFabModule/details";
     public static final String GET_DISTINCT_DRAWING_NOS_FROM_SQUARE_METER_FAB_MODULE = "/getDistinctDrawingNosFromSquareMeterFabModule/details";
