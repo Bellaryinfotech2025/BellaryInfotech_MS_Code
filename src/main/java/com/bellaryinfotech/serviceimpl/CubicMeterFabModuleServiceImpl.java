@@ -301,6 +301,8 @@ public class CubicMeterFabModuleServiceImpl implements CubicMeterFabModuleServic
         
         return new CubicMeterFabModuleDTO(
                 cubicMeterFabModule.getId(),
+                cubicMeterFabModule.getOrderId(),
+                cubicMeterFabModule.getClientName(),
                 cubicMeterFabModule.getWorkOrder(),
                 cubicMeterFabModule.getBuildingName(),
                 cubicMeterFabModule.getDrawingNo(),
@@ -340,6 +342,8 @@ public class CubicMeterFabModuleServiceImpl implements CubicMeterFabModuleServic
         
         CubicMeterFabModule cubicMeterFabModule = new CubicMeterFabModule();
         cubicMeterFabModule.setId(cubicMeterFabModuleDTO.getId());
+        cubicMeterFabModule.setOrderId(cubicMeterFabModuleDTO.getOrderId());
+        cubicMeterFabModule.setClientName(cubicMeterFabModuleDTO.getClientName());
         cubicMeterFabModule.setWorkOrder(cubicMeterFabModuleDTO.getWorkOrder());
         cubicMeterFabModule.setBuildingName(cubicMeterFabModuleDTO.getBuildingName());
         cubicMeterFabModule.setDrawingNo(cubicMeterFabModuleDTO.getDrawingNo());
@@ -371,4 +375,39 @@ public class CubicMeterFabModuleServiceImpl implements CubicMeterFabModuleServic
         
         return cubicMeterFabModule;
     }
+    
+    public CubicMeterFabModule convertDtoToEntity(CubicMeterFabModuleDTO dto) {
+        CubicMeterFabModule entity = new CubicMeterFabModule();
+        
+        entity.setOrderId(dto.getOrderId());
+        entity.setClientName(dto.getClientName());
+        
+        entity.setWorkOrder(dto.getWorkOrder());
+        entity.setBuildingName(dto.getBuildingName());
+        entity.setDrawingNo(dto.getDrawingNo());
+        entity.setMarkNo(dto.getMarkNo());
+        entity.setMarkQty(dto.getMarkQty());
+        entity.setEachMarkLength(dto.getEachMarkLength());
+        entity.setTotalMarkLength(dto.getTotalMarkLength());
+        entity.setRaNo(dto.getRaNo());
+        entity.setItemNo(dto.getItemNo());
+        entity.setSection(dto.getSection());
+        entity.setLengthMm(dto.getLengthMm());
+        entity.setWidthMm(dto.getWidthMm());
+        entity.setHeightMm(dto.getHeightMm());
+        entity.setItemQty(dto.getItemQty());
+        entity.setTotalVolume(dto.getTotalVolume());
+        entity.setRemarks(dto.getRemarks());
+        entity.setCuttingStage(dto.getCuttingStage());
+        entity.setFitUpStage(dto.getFitUpStage());
+        entity.setWeldingStage(dto.getWeldingStage());
+        entity.setFinishingStage(dto.getFinishingStage());
+        entity.setCreatedBy(dto.getCreatedBy());
+        entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+        entity.setCreatedDate(LocalDateTime.now());
+        entity.setLastUpdatedDate(LocalDateTime.now());
+        
+        return entity;
+    }
+
 }

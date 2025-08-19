@@ -395,7 +395,6 @@ public class InchMeterFabModuleServiceImpl implements InchMeterFabModuleService 
         return inchMeterFabModuleRepository.findDistinctRaNosByStatus(ACTIVE_STATUS);
     }
     
-    // NEW: Missing method implementation
     @Override
     @Transactional(readOnly = true)
     public List<String> getDistinctServiceDescriptionsByWorkOrder(String workOrder) {
@@ -426,6 +425,86 @@ public class InchMeterFabModuleServiceImpl implements InchMeterFabModuleService 
     public boolean recordExists(String workOrder, String buildingName, String drawingNo, String markNo, String itemNo) {
         return inchMeterFabModuleRepository.existsByWorkOrderAndBuildingNameAndDrawingNoAndMarkNoAndItemNoAndStatus(
                 workOrder, buildingName, drawingNo, markNo, itemNo, ACTIVE_STATUS);
+    }
+
+    // NEW CLIENT-BASED METHODS IMPLEMENTATION
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctClientNames() {
+        LOG.info("Fetching distinct client names from InchMeterFabModule");
+        try {
+            List<String> clientNames = inchMeterFabModuleRepository.findDistinctClientNamesByStatus(ACTIVE_STATUS);
+            LOG.info("Found {} distinct client names", clientNames.size());
+            return clientNames;
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct client names: {}", e.getMessage(), e);
+            throw new RuntimeException("Error fetching distinct client names: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        LOG.info("Fetching distinct work orders for client: {}", clientName);
+        try {
+            List<String> workOrders = inchMeterFabModuleRepository.findDistinctWorkOrdersByClientNameAndStatus(clientName, ACTIVE_STATUS);
+            LOG.info("Found {} distinct work orders for client: {}", workOrders.size(), clientName);
+            return workOrders;
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct work orders for client {}: {}", clientName, e.getMessage(), e);
+            throw new RuntimeException("Error fetching distinct work orders: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctServiceDescriptionsByClientNameAndWorkOrder(String clientName, String workOrder) {
+        LOG.info("Fetching distinct service descriptions for client: {} and work order: {}", clientName, workOrder);
+        try {
+            List<String> serviceDescriptions = inchMeterFabModuleRepository.findDistinctServiceDescriptionsByClientNameAndWorkOrderAndStatus(
+                    clientName, workOrder, ACTIVE_STATUS);
+            LOG.info("Found {} distinct service descriptions", serviceDescriptions.size());
+            return serviceDescriptions;
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct service descriptions: {}", e.getMessage(), e);
+            throw new RuntimeException("Error fetching distinct service descriptions: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescription(String clientName, String workOrder, String serviceDescription) {
+        LOG.info("Fetching distinct RA numbers for client: {}, work order: {}, service description: {}", 
+                clientName, workOrder, serviceDescription);
+        try {
+            List<String> raNumbers = inchMeterFabModuleRepository.findDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescriptionAndStatus(
+                    clientName, workOrder, serviceDescription, ACTIVE_STATUS);
+            LOG.info("Found {} distinct RA numbers", raNumbers.size());
+            return raNumbers;
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct RA numbers: {}", e.getMessage(), e);
+            throw new RuntimeException("Error fetching distinct RA numbers: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InchMeterFabModuleDto> searchInchMeterFabDataByFilters(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        LOG.info("Searching InchMeterFab data for client: {}, work order: {}, service description: {}, RA number: {}", 
+                clientName, workOrder, serviceDescription, raNumber);
+        try {
+            List<InchMeterFabModule> entities = inchMeterFabModuleRepository.findByClientNameAndWorkOrderAndServiceDescriptionAndRaNoAndStatus(
+                    clientName, workOrder, serviceDescription, raNumber, ACTIVE_STATUS);
+            LOG.info("Found {} InchMeterFab records matching search criteria", entities.size());
+            
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            LOG.error("Error searching InchMeterFab data: {}", e.getMessage(), e);
+            throw new RuntimeException("Error searching InchMeterFab data: " + e.getMessage());
+        }
     }
     
     // Conversion methods

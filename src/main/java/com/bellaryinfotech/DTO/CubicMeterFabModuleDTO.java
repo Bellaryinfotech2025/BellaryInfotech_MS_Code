@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 public class CubicMeterFabModuleDTO {
     
     private Long id;
+    private Long orderId;
+    private String clientName;
     private String workOrder;
     private String buildingName;
     private String drawingNo;
@@ -39,7 +41,7 @@ public class CubicMeterFabModuleDTO {
     public CubicMeterFabModuleDTO() {}
 
     // Constructor with all fields
-    public CubicMeterFabModuleDTO(Long id, String workOrder, String buildingName, String drawingNo, 
+    public CubicMeterFabModuleDTO(Long id,Long orderId,String clientName, String workOrder, String buildingName, String drawingNo, 
                                   String markNo, Integer markQty, BigDecimal eachMarkLength, 
                                   BigDecimal totalMarkLength, String raNo, String itemNo, String section,
                                   BigDecimal lengthMm, BigDecimal widthMm, BigDecimal heightMm,
@@ -49,6 +51,8 @@ public class CubicMeterFabModuleDTO {
                                   String lastUpdatedBy, LocalDateTime lastUpdatedDate, String status,
                                   String serviceDescription, String uom, String dataModule) {
         this.id = id;
+        this.orderId=orderId;
+        this.clientName=clientName;
         this.workOrder = workOrder;
         this.buildingName = buildingName;
         this.drawingNo = drawingNo;
@@ -79,12 +83,29 @@ public class CubicMeterFabModuleDTO {
         this.dataModule = dataModule;
     }
 
-    // Getters and Setters
+     
     public Long getId() {
         return id;
     }
+    
 
-    public void setId(Long id) {
+    public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 
@@ -316,6 +337,8 @@ public class CubicMeterFabModuleDTO {
     public String toString() {
         return "CubicMeterFabModuleDTO{" +
                 "id=" + id +
+                "orderId=" + orderId + 
+                "clientName=" + clientName + 
                 ", workOrder='" + workOrder + '\'' +
                 ", buildingName='" + buildingName + '\'' +
                 ", drawingNo='" + drawingNo + '\'' +

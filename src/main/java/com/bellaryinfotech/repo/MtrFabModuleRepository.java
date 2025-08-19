@@ -102,4 +102,32 @@ public interface MtrFabModuleRepository extends JpaRepository<MtrFabModule, Long
 
     // Count records by RA Number and status
     long countByRaNoAndStatus(String raNo, String status);
+    
+    
+    
+    
+    
+    
+    @Query("SELECT DISTINCT m.clientName FROM MtrFabModule m WHERE m.status = :status AND m.clientName IS NOT NULL ORDER BY m.clientName")
+    List<String> findDistinctClientNamesByStatus(@Param("status") String status);
+
+    @Query("SELECT DISTINCT m.workOrder FROM MtrFabModule m WHERE m.clientName = :clientName AND m.status = :status AND m.workOrder IS NOT NULL ORDER BY m.workOrder")
+    List<String> findDistinctWorkOrdersByClientNameAndStatus(@Param("clientName") String clientName, @Param("status") String status);
+
+    @Query("SELECT DISTINCT m.serviceDescription FROM MtrFabModule m WHERE m.clientName = :clientName AND m.workOrder = :workOrder AND m.status = :status AND m.serviceDescription IS NOT NULL ORDER BY m.serviceDescription")
+    List<String> findDistinctServiceDescriptionsByClientNameAndWorkOrderAndStatus(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("status") String status);
+
+    @Query("SELECT DISTINCT m.raNo FROM MtrFabModule m WHERE m.clientName = :clientName AND m.workOrder = :workOrder AND m.serviceDescription = :serviceDescription AND m.status = :status AND m.raNo IS NOT NULL ORDER BY m.raNo")
+    List<String> findDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescriptionAndStatus(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("status") String status);
+
+    List<MtrFabModule> findByClientNameAndWorkOrderAndServiceDescriptionAndRaNoAndStatus(String clientName, String workOrder, String serviceDescription, String raNo, String status);
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

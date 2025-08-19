@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 public class SquareMeterFabModuleDto {
     
     private Long id;
+    private Long orderId;
+    private String clientName;
     private String workOrder;
     private String buildingName;
     private String drawingNo;
@@ -44,52 +46,69 @@ public class SquareMeterFabModuleDto {
     // Default constructor
     public SquareMeterFabModuleDto() {}
 
-    // Constructor with all fields
-    public SquareMeterFabModuleDto(Long id, String workOrder, String buildingName, String drawingNo, 
-                                   String markNo, Integer markQty, BigDecimal eachMarkLength, 
-                                   BigDecimal totalMarkLength, String raNo, String itemNo, String section, 
-                                   BigDecimal lengthMm, BigDecimal widthMm, Integer itemQty, 
-                                   BigDecimal totalArea, String remarks, String cuttingStage, 
-                                   String fitUpStage, String weldingStage, String finishingStage, 
-                                   String createdBy, LocalDateTime createdDate, String lastUpdatedBy, 
-                                   LocalDateTime lastUpdatedDate, String status, String serviceDescription, 
-                                   String uom, String dataModule) {
-        this.id = id;
-        this.workOrder = workOrder;
-        this.buildingName = buildingName;
-        this.drawingNo = drawingNo;
-        this.markNo = markNo;
-        this.markQty = markQty;
-        this.eachMarkLength = eachMarkLength;
-        this.totalMarkLength = totalMarkLength;
-        this.raNo = raNo;
-        this.itemNo = itemNo;
-        this.section = section;
-        this.lengthMm = lengthMm;
-        this.widthMm = widthMm;
-        this.itemQty = itemQty;
-        this.totalArea = totalArea;
-        this.remarks = remarks;
-        this.cuttingStage = cuttingStage;
-        this.fitUpStage = fitUpStage;
-        this.weldingStage = weldingStage;
-        this.finishingStage = finishingStage;
-        this.createdBy = createdBy;
-        this.createdDate = createdDate;
-        this.lastUpdatedBy = lastUpdatedBy;
-        this.lastUpdatedDate = lastUpdatedDate;
-        this.status = status;
-        this.serviceDescription = serviceDescription;
-        this.uom = uom;
-        this.dataModule = dataModule;
-    }
+    public SquareMeterFabModuleDto(Long id, Long orderId, String clientName, String workOrder, String buildingName,
+            String drawingNo, String markNo, Integer markQty, BigDecimal eachMarkLength,
+            BigDecimal totalMarkLength, String raNo, String itemNo, String section,
+            BigDecimal lengthMm, BigDecimal widthMm, Integer itemQty, BigDecimal totalArea,
+            String remarks, String cuttingStage, String fitUpStage, String weldingStage,
+            String finishingStage, String createdBy, LocalDateTime createdDate,
+            String lastUpdatedBy, LocalDateTime lastUpdatedDate, String status,
+            String serviceDescription, String uom, String dataModule) {
+this.id = id;
+this.orderId = orderId;
+this.clientName = clientName;
+this.workOrder = workOrder;
+this.buildingName = buildingName;
+this.drawingNo = drawingNo;
+this.markNo = markNo;
+this.markQty = markQty;
+this.eachMarkLength = eachMarkLength;
+this.totalMarkLength = totalMarkLength;
+this.raNo = raNo;
+this.itemNo = itemNo;
+this.section = section;
+this.lengthMm = lengthMm;
+this.widthMm = widthMm;
+this.itemQty = itemQty;
+this.totalArea = totalArea;
+this.remarks = remarks;
+this.cuttingStage = cuttingStage;
+this.fitUpStage = fitUpStage;
+this.weldingStage = weldingStage;
+this.finishingStage = finishingStage;
+this.createdBy = createdBy;
+this.createdDate = createdDate;
+this.lastUpdatedBy = lastUpdatedBy;
+this.lastUpdatedDate = lastUpdatedDate;
+this.status = status;
+this.serviceDescription = serviceDescription;
+this.uom = uom;
+this.dataModule = dataModule;
+}
 
-    // Getters and Setters
+    
     public Long getId() {
         return id;
     }
+    
 
-    public void setId(Long id) {
+    public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 

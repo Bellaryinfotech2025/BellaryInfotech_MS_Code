@@ -279,10 +279,11 @@ public class SquareMeterFabModuleServiceImpl implements SquareMeterFabModuleServ
         return statistics;
     }
     
-    // Helper methods for conversion
     private SquareMeterFabModuleDto convertToDto(SquareMeterFabModule entity) {
         return new SquareMeterFabModuleDto(
                 entity.getId(),
+                entity.getOrderId(),
+                entity.getClientName(),
                 entity.getWorkOrder(),
                 entity.getBuildingName(),
                 entity.getDrawingNo(),
@@ -312,6 +313,7 @@ public class SquareMeterFabModuleServiceImpl implements SquareMeterFabModuleServ
                 entity.getDataModule()
         );
     }
+
     
     private SquareMeterFabModule convertToEntity(SquareMeterFabModuleDto dto) {
         SquareMeterFabModule entity = new SquareMeterFabModule();
@@ -320,6 +322,8 @@ public class SquareMeterFabModuleServiceImpl implements SquareMeterFabModuleServ
     }
     
     private void updateEntityFromDto(SquareMeterFabModule entity, SquareMeterFabModuleDto dto) {
+        if (dto.getOrderId() != null) entity.setOrderId(dto.getOrderId());
+        if (dto.getClientName() != null) entity.setClientName(dto.getClientName());
         if (dto.getWorkOrder() != null) entity.setWorkOrder(dto.getWorkOrder());
         if (dto.getBuildingName() != null) entity.setBuildingName(dto.getBuildingName());
         if (dto.getDrawingNo() != null) entity.setDrawingNo(dto.getDrawingNo());
@@ -346,4 +350,5 @@ public class SquareMeterFabModuleServiceImpl implements SquareMeterFabModuleServ
         if (dto.getUom() != null) entity.setUom(dto.getUom());
         if (dto.getDataModule() != null) entity.setDataModule(dto.getDataModule());
     }
+
 }

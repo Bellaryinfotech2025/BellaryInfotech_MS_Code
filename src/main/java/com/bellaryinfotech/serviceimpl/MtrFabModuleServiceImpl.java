@@ -492,4 +492,57 @@ public class MtrFabModuleServiceImpl implements MtrFabModuleService {
         
         return dto;
     }
+    
+    
+    
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctClientNames() {
+        LOG.info("Fetching distinct client names from MTR Fab Module");
+        return mtrFabModuleRepository.findDistinctClientNamesByStatus(ACTIVE_STATUS);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        LOG.info("Fetching distinct work orders for client: {}", clientName);
+        return mtrFabModuleRepository.findDistinctWorkOrdersByClientNameAndStatus(clientName, ACTIVE_STATUS);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctServiceDescriptionsByClientNameAndWorkOrder(String clientName, String workOrder) {
+        LOG.info("Fetching distinct service descriptions for client: {} and work order: {}", clientName, workOrder);
+        return mtrFabModuleRepository.findDistinctServiceDescriptionsByClientNameAndWorkOrderAndStatus(clientName, workOrder, ACTIVE_STATUS);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescription(String clientName, String workOrder, String serviceDescription) {
+        LOG.info("Fetching distinct RA numbers for client: {}, work order: {}, service description: {}", clientName, workOrder, serviceDescription);
+        return mtrFabModuleRepository.findDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescriptionAndStatus(clientName, workOrder, serviceDescription, ACTIVE_STATUS);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MtrFabModuleDto> searchMtrFabDataByFilters(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        LOG.info("Searching MTR Fab data with filters - client: {}, work order: {}, service description: {}, RA number: {}", 
+                clientName, workOrder, serviceDescription, raNumber);
+        
+        try {
+            List<MtrFabModule> entities = mtrFabModuleRepository.findByClientNameAndWorkOrderAndServiceDescriptionAndRaNoAndStatus(
+                    clientName, workOrder, serviceDescription, raNumber, ACTIVE_STATUS);
+            LOG.info("Found {} MTR Fab records matching search criteria", entities.size());
+            
+            return entities.stream()
+                    .map(this::convertEntityToDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            LOG.error("Error searching MTR Fab data: {}", e.getMessage(), e);
+            throw new RuntimeException("Error searching MTR Fab data: " + e.getMessage());
+        }
+    }
+
+    
 }

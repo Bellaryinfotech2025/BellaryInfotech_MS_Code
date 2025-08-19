@@ -42,4 +42,17 @@ public interface MtrFabModuleService {
     
     // Validation
     boolean recordExists(String workOrder, String buildingName, String drawingNo, String markNo, String itemNo);
+    
+    
+    
+    
+    
+    List<String> getDistinctClientNames();
+    List<String> getDistinctWorkOrdersByClientName(String clientName);
+    List<String> getDistinctServiceDescriptionsByClientNameAndWorkOrder(String clientName, String workOrder);
+    List<String> getDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescription(String clientName, String workOrder, String serviceDescription);
+    List<MtrFabModuleDto> searchMtrFabDataByFilters(String clientName, String workOrder, String serviceDescription, String raNumber);
+
+    
+    
 }

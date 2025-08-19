@@ -5,6 +5,7 @@ import com.bellaryinfotech.service.MtrFabModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -467,4 +468,104 @@ public class MtrFabModuleController {
             return ResponseEntity.badRequest().body("Error generating statistics: " + e.getMessage());
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @GetMapping("/getDistinctClientNamesFromMtrFab/details")
+    public ResponseEntity<List<String>> getDistinctClientNamesFromMtrFab() {
+        LOG.info("Fetching distinct client names from MTR Fab Module");
+        try {
+            List<String> clientNames = mtrFabModuleService.getDistinctClientNames();
+            LOG.info("Found {} distinct client names", clientNames.size());
+            return ResponseEntity.ok(clientNames);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct client names: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/getDistinctWorkOrdersFromMtrFab/details")
+    public ResponseEntity<List<String>> getDistinctWorkOrdersFromMtrFab(@RequestParam String clientName) {
+        LOG.info("Fetching distinct work orders from MTR Fab Module for client: {}", clientName);
+        try {
+            List<String> workOrders = mtrFabModuleService.getDistinctWorkOrdersByClientName(clientName);
+            LOG.info("Found {} distinct work orders for client: {}", workOrders.size(), clientName);
+            return ResponseEntity.ok(workOrders);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct work orders for client {}: {}", clientName, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/getDistinctServiceDescriptionsFromMtrFab/details")
+    public ResponseEntity<List<String>> getDistinctServiceDescriptionsFromMtrFab(
+            @RequestParam String clientName, 
+            @RequestParam String workOrder) {
+        LOG.info("Fetching distinct service descriptions from MTR Fab Module for client: {} and work order: {}", clientName, workOrder);
+        try {
+            List<String> serviceDescriptions = mtrFabModuleService.getDistinctServiceDescriptionsByClientNameAndWorkOrder(clientName, workOrder);
+            LOG.info("Found {} distinct service descriptions", serviceDescriptions.size());
+            return ResponseEntity.ok(serviceDescriptions);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct service descriptions: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/getDistinctRaNumbersFromMtrFab/details")
+    public ResponseEntity<List<String>> getDistinctRaNumbersFromMtrFab(
+            @RequestParam String clientName, 
+            @RequestParam String workOrder, 
+            @RequestParam String serviceDescription) {
+        LOG.info("Fetching distinct RA numbers from MTR Fab Module for client: {}, work order: {}, service description: {}", 
+                clientName, workOrder, serviceDescription);
+        try {
+            List<String> raNumbers = mtrFabModuleService.getDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescription(
+                    clientName, workOrder, serviceDescription);
+            LOG.info("Found {} distinct RA numbers", raNumbers.size());
+            return ResponseEntity.ok(raNumbers);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct RA numbers: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/searchMtrFabData/details")
+    public ResponseEntity<List<MtrFabModuleDto>> searchMtrFabData(
+            @RequestParam String clientName,
+            @RequestParam String workOrder,
+            @RequestParam String serviceDescription,
+            @RequestParam String raNumber) {
+        LOG.info("Searching MTR Fab data for client: {}, work order: {}, service description: {}, RA number: {}", 
+                clientName, workOrder, serviceDescription, raNumber);
+        try {
+            List<MtrFabModuleDto> results = mtrFabModuleService.searchMtrFabDataByFilters(
+                    clientName, workOrder, serviceDescription, raNumber);
+            LOG.info("Found {} MTR Fab records matching search criteria", results.size());
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            LOG.error("Error searching MTR Fab data: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    
+    
+    
 }
+    
+    
+    
+    
+    

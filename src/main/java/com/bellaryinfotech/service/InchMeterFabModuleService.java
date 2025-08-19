@@ -48,4 +48,14 @@ public interface InchMeterFabModuleService {
     
     
     
+    
+ // NEW CLIENT-BASED METHODS - Similar to MTR Fab Module
+    List<String> getDistinctClientNames();
+    List<String> getDistinctWorkOrdersByClientName(String clientName);
+    List<String> getDistinctServiceDescriptionsByClientNameAndWorkOrder(String clientName, String workOrder);
+    List<String> getDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescription(String clientName, String workOrder, String serviceDescription);
+    List<InchMeterFabModuleDto> searchInchMeterFabDataByFilters(String clientName, String workOrder, String serviceDescription, String raNumber);
+    
+    
+    
 }

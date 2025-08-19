@@ -13,9 +13,9 @@ public class SquareMeterFabModule {
     @Column(name = "id")
     private Long id;
 
-
     @Column(name = "order_id")
     private Long orderId;
+    
     @Column(name = "client_name", length = 200)
     private String clientName;
     
@@ -34,10 +34,10 @@ public class SquareMeterFabModule {
     @Column(name = "mark_qty")
     private Integer markQty;
 
-    @Column(name = "each_mark_length", precision = 10, scale = 3)
+    @Column(name = "each_mark_length")
     private BigDecimal eachMarkLength;
 
-    @Column(name = "total_mark_length", precision = 10, scale = 3)
+    @Column(name = "total_mark_length")
     private BigDecimal totalMarkLength;
 
     @Column(name = "ra_no", length = 100)
@@ -49,16 +49,16 @@ public class SquareMeterFabModule {
     @Column(name = "section", length = 100)
     private String section;
 
-    @Column(name = "length_mm", precision = 10, scale = 3)
+    @Column(name = "length_mm")
     private BigDecimal lengthMm;
 
-    @Column(name = "width_mm", precision = 10, scale = 3)
+    @Column(name = "width_mm")
     private BigDecimal widthMm;
 
     @Column(name = "item_qty")
     private Integer itemQty;
 
-    @Column(name = "total_area", precision = 10, scale = 3)
+    @Column(name = "total_area")
     private BigDecimal totalArea;
 
     @Column(name = "remarks", length = 500)
@@ -106,7 +106,22 @@ public class SquareMeterFabModule {
         this.lastUpdatedDate = LocalDateTime.now();
     }
 
-    // Getters and Setters
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
     public Long getId() {
         return id;
     }

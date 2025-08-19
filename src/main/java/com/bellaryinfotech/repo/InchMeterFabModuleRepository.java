@@ -107,4 +107,70 @@ public interface InchMeterFabModuleRepository extends JpaRepository<InchMeterFab
 
     // Count records by RA Number and status
     long countByRaNoAndStatus(String raNo, String status);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+// NEW CLIENT-BASED QUERIES - Similar to MTR Fab Module
+    
+    // Get distinct client names
+    @Query("SELECT DISTINCT i.clientName FROM InchMeterFabModule i WHERE i.status = :status AND i.clientName IS NOT NULL ORDER BY i.clientName")
+    List<String> findDistinctClientNamesByStatus(@Param("status") String status);
+
+    // Get distinct work orders by client name
+    @Query("SELECT DISTINCT i.workOrder FROM InchMeterFabModule i WHERE i.clientName = :clientName AND i.status = :status ORDER BY i.workOrder")
+    List<String> findDistinctWorkOrdersByClientNameAndStatus(@Param("clientName") String clientName, @Param("status") String status);
+
+    // Get distinct service descriptions by client name and work order
+    @Query("SELECT DISTINCT i.serviceDescription FROM InchMeterFabModule i WHERE i.clientName = :clientName AND i.workOrder = :workOrder AND i.status = :status ORDER BY i.serviceDescription")
+    List<String> findDistinctServiceDescriptionsByClientNameAndWorkOrderAndStatus(
+            @Param("clientName") String clientName, 
+            @Param("workOrder") String workOrder, 
+            @Param("status") String status);
+
+    // Get distinct RA numbers by client name, work order, and service description
+    @Query("SELECT DISTINCT i.raNo FROM InchMeterFabModule i WHERE i.clientName = :clientName AND i.workOrder = :workOrder AND i.serviceDescription = :serviceDescription AND i.status = :status ORDER BY i.raNo")
+    List<String> findDistinctRaNumbersByClientNameAndWorkOrderAndServiceDescriptionAndStatus(
+            @Param("clientName") String clientName, 
+            @Param("workOrder") String workOrder, 
+            @Param("serviceDescription") String serviceDescription, 
+            @Param("status") String status);
+
+    // Search by client-based filters
+    @Query("SELECT i FROM InchMeterFabModule i WHERE " +
+           "i.clientName = :clientName AND " +
+           "i.workOrder = :workOrder AND " +
+           "i.serviceDescription = :serviceDescription AND " +
+           "i.raNo = :raNumber AND " +
+           "i.status = :status " +
+           "ORDER BY i.createdDate DESC")
+    List<InchMeterFabModule> findByClientNameAndWorkOrderAndServiceDescriptionAndRaNoAndStatus(
+            @Param("clientName") String clientName,
+            @Param("workOrder") String workOrder,
+            @Param("serviceDescription") String serviceDescription,
+            @Param("raNumber") String raNumber,
+            @Param("status") String status);
+
+    // Find by client name
+    List<InchMeterFabModule> findByClientNameAndStatus(String clientName, String status);
+
+    // Find by client name and work order
+    List<InchMeterFabModule> findByClientNameAndWorkOrderAndStatus(String clientName, String workOrder, String status);
+
+    // Count records by client name
+    long countByClientNameAndStatus(String clientName, String status);
+    
+    
+    
+    
 }

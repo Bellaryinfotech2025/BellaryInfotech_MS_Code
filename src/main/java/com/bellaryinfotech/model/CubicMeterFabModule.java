@@ -108,12 +108,33 @@ public class CubicMeterFabModule {
         this.lastUpdatedDate = LocalDateTime.now();
     }
 
-    // Getters and Setters
+    
     public Long getId() {
         return id;
     }
+    
 
-    public void setId(Long id) {
+    public Long getOrderId() {
+		return orderId;
+	}
+
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+
+
+	public String getClientName() {
+		return clientName;
+	}
+
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+
+	public void setId(Long id) {
         this.id = id;
     }
 
