@@ -41,4 +41,31 @@ public interface PostInchMeterPreFabricatedModuleService {
     
     // NEW: Search method for workOrder, serviceDescription, and optional raNo
     List<PostInchMeterPreFabricatedModule> searchPostInchMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo);
+
+
+    
+    
+    
+    
+    
+    
+    
+ // Get all records
+    List<PostInchMeterPreFabricatedModule> getAllRecords();
+    
+    // Get distinct client names
+    List<String> getDistinctClientNames();
+    
+    // Get distinct work orders by client name
+    List<String> getDistinctWorkOrdersByClientName(String clientName);
+    
+    // Get distinct service descriptions by client and work order
+    List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder);
+    
+    // Get distinct RA numbers by all criteria
+    List<String> getDistinctRaNumbersByAllCriteria(String clientName, String workOrder, String serviceDescription);
+    
+    // Search by all criteria
+    List<PostInchMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber);
+
 }

@@ -159,4 +159,46 @@ public class PostMeterPreFabricatedModuleServiceImpl implements PostMeterPreFabr
     public void deletePostMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo) {
         repository.deleteByWorkOrderAndRaNo(workOrder, raNo);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
+    public List<PostMeterPreFabricatedModule> getAllRecords() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<String> getDistinctClientNames() {
+        return repository.findDistinctClientNames();
+    }
+
+    @Override
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        return repository.findDistinctWorkOrdersByClientName(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder) {
+        return repository.findDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+    }
+
+    @Override
+    public List<String> getDistinctRaNumbersByAllCriteria(String clientName, String workOrder, String serviceDescription) {
+        return repository.findDistinctRaNumbersByAllCriteria(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<PostMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        return repository.findByAllCriteria(clientName, workOrder, serviceDescription, raNumber);
+    }
+    
+    
+    
 }

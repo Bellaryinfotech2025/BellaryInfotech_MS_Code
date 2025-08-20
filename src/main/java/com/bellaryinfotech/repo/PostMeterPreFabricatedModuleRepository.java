@@ -49,4 +49,33 @@ public interface PostMeterPreFabricatedModuleRepository extends JpaRepository<Po
 
     @Query("SELECT DISTINCT p.raNo FROM PostMeterPreFabricatedModule p WHERE p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription")
     String findRaNoByWorkOrderAndServiceDescription(String workOrder, String serviceDescription);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ // NEW methods to add to PostMeterPreFabricatedModuleRepository
+
+    @Query("SELECT DISTINCT p.clientName FROM PostMeterPreFabricatedModule p WHERE p.clientName IS NOT NULL ORDER BY p.clientName")
+    List<String> findDistinctClientNames();
+
+    @Query("SELECT DISTINCT p.workOrder FROM PostMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder IS NOT NULL ORDER BY p.workOrder")
+    List<String> findDistinctWorkOrdersByClientName(@Param("clientName") String clientName);
+
+    @Query("SELECT DISTINCT p.serviceDescription FROM PostMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription IS NOT NULL ORDER BY p.serviceDescription")
+    List<String> findDistinctServiceDescriptionsByClientAndWorkOrder(@Param("clientName") String clientName, @Param("workOrder") String workOrder);
+
+    @Query("SELECT DISTINCT p.raNo FROM PostMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo IS NOT NULL ORDER BY p.raNo")
+    List<String> findDistinctRaNumbersByAllCriteria(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+
+    @Query("SELECT p FROM PostMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo = :raNumber ORDER BY p.id")
+    List<PostMeterPreFabricatedModule> findByAllCriteria(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("raNumber") String raNumber);
 }

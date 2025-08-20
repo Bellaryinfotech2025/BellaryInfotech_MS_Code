@@ -49,4 +49,29 @@ public interface PostInchMeterPreFabricatedModuleRepository extends JpaRepositor
             @Param("workOrder") String workOrder, 
             @Param("serviceDescription") String serviceDescription, 
             @Param("raNo") String raNo);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Query("SELECT DISTINCT p.clientName FROM PostInchMeterPreFabricatedModule p WHERE p.clientName IS NOT NULL ORDER BY p.clientName")
+    List<String> findDistinctClientNames();
+
+    @Query("SELECT DISTINCT p.workOrder FROM PostInchMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder IS NOT NULL ORDER BY p.workOrder")
+    List<String> findDistinctWorkOrdersByClientName(@Param("clientName") String clientName);
+
+    @Query("SELECT DISTINCT p.serviceDescription FROM PostInchMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription IS NOT NULL ORDER BY p.serviceDescription")
+    List<String> findDistinctServiceDescriptionsByClientAndWorkOrder(@Param("clientName") String clientName, @Param("workOrder") String workOrder);
+
+    @Query("SELECT DISTINCT p.raNo FROM PostInchMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo IS NOT NULL ORDER BY p.raNo")
+    List<String> findDistinctRaNumbersByAllCriteria(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+
+    @Query("SELECT p FROM PostInchMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo = :raNumber ORDER BY p.id")
+    List<PostInchMeterPreFabricatedModule> findByAllCriteria(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("raNumber") String raNumber);
 }

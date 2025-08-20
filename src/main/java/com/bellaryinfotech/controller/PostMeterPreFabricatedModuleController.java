@@ -159,4 +159,93 @@ public class PostMeterPreFabricatedModuleController {
             return new ResponseEntity<>("Failed to delete modules", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @GetMapping("/getAllPostMeterPreFabData/details")
+    public ResponseEntity<List<PostMeterPreFabricatedModule>> getAllPostMeterPreFabData() {
+        try {
+            List<PostMeterPreFabricatedModule> results = service.getAllRecords();
+            return new ResponseEntity<>(results, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctClientNamesFromPostMeterPreFab/details")
+    public ResponseEntity<List<String>> getDistinctClientNamesFromPostMeterPreFab() {
+        try {
+            List<String> clientNames = service.getDistinctClientNames();
+            return new ResponseEntity<>(clientNames, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctWorkOrdersFromPostMeterPreFab/details")
+    public ResponseEntity<List<String>> getDistinctWorkOrdersFromPostMeterPreFab(@RequestParam String clientName) {
+        try {
+            List<String> workOrders = service.getDistinctWorkOrdersByClientName(clientName);
+            return new ResponseEntity<>(workOrders, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctServiceDescriptionsFromPostMeterPreFab/details")
+    public ResponseEntity<List<String>> getDistinctServiceDescriptionsFromPostMeterPreFab(
+            @RequestParam String clientName, @RequestParam String workOrder) {
+        try {
+            List<String> serviceDescriptions = service.getDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+            return new ResponseEntity<>(serviceDescriptions, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/getDistinctRaNumbersFromPostMeterPreFab/details")
+    public ResponseEntity<List<String>> getDistinctRaNumbersFromPostMeterPreFab(
+            @RequestParam String clientName, @RequestParam String workOrder, @RequestParam String serviceDescription) {
+        try {
+            List<String> raNumbers = service.getDistinctRaNumbersByAllCriteria(clientName, workOrder, serviceDescription);
+            return new ResponseEntity<>(raNumbers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/searchPostMeterPreFabData/details")
+    public ResponseEntity<List<PostMeterPreFabricatedModule>> searchPostMeterPreFabData(
+            @RequestParam String clientName, 
+            @RequestParam String workOrder,
+            @RequestParam String serviceDescription,
+            @RequestParam String raNumber) {
+        try {
+            List<PostMeterPreFabricatedModule> results = service.searchByAllCriteria(clientName, workOrder, serviceDescription, raNumber);
+            return new ResponseEntity<>(results, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    
 }

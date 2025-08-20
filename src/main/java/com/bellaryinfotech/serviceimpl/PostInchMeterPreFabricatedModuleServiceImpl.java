@@ -173,4 +173,45 @@ public class PostInchMeterPreFabricatedModuleServiceImpl implements PostInchMete
         }
         return repository.findByWorkOrderAndServiceDescription(workOrder, serviceDescription);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
+    public List<PostInchMeterPreFabricatedModule> getAllRecords() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<String> getDistinctClientNames() {
+        return repository.findDistinctClientNames();
+    }
+
+    @Override
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        return repository.findDistinctWorkOrdersByClientName(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder) {
+        return repository.findDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+    }
+
+    @Override
+    public List<String> getDistinctRaNumbersByAllCriteria(String clientName, String workOrder, String serviceDescription) {
+        return repository.findDistinctRaNumbersByAllCriteria(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<PostInchMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        return repository.findByAllCriteria(clientName, workOrder, serviceDescription, raNumber);
+    }
 }

@@ -36,4 +36,25 @@ public interface PostMeterPreFabricatedModuleService {
     void deletePostMeterPreFabricatedModulesByWorkOrder(String workOrder);
     
     void deletePostMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo);
+    
+    
+    
+    
+ // Get all records
+    List<PostMeterPreFabricatedModule> getAllRecords();
+    
+    // Get distinct client names
+    List<String> getDistinctClientNames();
+    
+    // Get distinct work orders by client name
+    List<String> getDistinctWorkOrdersByClientName(String clientName);
+    
+    // Get distinct service descriptions by client and work order
+    List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder);
+    
+    // Get distinct RA numbers by all criteria
+    List<String> getDistinctRaNumbersByAllCriteria(String clientName, String workOrder, String serviceDescription);
+    
+    // Search by all criteria
+    List<PostMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber);
 }
