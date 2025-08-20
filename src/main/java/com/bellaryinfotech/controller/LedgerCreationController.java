@@ -3,25 +3,35 @@ package com.bellaryinfotech.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import com.bellaryinfotech.repo.LedgerCreationRepository;
 import com.bellaryinfotech.DTO.LedgerCreationDTO;
+import com.bellaryinfotech.model.LedgerCreation;
 import com.bellaryinfotech.service.LedgerCreationService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+ 
 
 @RestController
 @RequestMapping("/api/ledgers")
 @CrossOrigin(origins = "*")
 public class LedgerCreationController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(LedgerCreationController.class);
     
     @Autowired
     private LedgerCreationService ledgerService;
+    @Autowired
+    private LedgerCreationRepository ledgercreationrepo;
     
     @PostMapping
     public ResponseEntity<?> createLedger(@Valid @RequestBody LedgerCreationDTO ledgerDTO, BindingResult bindingResult) {
@@ -156,5 +166,20 @@ public class LedgerCreationController {
     public ResponseEntity<Boolean> existsByPan(@PathVariable String pan) {
         boolean exists = ledgerService.existsByPan(pan);
         return new ResponseEntity<>(exists, HttpStatus.OK);
+    }
+    
+    
+  
+    
+    @GetMapping(value = "/getCreditors/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<List<LedgerCreation>> getCreditors() {
+        try {
+            List<LedgerCreation> creditors = ledgercreationrepo.findByDebtorCreditor("Creditor");
+            return ResponseEntity.ok(creditors);
+        } catch (Exception e) {
+            logger.error("Error fetching creditors: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

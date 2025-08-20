@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.bellaryinfotech.model.LedgerCreation;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,6 +27,23 @@ public interface LedgerCreationRepository extends JpaRepository<LedgerCreation, 
     boolean existsByPan(@Param("pan") String pan);
     
     Optional<LedgerCreation> findByLedgerName(String ledgerName);
+    
+ // New method to find creditors only
+    List<LedgerCreation> findByDebtorCreditor(String debtorCreditor);
+    
+    // Alternative with custom query if needed
+    @Query("SELECT l FROM LedgerCreation l WHERE l.debtorCreditor = :debtorCreditor ORDER BY l.ledgerName ASC")
+    List<LedgerCreation> findCreditorsSorted(@Param("debtorCreditor") String debtorCreditor);
+    
+    
+    
+  
+    
+    // Custom query for creditors with sorting
+    @Query("SELECT l FROM LedgerCreation l WHERE l.debtorCreditor = 'Creditor' ORDER BY l.ledgerName ASC")
+    List<LedgerCreation> findCreditorsOrdered();
 }
+
+
 
 

@@ -13,15 +13,16 @@ import java.util.Optional;
 @Repository
 public interface BitsHeaderRepository extends JpaRepository<BitsHeaderAll, Long> {
     
-    // YOUR EXISTING METHODS - KEEPING EXACTLY AS THEY ARE
+    
     List<BitsHeaderAll> findByWorkOrderContainingIgnoreCase(String workOrder);
     List<BitsHeaderAll> findByPlantLocationContainingIgnoreCase(String plantLocation);
     List<BitsHeaderAll> findByDepartmentContainingIgnoreCase(String department);
     List<BitsHeaderAll> findByWorkLocationContainingIgnoreCase(String workLocation);
     List<BitsHeaderAll> findByLdApplicable(Boolean ldApplicable);
-    Optional<BitsHeaderAll> findByWorkOrder(String workOrderNo);
     
-    // NEW METHODS FOR ORDER_ID MAPPING - ADDED BELOW YOUR EXISTING CODE
+    
+    
+    
     Optional<BitsHeaderAll> findByOrderId(Long orderId);
     boolean existsByWorkOrder(String workOrder);
     boolean existsByOrderId(Long orderId);
@@ -42,4 +43,27 @@ public interface BitsHeaderRepository extends JpaRepository<BitsHeaderAll, Long>
             @Param("plantLocation") String plantLocation,
             @Param("department") String department,
             @Param("workLocation") String workLocation);
+    
+    
+    
+ // Find work orders by plant location (client name)
+    List<BitsHeaderAll> findByPlantLocation(String plantLocation);
+    
+    // Find work order by work order number
+    Optional<BitsHeaderAll> findByWorkOrder(String workOrder);
+    
+    // Custom query for better performance
+    @Query("SELECT b FROM BitsHeaderAll b WHERE b.plantLocation = :plantLocation ORDER BY b.workOrder ASC")
+    List<BitsHeaderAll> findWorkOrdersByPlantLocationSorted(@Param("plantLocation") String plantLocation);
+    
+    // Fixed query to return only the order_id as Long
+    @Query("SELECT b.orderId FROM  BitsHeaderAll b WHERE b.workOrder = :workOrder")
+    Long findOrderIdByWorkOrder(@Param("workOrder") String workOrder);
+    
+    // Alternative native query if the above doesn't work
+    @Query(value = "SELECT order_id FROM bits_po_entry_header WHERE work_order = :workOrder LIMIT 1", nativeQuery = true)
+    Long findOrderIdByWorkOrderNative(@Param("workOrder") String workOrder);
+    
+    
+
 }

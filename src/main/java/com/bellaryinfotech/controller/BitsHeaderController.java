@@ -1,6 +1,7 @@
 package com.bellaryinfotech.controller;
 
 import com.bellaryinfotech.model.BitsHeaderAll;
+import com.bellaryinfotech.repo.BitsHeaderRepository;
 import com.bellaryinfotech.DTO.BitsHeaderDto;
 import com.bellaryinfotech.service.BitsHeaderService;
 import org.slf4j.Logger;
@@ -34,6 +35,9 @@ import java.nio.charset.StandardCharsets;
 @CrossOrigin(origins = "*")
 public class BitsHeaderController {
     private static final Logger LOG = LoggerFactory.getLogger(BitsHeaderController.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(LedgerCreationController.class);
+    
 
     @Autowired
     private BitsHeaderService headerService;
@@ -43,6 +47,8 @@ public class BitsHeaderController {
         
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired 
+    private BitsHeaderRepository bitsheaderrepo;
         
     // Constants for endpoints
     public static final String GET_ALL_HEADERS = "/getAllBitsHeaders/details";
@@ -1999,6 +2005,33 @@ public class BitsHeaderController {
             LOG.error("Error in health check", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Health check failed: " + e.getMessage());
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @GetMapping(value = "/getWorkOrdersByPlantLocationout/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<List<BitsHeaderAll>> getWorkOrdersByPlantLocationout(@RequestParam String plantLocation) {
+        try {
+            // Find work orders where plant_location matches the selected client name
+            List<BitsHeaderAll> workOrders = bitsheaderrepo.findByPlantLocation(plantLocation);
+            
+            if (workOrders != null && !workOrders.isEmpty()) {
+                return ResponseEntity.ok(workOrders);
+            } else {
+                return ResponseEntity.ok(new ArrayList<>());
+            }
+        } catch (Exception e) {
+            logger.error("Error fetching work orders by plant location: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }
