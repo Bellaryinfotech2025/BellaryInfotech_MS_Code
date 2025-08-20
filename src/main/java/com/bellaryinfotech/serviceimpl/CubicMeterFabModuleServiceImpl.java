@@ -410,4 +410,75 @@ public class CubicMeterFabModuleServiceImpl implements CubicMeterFabModuleServic
         return entity;
     }
 
+    
+    
+    
+    
+    
+    
+    
+ // NEW methods to add to CubicMeterFabModuleServiceImpl.java
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctClientNames() {
+        try {
+            return cubicMeterFabModuleRepository.findDistinctClientNames();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct client names: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        try {
+            return cubicMeterFabModuleRepository.findDistinctWorkOrdersByClientName(clientName);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct work orders by client: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder) {
+        try {
+            return cubicMeterFabModuleRepository.findDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct service descriptions: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription) {
+        try {
+            return cubicMeterFabModuleRepository.findDistinctRaNumbersByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct RA numbers: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CubicMeterFabModuleDTO> searchByClientWorkOrderServiceAndRa(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        try {
+            List<CubicMeterFabModule> entities = cubicMeterFabModuleRepository.findByClientNameAndWorkOrderAndServiceDescriptionAndRaNo(
+                clientName, workOrder, serviceDescription, raNumber);
+            return entities.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error searching by client, work order, service and RA: " + e.getMessage(), e);
+        }
+    }
+ 
+    
+    
+    
+    
+    
+    
+    
+    
 }

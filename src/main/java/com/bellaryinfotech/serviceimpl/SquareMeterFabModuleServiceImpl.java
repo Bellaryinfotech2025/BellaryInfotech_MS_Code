@@ -351,4 +351,52 @@ public class SquareMeterFabModuleServiceImpl implements SquareMeterFabModuleServ
         if (dto.getDataModule() != null) entity.setDataModule(dto.getDataModule());
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
+ // NEW methods to add to SquareMeterFabModuleServiceImpl.java
+
+    @Override
+    public List<String> getDistinctClientNames() {
+        LOG.info("Fetching distinct client names");
+        return squareMeterFabModuleRepository.findDistinctClientNames();
+    }
+
+    @Override
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        LOG.info("Fetching distinct work orders for client: {}", clientName);
+        return squareMeterFabModuleRepository.findDistinctWorkOrdersByClientName(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder) {
+        LOG.info("Fetching distinct service descriptions for client: {} and work order: {}", clientName, workOrder);
+        return squareMeterFabModuleRepository.findDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+    }
+
+    @Override
+    public List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription) {
+        LOG.info("Fetching distinct RA numbers for client: {}, work order: {}, service: {}", clientName, workOrder, serviceDescription);
+        return squareMeterFabModuleRepository.findDistinctRaNumbersByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<SquareMeterFabModuleDto> searchByClientWorkOrderServiceAndRa(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        LOG.info("Searching by client: {}, work order: {}, service: {}, RA: {}", clientName, workOrder, serviceDescription, raNumber);
+        
+        List<SquareMeterFabModule> entities = squareMeterFabModuleRepository.findByClientNameAndWorkOrderAndServiceDescriptionAndRaNo(
+            clientName, workOrder, serviceDescription, raNumber);
+        
+        return entities.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    
+    
 }

@@ -8,11 +8,11 @@ import java.util.Optional;
 
 public interface CubicMeterFabModuleService {
 
-    // Create operations
+     
     CubicMeterFabModuleDTO createCubicMeterFabModule(CubicMeterFabModuleDTO cubicMeterFabModuleDTO);
     List<CubicMeterFabModuleDTO> createCubicMeterFabModuleEntries(List<CubicMeterFabModuleDTO> cubicMeterFabModuleDTOs);
 
-    // Read operations
+     
     List<CubicMeterFabModuleDTO> getAllCubicMeterFabModules();
     Optional<CubicMeterFabModuleDTO> getCubicMeterFabModuleById(Long id);
     List<String> getDistinctWorkOrders();
@@ -22,26 +22,55 @@ public interface CubicMeterFabModuleService {
             String workOrder, String buildingName, String drawingNo, String markNo);
     List<CubicMeterFabModuleDTO> getCubicMeterFabModulesByRaNo(String raNo);
     List<String> getDistinctRaNos();
-    // NEW: Get CubicMeterFabModules by work order only
+     
     List<CubicMeterFabModuleDTO> getCubicMeterFabModulesByWorkOrder(String workOrder);
 
 
-    // Update operations
+     
     CubicMeterFabModuleDTO updateCubicMeterFabModule(Long id, CubicMeterFabModuleDTO cubicMeterFabModuleDTO);
     CubicMeterFabModuleDTO updateCubicMeterFabModuleStatus(Long id, String status);
 
-    // Delete operations
+    
     boolean deleteCubicMeterFabModule(Long id);
     boolean softDeleteCubicMeterFabModule(Long id);
 
-    // Search operations
+     
     List<CubicMeterFabModuleDTO> searchCubicMeterFabModules(String workOrder, String buildingName, 
                                                            String drawingNo, String markNo, String raNo);
 
-    // Statistics
+     
     Long getActiveCubicMeterFabModulesCount();
 
-    // Utility methods
+     
     CubicMeterFabModuleDTO convertToDTO(CubicMeterFabModule cubicMeterFabModule);
     CubicMeterFabModule convertToEntity(CubicMeterFabModuleDTO cubicMeterFabModuleDTO);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ // NEW methods to add to cubic
+
+  
+ List<String> getDistinctClientNames();
+
+  
+ List<String> getDistinctWorkOrdersByClientName(String clientName);
+
+ 
+ List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder);
+
+  
+ List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription);
+
+  
+ List<CubicMeterFabModuleDTO> searchByClientWorkOrderServiceAndRa(String clientName, String workOrder, String serviceDescription, String raNumber);
+
 }

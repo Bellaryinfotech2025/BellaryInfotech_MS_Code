@@ -4,6 +4,7 @@ import com.bellaryinfotech.DTO.CubicMeterFabModuleDTO;
 import com.bellaryinfotech.service.CubicMeterFabModuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,10 +14,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/V2.0")
 @CrossOrigin(origins = "*")
 public class CubicMeterFabModuleController {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(CubicMeterFabModuleController.class);
+
 
     @Autowired
     private CubicMeterFabModuleService cubicMeterFabModuleService;
@@ -270,4 +277,97 @@ public class CubicMeterFabModuleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    
+//new apis gto get the cubic in productionn
+  
+ @GetMapping(value = "/getDistinctClientNamesFromCubicMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctClientNamesFromCubicMeterFab() {
+     LOG.info("Fetching distinct client names from CubicMeterFabModule");
+     
+     try {
+         List<String> clientNames = cubicMeterFabModuleService.getDistinctClientNames();
+         LOG.info("Found {} distinct client names", clientNames.size());
+         
+         return ResponseEntity.ok(clientNames);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct client names: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching client names: " + e.getMessage());
+     }
+ }
+
+ 
+ @GetMapping(value = "/getDistinctWorkOrdersFromCubicMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctWorkOrdersFromCubicMeterFab(@RequestParam String clientName) {
+     LOG.info("Fetching distinct work orders for client: {}", clientName);
+     
+     try {
+         List<String> workOrders = cubicMeterFabModuleService.getDistinctWorkOrdersByClientName(clientName);
+         LOG.info("Found {} distinct work orders for client: {}", workOrders.size(), clientName);
+         
+         return ResponseEntity.ok(workOrders);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct work orders: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching work orders: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/getDistinctServiceDescriptionsFromCubicMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctServiceDescriptionsFromCubicMeterFab(
+         @RequestParam String clientName, 
+         @RequestParam String workOrder) {
+     LOG.info("Fetching distinct service descriptions for client: {} and work order: {}", clientName, workOrder);
+     
+     try {
+         List<String> serviceDescriptions = cubicMeterFabModuleService.getDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+         LOG.info("Found {} distinct service descriptions", serviceDescriptions.size());
+         
+         return ResponseEntity.ok(serviceDescriptions);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct service descriptions: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching service descriptions: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/getDistinctRaNumbersFromCubicMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctRaNumbersFromCubicMeterFab(
+         @RequestParam String clientName,
+         @RequestParam String workOrder,
+         @RequestParam String serviceDescription) {
+     LOG.info("Fetching distinct RA numbers for client: {}, work order: {}, service: {}", clientName, workOrder, serviceDescription);
+     
+     try {
+         List<String> raNumbers = cubicMeterFabModuleService.getDistinctRaNumbersByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+         LOG.info("Found {} distinct RA numbers", raNumbers.size());
+         
+         return ResponseEntity.ok(raNumbers);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct RA numbers: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching RA numbers: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/searchCubicMeterFabData/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> searchCubicMeterFabData(
+         @RequestParam String clientName,
+         @RequestParam String workOrder,
+         @RequestParam String serviceDescription,
+         @RequestParam String raNumber) {
+     LOG.info("Searching CubicMeterFab data for client: {}, work order: {}, service: {}, RA: {}", 
+              clientName, workOrder, serviceDescription, raNumber);
+     
+     try {
+         List<CubicMeterFabModuleDTO> results = cubicMeterFabModuleService.searchByClientWorkOrderServiceAndRa(
+             clientName, workOrder, serviceDescription, raNumber);
+         LOG.info("Found {} CubicMeterFab records", results.size());
+         
+         return ResponseEntity.ok(results);
+     } catch (Exception e) {
+         LOG.error("Error searching CubicMeterFab data: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error searching data: " + e.getMessage());
+     }
+ }
+
 }

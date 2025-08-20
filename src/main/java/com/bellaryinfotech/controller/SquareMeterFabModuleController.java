@@ -458,4 +458,98 @@ public class SquareMeterFabModuleController {
             return ResponseEntity.badRequest().body("Error fetching statistics: " + e.getMessage());
         }
     }
+    
+       
+ // new apis to add to Square to productionn 
+
+ @GetMapping(value = "/getDistinctClientNamesFromSquareMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctClientNamesFromSquareMeterFab() {
+     LOG.info("Fetching distinct client names from SquareMeterFabModule");
+     
+     try {
+         List<String> clientNames = squareMeterFabModuleService.getDistinctClientNames();
+         LOG.info("Found {} distinct client names", clientNames.size());
+         
+         return ResponseEntity.ok(clientNames);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct client names: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching client names: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/getDistinctWorkOrdersFromSquareMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctWorkOrdersFromSquareMeterFab(@RequestParam String clientName) {
+     LOG.info("Fetching distinct work orders for client: {}", clientName);
+     
+     try {
+         List<String> workOrders = squareMeterFabModuleService.getDistinctWorkOrdersByClientName(clientName);
+         LOG.info("Found {} distinct work orders for client: {}", workOrders.size(), clientName);
+         
+         return ResponseEntity.ok(workOrders);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct work orders: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching work orders: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/getDistinctServiceDescriptionsFromSquareMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctServiceDescriptionsFromSquareMeterFab(
+         @RequestParam String clientName, 
+         @RequestParam String workOrder) {
+     LOG.info("Fetching distinct service descriptions for client: {} and work order: {}", clientName, workOrder);
+     
+     try {
+         List<String> serviceDescriptions = squareMeterFabModuleService.getDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+         LOG.info("Found {} distinct service descriptions", serviceDescriptions.size());
+         
+         return ResponseEntity.ok(serviceDescriptions);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct service descriptions: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching service descriptions: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/getDistinctRaNumbersFromSquareMeterFab/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> getDistinctRaNumbersFromSquareMeterFab(
+         @RequestParam String clientName,
+         @RequestParam String workOrder,
+         @RequestParam String serviceDescription) {
+     LOG.info("Fetching distinct RA numbers for client: {}, work order: {}, service: {}", clientName, workOrder, serviceDescription);
+     
+     try {
+         List<String> raNumbers = squareMeterFabModuleService.getDistinctRaNumbersByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+         LOG.info("Found {} distinct RA numbers", raNumbers.size());
+         
+         return ResponseEntity.ok(raNumbers);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct RA numbers: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error fetching RA numbers: " + e.getMessage());
+     }
+ }
+
+  
+ @GetMapping(value = "/searchSquareMeterFabData/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<?> searchSquareMeterFabData(
+         @RequestParam String clientName,
+         @RequestParam String workOrder,
+         @RequestParam String serviceDescription,
+         @RequestParam String raNumber) {
+     LOG.info("Searching SquareMeterFab data for client: {}, work order: {}, service: {}, RA: {}", 
+              clientName, workOrder, serviceDescription, raNumber);
+     
+     try {
+         List<SquareMeterFabModuleDto> results = squareMeterFabModuleService.searchByClientWorkOrderServiceAndRa(
+             clientName, workOrder, serviceDescription, raNumber);
+         LOG.info("Found {} SquareMeterFab records", results.size());
+         
+         return ResponseEntity.ok(results);
+     } catch (Exception e) {
+         LOG.error("Error searching SquareMeterFab data: {}", e.getMessage(), e);
+         return ResponseEntity.badRequest().body("Error searching data: " + e.getMessage());
+     }
+ }
+
 }
