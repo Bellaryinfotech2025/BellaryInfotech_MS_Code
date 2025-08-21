@@ -29,7 +29,7 @@ public class WorkOrderOutDrawingEntryController {
     @Autowired
     private BitsHeaderRepository bitsHeaderRepository;
     
-   
+    // Constants for endpoints
     public static final String GET_ALL_WORK_ORDER_OUT_ENTRIES = "/getAllWorkOrderOutDrawingEntries/details";
     public static final String GET_WORK_ORDER_OUT_ENTRY_BY_ID = "/getWorkOrderOutDrawingEntryById/details";
     public static final String CREATE_BULK_WORK_ORDER_OUT_ENTRIES = "/createBulkWorkOrderOutDrawingEntries/details";
@@ -37,7 +37,7 @@ public class WorkOrderOutDrawingEntryController {
     public static final String DELETE_WORK_ORDER_OUT_ENTRY = "/deleteWorkOrderOutDrawingEntry/details";
     public static final String DELETE_BY_DRAWING_AND_MARK = "/deleteWorkOrderOutEntriesByDrawingAndMark/details";
     
-     
+    // Search endpoints
     public static final String SEARCH_BY_WORK_ORDER = "/searchWorkOrderOutEntriesByWorkOrder/details";
     public static final String SEARCH_BY_WORK_ORDER_AND_PLANT_LOCATION = "/searchWorkOrderOutEntriesByWorkOrderAndPlantLocation/details";
     public static final String SEARCH_BY_DRAWING_NO = "/searchWorkOrderOutEntriesByDrawingNo/details";
@@ -46,13 +46,13 @@ public class WorkOrderOutDrawingEntryController {
     public static final String SEARCH_BY_ORDER_ID = "/searchWorkOrderOutEntriesByOrderId/details";
     public static final String SEARCH_BY_MULTIPLE_CRITERIA = "/searchWorkOrderOutEntriesByMultipleCriteria/details";
     
-     
+    // Dropdown endpoints
     public static final String GET_DISTINCT_WORK_ORDERS_WOO = "/getDistinctWorkOrdersFromWorkOrderOut/details";
     public static final String GET_DISTINCT_PLANT_LOCATIONS_BY_WORK_ORDER_WOO = "/getDistinctPlantLocationsByWorkOrderFromWorkOrderOut/details";
     public static final String GET_DISTINCT_DRAWING_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctDrawingNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     public static final String GET_DISTINCT_MARK_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctMarkNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     
-    
+    // Edit endpoints
     public static final String GET_ENTRIES_FOR_EDITING_BY_MARK_NO = "/getWorkOrderOutEntriesForEditingByMarkNo/details";
     public static final String GET_DRAWING_ENTRY_BY_MARK_NO = "/getWorkOrderOutDrawingEntryByMarkNo/details";
     
@@ -124,7 +124,7 @@ public class WorkOrderOutDrawingEntryController {
                 dto.setWorkOrder((String) drawingEntry.get("workOrder"));
                 dto.setSubAgencyName((String) drawingEntry.get("subAgencyName"));
                 dto.setSubAgencyWorkOrderName((String) drawingEntry.get("subAgencyWorkOrderName"));
-                dto.setBuildingName((String) drawingEntry.get("buildingName"));
+                dto.setPlantLocation((String) drawingEntry.get("plantLocation"));
                 dto.setDepartment((String) drawingEntry.get("department"));
                 dto.setWorkLocation((String) drawingEntry.get("workLocation"));
                 dto.setLineNumber((String) drawingEntry.get("lineNumber"));
@@ -258,10 +258,10 @@ public class WorkOrderOutDrawingEntryController {
     
     @GetMapping(value = SEARCH_BY_WORK_ORDER_AND_PLANT_LOCATION, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkOrderOutDrawingEntryDto>> searchByWorkOrderAndPlantLocation(
-            @RequestParam String workOrder, @RequestParam String buildingName) {
+            @RequestParam String workOrder, @RequestParam String plantLocation) {
         try {
-            LOG.info("Searching work order out drawing entries by work order: {} and plant location: {}", workOrder, buildingName);
-            List<WorkOrderOutDrawingEntryDto> entries = workOrderOutDrawingEntryService.searchByWorkOrderAndPlantLocation(workOrder, buildingName);
+            LOG.info("Searching work order out drawing entries by work order: {} and plant location: {}", workOrder, plantLocation);
+            List<WorkOrderOutDrawingEntryDto> entries = workOrderOutDrawingEntryService.searchByWorkOrderAndPlantLocation(workOrder, plantLocation);
             LOG.info("Found {} work order out drawing entries", entries.size());
             return ResponseEntity.ok(entries);
         } catch (Exception e) {
@@ -326,12 +326,12 @@ public class WorkOrderOutDrawingEntryController {
     @GetMapping(value = SEARCH_BY_MULTIPLE_CRITERIA, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkOrderOutDrawingEntryDto>> searchByMultipleCriteria(
             @RequestParam(required = false) String workOrder,
-            @RequestParam(required = false) String buildingName,
+            @RequestParam(required = false) String plantLocation,
             @RequestParam(required = false) String drawingNo,
             @RequestParam(required = false) String markNo) {
         try {
             LOG.info("Searching work order out drawing entries by multiple criteria");
-            List<WorkOrderOutDrawingEntryDto> entries = workOrderOutDrawingEntryService.searchByMultipleCriteria(workOrder, buildingName, drawingNo, markNo);
+            List<WorkOrderOutDrawingEntryDto> entries = workOrderOutDrawingEntryService.searchByMultipleCriteria(workOrder, plantLocation, drawingNo, markNo);
             LOG.info("Found {} work order out drawing entries", entries.size());
             return ResponseEntity.ok(entries);
         } catch (Exception e) {
@@ -359,9 +359,9 @@ public class WorkOrderOutDrawingEntryController {
     public ResponseEntity<List<String>> getDistinctPlantLocationsByWorkOrder(@RequestParam String workOrder) {
         try {
             LOG.info("Fetching distinct plant locations for work order: {}", workOrder);
-            List<String> buildingNames = workOrderOutDrawingEntryService.getDistinctPlantLocationsByWorkOrder(workOrder);
-            LOG.info("Found {} distinct plant locations", buildingNames.size());
-            return ResponseEntity.ok(buildingNames);
+            List<String> plantLocations = workOrderOutDrawingEntryService.getDistinctPlantLocationsByWorkOrder(workOrder);
+            LOG.info("Found {} distinct plant locations", plantLocations.size());
+            return ResponseEntity.ok(plantLocations);
         } catch (Exception e) {
             LOG.error("Error fetching distinct plant locations for work order: {}", workOrder, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -370,10 +370,10 @@ public class WorkOrderOutDrawingEntryController {
     
     @GetMapping(value = GET_DISTINCT_DRAWING_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getDistinctDrawingNumbersByWorkOrderAndPlantLocation(
-            @RequestParam String workOrder, @RequestParam String buildingName) {
+            @RequestParam String workOrder, @RequestParam String plantLocation) {
         try {
-            LOG.info("Fetching distinct drawing numbers for work order: {} and plant location: {}", workOrder, buildingName);
-            List<String> drawingNumbers = workOrderOutDrawingEntryService.getDistinctDrawingNumbersByWorkOrderAndPlantLocation(workOrder, buildingName);
+            LOG.info("Fetching distinct drawing numbers for work order: {} and plant location: {}", workOrder, plantLocation);
+            List<String> drawingNumbers = workOrderOutDrawingEntryService.getDistinctDrawingNumbersByWorkOrderAndPlantLocation(workOrder, plantLocation);
             LOG.info("Found {} distinct drawing numbers", drawingNumbers.size());
             return ResponseEntity.ok(drawingNumbers);
         } catch (Exception e) {
