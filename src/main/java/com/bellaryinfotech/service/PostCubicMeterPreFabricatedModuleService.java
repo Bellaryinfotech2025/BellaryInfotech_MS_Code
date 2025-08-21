@@ -40,4 +40,20 @@ public interface PostCubicMeterPreFabricatedModuleService {
     void deletePostCubicMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo);
 
     List<PostCubicMeterPreFabricatedModule> searchPostCubicMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo);
+
+
+
+    
+    // new mmethods to get the cubic prefabriacted 
+    List<PostCubicMeterPreFabricatedModule> getAllPostCubicMeterPreFabricatedModules();
+    
+    List<String> getDistinctClientNames();
+    
+    List<String> getDistinctWorkOrdersByClientName(String clientName);
+    
+    List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder);
+    
+    List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription);
+    
+    List<PostCubicMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber);
 }

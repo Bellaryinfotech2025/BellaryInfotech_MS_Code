@@ -48,4 +48,34 @@ public interface PostCubicMeterPreFabricatedModuleRepository extends JpaReposito
             @Param("workOrder") String workOrder,
             @Param("serviceDescription") String serviceDescription,
             @Param("raNo") String raNo);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ // new query to get the cubic pre fabriacted 
+    @Query("SELECT DISTINCT p.clientName FROM PostCubicMeterPreFabricatedModule p ORDER BY p.clientName")
+    List<String> findDistinctClientNames();
+
+    @Query("SELECT DISTINCT p.workOrder FROM PostCubicMeterPreFabricatedModule p WHERE p.clientName = :clientName ORDER BY p.workOrder")
+    List<String> findDistinctWorkOrdersByClientName(@Param("clientName") String clientName);
+
+    @Query("SELECT DISTINCT p.serviceDescription FROM PostCubicMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder ORDER BY p.serviceDescription")
+    List<String> findDistinctServiceDescriptionsByClientAndWorkOrder(@Param("clientName") String clientName, @Param("workOrder") String workOrder);
+
+    @Query("SELECT DISTINCT p.raNo FROM PostCubicMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription ORDER BY p.raNo")
+    List<String> findDistinctRaNumbersByClientWorkOrderAndService(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+
+    // NEW search method
+    @Query("SELECT p FROM PostCubicMeterPreFabricatedModule p WHERE p.clientName = :clientName AND p.workOrder = :workOrder AND p.serviceDescription = :serviceDescription AND p.raNo = :raNo")
+    List<PostCubicMeterPreFabricatedModule> findByClientNameAndWorkOrderAndServiceDescriptionAndRaNo(
+            @Param("clientName") String clientName,
+            @Param("workOrder") String workOrder,
+            @Param("serviceDescription") String serviceDescription,
+            @Param("raNo") String raNo);
 }

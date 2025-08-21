@@ -172,4 +172,48 @@ public class PostCubicMeterPreFabricatedModuleServiceImpl implements PostCubicMe
         }
         return repository.findByWorkOrderAndServiceDescription(workOrder, serviceDescription);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // new methods to gett he cubic pre fabriacted 
+    @Override
+    public List<PostCubicMeterPreFabricatedModule> getAllPostCubicMeterPreFabricatedModules() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<String> getDistinctClientNames() {
+        return repository.findDistinctClientNames();
+    }
+
+    @Override
+    public List<String> getDistinctWorkOrdersByClientName(String clientName) {
+        return repository.findDistinctWorkOrdersByClientName(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder) {
+        return repository.findDistinctServiceDescriptionsByClientAndWorkOrder(clientName, workOrder);
+    }
+
+    @Override
+    public List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription) {
+        return repository.findDistinctRaNumbersByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<PostCubicMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber) {
+        return repository.findByClientNameAndWorkOrderAndServiceDescriptionAndRaNo(clientName, workOrder, serviceDescription, raNumber);
+    }
 }

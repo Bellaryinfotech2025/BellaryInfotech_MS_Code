@@ -40,4 +40,20 @@ public interface PostSquareMeterPreFabricatedModuleService {
     void deletePostSquareMeterPreFabricatedModulesByWorkOrderAndRaNo(String workOrder, String raNo);
 
     List<PostSquareMeterPreFabricatedModule> searchPostSquareMeterPreFabricatedModules(String workOrder, String serviceDescription, String raNo);
-}
+
+ 
+        
+        //new methods to get the square pre fabriacted 
+        List<PostSquareMeterPreFabricatedModule> getAllPostSquareMeterPreFabricatedModules();
+        
+        List<String> getDistinctClientNames();
+        
+        List<String> getDistinctWorkOrdersByClientName(String clientName);
+        
+        List<String> getDistinctServiceDescriptionsByClientAndWorkOrder(String clientName, String workOrder);
+        
+        List<String> getDistinctRaNumbersByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription);
+        
+        List<PostSquareMeterPreFabricatedModule> searchByAllCriteria(String clientName, String workOrder, String serviceDescription, String raNumber);
+    }
+
