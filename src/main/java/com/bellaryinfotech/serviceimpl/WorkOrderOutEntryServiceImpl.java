@@ -1,12 +1,11 @@
 package com.bellaryinfotech.serviceimpl;
-
- 
  
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bellaryinfotech.DTO.WorkOrderOutDetailsDTO;
 import com.bellaryinfotech.DTO.WorkOrderOutEntryDTO;
 import com.bellaryinfotech.model.WorkOrderOutEntry;
 import com.bellaryinfotech.repo.BitsHeaderRepository;
@@ -113,6 +112,90 @@ public class WorkOrderOutEntryServiceImpl implements WorkOrderOutEntryService {
         }
     }
     
+    // New method to get unique work orders (no duplicates)
+    public List<WorkOrderOutEntryDTO> getUniqueWorkOrders() {
+        try {
+            List<WorkOrderOutEntry> allEntries = workOrderOutEntryRepository.findAll();
+            
+            // Group by reference work order and get the first entry for each group
+            Map<String, WorkOrderOutEntry> uniqueEntries = allEntries.stream()
+                .collect(Collectors.toMap(
+                    WorkOrderOutEntry::getReferenceWorkOrder,
+                    entry -> entry,
+                    (existing, replacement) -> existing // Keep the first occurrence
+                ));
+            
+            return uniqueEntries.values().stream()
+                .map(this::convertEntityToDTO)
+                .sorted((a, b) -> {
+                    if (a.getId() != null && b.getId() != null) {
+                        return b.getId().compareTo(a.getId());
+                    }
+                    return 0;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching unique work orders: " + e.getMessage(), e);
+        }
+    }
+    
+    // New method to search unique work orders
+    public List<WorkOrderOutEntryDTO> searchUniqueWorkOrders(String searchTerm) {
+        try {
+            List<WorkOrderOutEntry> allEntries = workOrderOutEntryRepository.findAll();
+            
+            // Filter by search term and get unique entries
+            Map<String, WorkOrderOutEntry> uniqueEntries = allEntries.stream()
+                .filter(entry -> 
+                    (entry.getClientName() != null && entry.getClientName().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                    (entry.getReferenceWorkOrder() != null && entry.getReferenceWorkOrder().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                    (entry.getWorkLocation() != null && entry.getWorkLocation().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                    (entry.getSubAgencyName() != null && entry.getSubAgencyName().toLowerCase().contains(searchTerm.toLowerCase()))
+                )
+                .collect(Collectors.toMap(
+                    WorkOrderOutEntry::getReferenceWorkOrder,
+                    entry -> entry,
+                    (existing, replacement) -> existing // Keep the first occurrence
+                ));
+            
+            return uniqueEntries.values().stream()
+                .map(this::convertEntityToDTO)
+                .sorted((a, b) -> {
+                    if (a.getId() != null && b.getId() != null) {
+                        return b.getId().compareTo(a.getId());
+                    }
+                    return 0;
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error searching unique work orders: " + e.getMessage(), e);
+        }
+    }
+    
+    // New method to get work order details with service lines
+    public WorkOrderOutDetailsDTO getWorkOrderDetails(String referenceWorkOrder) {
+        try {
+            List<WorkOrderOutEntry> entries = workOrderOutEntryRepository.findByReferenceWorkOrder(referenceWorkOrder);
+            
+            if (entries.isEmpty()) {
+                throw new RuntimeException("No work order found with reference: " + referenceWorkOrder);
+            }
+            
+            // Get work order details from the first entry (header info is same for all)
+            WorkOrderOutEntry firstEntry = entries.get(0);
+            WorkOrderOutEntryDTO workOrderDetails = convertEntityToDTO(firstEntry);
+            
+            // Get all service lines
+            List<WorkOrderOutEntryDTO> serviceLines = entries.stream()
+                .map(this::convertEntityToDTO)
+                .collect(Collectors.toList());
+            
+            return new WorkOrderOutDetailsDTO(workOrderDetails, serviceLines);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching work order details: " + e.getMessage(), e);
+        }
+    }
+    
     // Helper method to safely convert any object to String
     private String convertToString(Object value) {
         if (value == null) {
@@ -134,6 +217,19 @@ public class WorkOrderOutEntryServiceImpl implements WorkOrderOutEntryService {
         }
     }
     
+    // New method to delete by reference work order
+    @Transactional
+    public void deleteByReferenceWorkOrder(String referenceWorkOrder) {
+        try {
+            System.out.println("Deleting all entries for reference work order: " + referenceWorkOrder);
+            workOrderOutEntryRepository.deleteByReferenceWorkOrder(referenceWorkOrder);
+            System.out.println("Successfully deleted entries for reference work order: " + referenceWorkOrder);
+        } catch (Exception e) {
+            System.err.println("Error deleting entries for reference work order: " + referenceWorkOrder);
+            throw new RuntimeException("Error deleting work order out entries: " + e.getMessage(), e);
+        }
+    }
+    
     @Override
     public WorkOrderOutEntryDTO getWorkOrderOutEntryById(Long id) {
         try {
@@ -148,24 +244,11 @@ public class WorkOrderOutEntryServiceImpl implements WorkOrderOutEntryService {
     @Override
     public List<WorkOrderOutEntryDTO> getAllWorkOrderOutEntries() {
         try {
-            // Get unique work orders with their totals for summary view
-            List<Object[]> uniqueWorkOrders = workOrderOutEntryRepository.findUniqueWorkOrdersWithTotals();
-            
-            List<WorkOrderOutEntryDTO> result = new ArrayList<>();
-            for (Object[] row : uniqueWorkOrders) {
-                WorkOrderOutEntryDTO dto = new WorkOrderOutEntryDTO();
-                dto.setReferenceWorkOrder((String) row[0]);
-                dto.setClientName((String) row[1]);
-                dto.setWorkLocation((String) row[2]);
-                dto.setCompletionDate((java.time.LocalDate) row[3]);
-                dto.setLdApplicable((Boolean) row[4]);
-                dto.setTotalAmount((Double) row[5]);
-                dto.setOrderId((Long) row[6]);
-                dto.setCreatedDate((java.time.LocalDateTime) row[7]);
-                result.add(dto);
-            }
-            
-            return result;
+            // Get all entries and return them as DTOs
+            List<WorkOrderOutEntry> entries = workOrderOutEntryRepository.findAll();
+            return entries.stream()
+                .map(this::convertEntityToDTO)
+                .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Error fetching all work order out entries: " + e.getMessage(), e);
         }
@@ -278,6 +361,11 @@ public class WorkOrderOutEntryServiceImpl implements WorkOrderOutEntryService {
     private WorkOrderOutEntryDTO convertEntityToDTO(WorkOrderOutEntry entity) {
         WorkOrderOutEntryDTO dto = new WorkOrderOutEntryDTO();
         BeanUtils.copyProperties(entity, dto, "serviceOrders");
+        
+        // Map the service-specific fields
+        dto.setId(entity.getId());
+        dto.setOrderId(entity.getOrderId());
+        
         return dto;
     }
 }

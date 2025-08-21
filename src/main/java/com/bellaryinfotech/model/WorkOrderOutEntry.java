@@ -388,4 +388,15 @@ public class WorkOrderOutEntry {
     public void preUpdate() {
         this.updatedDate = LocalDateTime.now();
     }
+
+	public Boolean isLdApplicable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Boolean isRcmApplicable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+ 
 }
