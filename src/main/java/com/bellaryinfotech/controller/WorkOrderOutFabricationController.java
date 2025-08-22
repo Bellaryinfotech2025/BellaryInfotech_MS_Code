@@ -33,22 +33,25 @@ public class WorkOrderOutFabricationController {
     public static final String DELETE_FABRICATION = "/deleteWorkOrderOutFabrication/details";
     public static final String DELETE_FABRICATIONS_BY_WORK_ORDER = "/deleteWorkOrderOutFabricationsByWorkOrder/details";
     
-    
     public static final String SEARCH_BY_WORK_ORDER = "/searchWorkOrderOutFabricationsByWorkOrder/details";
     public static final String SEARCH_BY_MULTIPLE_CRITERIA = "/searchWorkOrderOutFabricationsByMultipleCriteria/details";
-    
     
     public static final String GET_RA_NOS_BY_WORK_ORDER = "/getRaNosByWorkOrder/details";
     public static final String UPDATE_RA_NOS_FOR_WORK_ORDER = "/updateRaNoForWorkOrder/details";
     
-    
+    // ============ NEW: WORK ORDER OUT RESULT ENDPOINT CONSTANTS ============
     public static final String GET_DISTINCT_CLIENT_NAMES_FROM_FABRICATION = "/getDistinctClientNamesFromWorkOrderOutFabrication/details";
     public static final String GET_DISTINCT_WORK_ORDERS_BY_CLIENT_FROM_FABRICATION = "/getDistinctWorkOrdersByClientFromWorkOrderOutFabrication/details";
     public static final String GET_DISTINCT_SERVICE_DESCRIPTIONS_BY_CLIENT_AND_WORK_ORDER_FROM_FABRICATION = "/getDistinctServiceDescriptionsByClientAndWorkOrderFromWorkOrderOutFabrication/details";
+    public static final String GET_DISTINCT_SUB_AGENCY_NAMES_BY_CLIENT_WORK_ORDER_AND_SERVICE_FROM_FABRICATION = "/getDistinctSubAgencyNamesByClientWorkOrderAndServiceFromWorkOrderOutFabrication/details";
+    public static final String CHECK_SERVICE_DESCRIPTION_FROM_FABRICATION = "/checkServiceDescriptionFromWorkOrderOutFabrication/details";
     public static final String GET_DISTINCT_RA_NOS_BY_CLIENT_WORK_ORDER_AND_SERVICE_FROM_FABRICATION = "/getDistinctRaNosByClientWorkOrderAndServiceFromWorkOrderOutFabrication/details";
+    public static final String GET_DISTINCT_RA_NOS_BY_ALL_FILTERS_WITH_SUB_AGENCY_FROM_FABRICATION = "/getDistinctRaNosByAllFiltersWithSubAgencyFromWorkOrderOutFabrication/details";
     public static final String SEARCH_BY_CLIENT_WORK_ORDER_SERVICE_AND_RA_NO = "/searchWorkOrderOutFabricationsByClientWorkOrderServiceAndRaNo/details";
+    public static final String SEARCH_BY_ALL_FILTERS_WITH_SUB_AGENCY = "/searchWorkOrderOutFabricationsByAllFiltersWithSubAgency/details";
+    public static final String SEARCH_BY_ALL_FILTERS_WITHOUT_SUB_AGENCY = "/searchWorkOrderOutFabricationsByAllFiltersWithoutSubAgency/details";
     
-    // ============ CRUD OPERATIONS ============
+    // ============ EXISTING CRUD OPERATIONS ============
     
     @GetMapping(value = GET_ALL_FABRICATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkOrderOutFabricationDto>> getAllFabrications() {
@@ -223,7 +226,7 @@ public class WorkOrderOutFabricationController {
         }
     }
     
-    // ============ SEARCH OPERATIONS ============
+    // ============ EXISTING SEARCH OPERATIONS ============
     
     @GetMapping(value = SEARCH_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<WorkOrderOutFabricationDto>> searchByWorkOrder(@RequestParam String workOrder) {
@@ -256,7 +259,7 @@ public class WorkOrderOutFabricationController {
         }
     }
     
-    // ============ RA NO OPERATIONS ============
+    // ============ EXISTING RA NO OPERATIONS ============
     
     @GetMapping(value = GET_RA_NOS_BY_WORK_ORDER, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> getRaNosByWorkOrder(@RequestParam String workOrder) {
@@ -298,7 +301,7 @@ public class WorkOrderOutFabricationController {
         }
     }
     
-    // ============ WORK ORDER OUT RESULT OPERATIONS ============
+    // ============ NEW: WORK ORDER OUT RESULT OPERATIONS ============
     
     @GetMapping(value = GET_DISTINCT_CLIENT_NAMES_FROM_FABRICATION, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getDistinctClientNamesFromWorkOrderOutFabrication() {
@@ -340,6 +343,38 @@ public class WorkOrderOutFabricationController {
         }
     }
     
+    @GetMapping(value = GET_DISTINCT_SUB_AGENCY_NAMES_BY_CLIENT_WORK_ORDER_AND_SERVICE_FROM_FABRICATION, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctSubAgencyNamesByClientWorkOrderAndServiceFromWorkOrderOutFabrication(
+            @RequestParam String clientName, @RequestParam String workOrder, @RequestParam String serviceDescription) {
+        try {
+            LOG.info("Fetching distinct sub agency names for client: {}, work order: {}, and service: {} from work order out fabrication", clientName, workOrder, serviceDescription);
+            List<String> subAgencyNames = workOrderOutFabricationService.getDistinctSubAgencyNamesByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+            LOG.info("Found {} distinct sub agency names", subAgencyNames.size());
+            return ResponseEntity.ok(subAgencyNames);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct sub agency names from work order out fabrication", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping(value = CHECK_SERVICE_DESCRIPTION_FROM_FABRICATION, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Boolean>> checkServiceDescriptionFromWorkOrderOutFabrication(
+            @RequestParam String clientName, @RequestParam String workOrder, @RequestParam String serviceDescription) {
+        try {
+            LOG.info("Checking if service description exists in work order out fabrication for client: {}, work order: {}, service: {}", clientName, workOrder, serviceDescription);
+            boolean exists = workOrderOutFabricationService.isServiceDescriptionFromWorkOrderOutFabrication(clientName, workOrder, serviceDescription);
+            
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("existsInFabrication", exists);
+            
+            LOG.info("Service description exists in fabrication: {}", exists);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            LOG.error("Error checking service description from work order out fabrication", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     @GetMapping(value = GET_DISTINCT_RA_NOS_BY_CLIENT_WORK_ORDER_AND_SERVICE_FROM_FABRICATION, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getDistinctRaNosByClientWorkOrderAndServiceFromWorkOrderOutFabrication(
             @RequestParam String clientName, @RequestParam String workOrder, @RequestParam String serviceDescription) {
@@ -350,6 +385,21 @@ public class WorkOrderOutFabricationController {
             return ResponseEntity.ok(raNumbers);
         } catch (Exception e) {
             LOG.error("Error fetching distinct RA NOs from work order out fabrication", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping(value = GET_DISTINCT_RA_NOS_BY_ALL_FILTERS_WITH_SUB_AGENCY_FROM_FABRICATION, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctRaNosByAllFiltersWithSubAgencyFromWorkOrderOutFabrication(
+            @RequestParam String clientName, @RequestParam String workOrder, 
+            @RequestParam String serviceDescription, @RequestParam String subAgencyName) {
+        try {
+            LOG.info("Fetching distinct RA NOs with sub agency filter for client: {}, work order: {}, service: {}, sub agency: {}", clientName, workOrder, serviceDescription, subAgencyName);
+            List<String> raNumbers = workOrderOutFabricationService.getDistinctRaNosByAllFiltersWithSubAgency(clientName, workOrder, serviceDescription, subAgencyName);
+            LOG.info("Found {} distinct RA NOs with sub agency filter", raNumbers.size());
+            return ResponseEntity.ok(raNumbers);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct RA NOs with sub agency filter from work order out fabrication", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -369,7 +419,37 @@ public class WorkOrderOutFabricationController {
         }
     }
     
-    // ============ UTILITY ENDPOINTS ============
+    @GetMapping(value = SEARCH_BY_ALL_FILTERS_WITH_SUB_AGENCY, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<WorkOrderOutFabricationDto>> searchWorkOrderOutFabricationsByAllFiltersWithSubAgency(
+            @RequestParam String clientName, @RequestParam String workOrder, 
+            @RequestParam String serviceDescription, @RequestParam String raNo, @RequestParam String subAgencyName) {
+        try {
+            LOG.info("Searching work order out fabrications with sub agency by client: {}, work order: {}, service: {}, RA NO: {}, sub agency: {}", clientName, workOrder, serviceDescription, raNo, subAgencyName);
+            List<WorkOrderOutFabricationDto> fabrications = workOrderOutFabricationService.searchByAllFiltersWithSubAgency(clientName, workOrder, serviceDescription, raNo, subAgencyName);
+            LOG.info("Found {} work order out fabrications with sub agency filter", fabrications.size());
+            return ResponseEntity.ok(fabrications);
+        } catch (Exception e) {
+            LOG.error("Error searching work order out fabrications with sub agency filter", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping(value = SEARCH_BY_ALL_FILTERS_WITHOUT_SUB_AGENCY, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<WorkOrderOutFabricationDto>> searchWorkOrderOutFabricationsByAllFiltersWithoutSubAgency(
+            @RequestParam String clientName, @RequestParam String workOrder, 
+            @RequestParam String serviceDescription, @RequestParam String raNo) {
+        try {
+            LOG.info("Searching work order out fabrications without sub agency by client: {}, work order: {}, service: {}, RA NO: {}", clientName, workOrder, serviceDescription, raNo);
+            List<WorkOrderOutFabricationDto> fabrications = workOrderOutFabricationService.searchByAllFiltersWithoutSubAgency(clientName, workOrder, serviceDescription, raNo);
+            LOG.info("Found {} work order out fabrications without sub agency filter", fabrications.size());
+            return ResponseEntity.ok(fabrications);
+        } catch (Exception e) {
+            LOG.error("Error searching work order out fabrications without sub agency filter", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // ============ EXISTING UTILITY ENDPOINTS ============
     
     @GetMapping(value = "/checkWorkOrderOutFabricationExists/details", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> checkFabricationExists(@RequestParam String workOrder, @RequestParam String drawingNo, @RequestParam String markNo) {

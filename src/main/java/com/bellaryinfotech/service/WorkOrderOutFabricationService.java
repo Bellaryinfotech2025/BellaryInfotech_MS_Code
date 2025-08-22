@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface WorkOrderOutFabricationService {
     
+    // ============ EXISTING SERVICE METHODS ============
+    
     List<WorkOrderOutFabricationDto> getAllFabrications();
     
     Optional<WorkOrderOutFabricationDto> getFabricationById(Long id);
@@ -30,6 +32,7 @@ public interface WorkOrderOutFabricationService {
     
     boolean existsByWorkOrderAndDrawingAndMark(String workOrder, String drawingNo, String markNo);
     
+    // ============ NEW: WORK ORDER OUT RESULT SERVICE METHODS ============
     
     List<String> getDistinctClientNames();
     
@@ -41,13 +44,15 @@ public interface WorkOrderOutFabricationService {
     
     List<WorkOrderOutFabricationDto> searchByClientWorkOrderServiceAndRaNo(String clientName, String workOrder, String serviceDescription, String raNo);
 
-
-
-
-
-
-
-
- 
-
+    // ============ NEW: SUB AGENCY NAME SERVICE METHODS ============
+    
+    List<String> getDistinctSubAgencyNamesByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription);
+    
+    boolean isServiceDescriptionFromWorkOrderOutFabrication(String clientName, String workOrder, String serviceDescription);
+    
+    List<String> getDistinctRaNosByAllFiltersWithSubAgency(String clientName, String workOrder, String serviceDescription, String subAgencyName);
+    
+    List<WorkOrderOutFabricationDto> searchByAllFiltersWithSubAgency(String clientName, String workOrder, String serviceDescription, String raNo, String subAgencyName);
+    
+    List<WorkOrderOutFabricationDto> searchByAllFiltersWithoutSubAgency(String clientName, String workOrder, String serviceDescription, String raNo);
 }

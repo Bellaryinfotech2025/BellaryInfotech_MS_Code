@@ -7,7 +7,7 @@ public class WorkOrderOutFabricationDto {
     
     private Long id;
     
-   
+    // Filter Information
     private String clientName;
     private String workOrder;
     private String serviceDescription;
@@ -19,15 +19,15 @@ public class WorkOrderOutFabricationDto {
     private String subAgencyName;
     private String subAgencyWorkOrderName;
     
-     
+    // RA NO Information
     private String raNo;
     private String subAgencyRaNo;
     
-     
+    // Original Entry Reference
     private Long originalEntryId;
     private Long orderId;
     
-    
+    // Item Details
     private String itemNo;
     private String sectionCode;
     private String sectionName;
@@ -37,30 +37,50 @@ public class WorkOrderOutFabricationDto {
     private BigDecimal itemWeight;
     private BigDecimal totalItemWeight;
     
-    
+    // Fabrication Stages
     private Boolean cuttingStage = false;
     private Boolean fitUpStage = false;
     private Boolean weldingStage = false;
     private Boolean finishingStage = false;
     
-    
+    // Remarks and Status
     private String remarks;
     private String status = "In Progress";
     
-    
+    // Edit Tracking
     private String editableEnable = "original";
     
-    
+    // Audit Fields
     private Integer tenantId = 1;
     private Timestamp creationDate;
     private String createdBy = "system";
     private Timestamp lastUpdateDate;
     private String lastUpdatedBy = "system";
     
-   
+    // Default constructor
     public WorkOrderOutFabricationDto() {}
     
-   
+    // Constructor for JPA projection queries
+    public WorkOrderOutFabricationDto(Long id, String clientName, String workOrder, String serviceDescription, 
+                                    String subAgencyName, String raNo, String drawingNo, String markNo, 
+                                    Integer itemQty, BigDecimal itemWeight, BigDecimal totalItemWeight, 
+                                    String remarks, Long orderId) {
+        this.id = id;
+        this.clientName = clientName;
+        this.workOrder = workOrder;
+        this.serviceDescription = serviceDescription;
+        this.subAgencyName = subAgencyName;
+        this.raNo = raNo;
+        this.drawingNo = drawingNo;
+        this.markNo = markNo;
+        this.itemQty = itemQty;
+        this.itemWeight = itemWeight;
+        this.totalItemWeight = totalItemWeight;
+        this.remarks = remarks;
+        this.orderId = orderId;
+    }
+    
+    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -24,6 +24,8 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
     @Autowired
     private WorkOrderOutFabricationRepository repository;
 
+    // ============ EXISTING CRUD OPERATIONS ============
+    
     @Override
     public List<WorkOrderOutFabricationDto> getAllFabrications() {
         List<WorkOrderOutFabrication> fabrications = repository.findAll();
@@ -86,6 +88,8 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
         repository.deleteByWorkOrder(workOrder);
     }
 
+    // ============ EXISTING SEARCH OPERATIONS ============
+    
     @Override
     public List<WorkOrderOutFabricationDto> searchByWorkOrder(String workOrder) {
         List<WorkOrderOutFabrication> fabrications = repository.findByWorkOrderOrderByIdAsc(workOrder);
@@ -102,6 +106,8 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
                 .collect(Collectors.toList());
     }
 
+    // ============ EXISTING RA NO OPERATIONS ============
+    
     @Override
     public Map<String, String> getRaNosByWorkOrder(String workOrder) {
         Map<String, String> raNumbers = new HashMap<>();
@@ -136,12 +142,15 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
         repository.saveAll(fabrications);
     }
 
+    // ============ EXISTING UTILITY OPERATIONS ============
+    
     @Override
     public boolean existsByWorkOrderAndDrawingAndMark(String workOrder, String drawingNo, String markNo) {
         return repository.existsByWorkOrderAndDrawingNoAndMarkNo(workOrder, drawingNo, markNo);
     }
 
-    // NEW: Implementation for Work Order Out Result component
+    // ============ NEW: WORK ORDER OUT RESULT OPERATIONS ============
+    
     @Override
     public List<String> getDistinctClientNames() {
         return repository.findDistinctClientNames();
@@ -170,7 +179,42 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
                 .collect(Collectors.toList());
     }
 
-    // Conversion methods
+    // ============ NEW: SUB AGENCY NAME OPERATIONS ============
+    
+    @Override
+    public List<String> getDistinctSubAgencyNamesByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription) {
+        return repository.findDistinctSubAgencyNamesByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public boolean isServiceDescriptionFromWorkOrderOutFabrication(String clientName, String workOrder, String serviceDescription) {
+        Long count = repository.countByClientNameAndWorkOrderAndServiceDescription(clientName, workOrder, serviceDescription);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public List<String> getDistinctRaNosByAllFiltersWithSubAgency(String clientName, String workOrder, String serviceDescription, String subAgencyName) {
+        return repository.findDistinctRaNosByAllFiltersWithSubAgency(clientName, workOrder, serviceDescription, subAgencyName);
+    }
+
+    @Override
+    public List<WorkOrderOutFabricationDto> searchByAllFiltersWithSubAgency(String clientName, String workOrder, String serviceDescription, String raNo, String subAgencyName) {
+        List<WorkOrderOutFabrication> fabrications = repository.searchByAllFiltersWithSubAgency(clientName, workOrder, serviceDescription, raNo, subAgencyName);
+        return fabrications.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WorkOrderOutFabricationDto> searchByAllFiltersWithoutSubAgency(String clientName, String workOrder, String serviceDescription, String raNo) {
+        List<WorkOrderOutFabrication> fabrications = repository.searchByAllFiltersWithoutSubAgency(clientName, workOrder, serviceDescription, raNo);
+        return fabrications.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    // ============ CONVERSION METHODS ============
+    
     private WorkOrderOutFabricationDto convertToDto(WorkOrderOutFabrication entity) {
         WorkOrderOutFabricationDto dto = new WorkOrderOutFabricationDto();
         dto.setId(entity.getId());
@@ -279,24 +323,6 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
         entity.setFinishingStage(dto.getFinishingStage());
         entity.setRemarks(dto.getRemarks());
         entity.setStatus(dto.getStatus());
-        
+        // Don't update editableEnable here, it's set in the service method
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
