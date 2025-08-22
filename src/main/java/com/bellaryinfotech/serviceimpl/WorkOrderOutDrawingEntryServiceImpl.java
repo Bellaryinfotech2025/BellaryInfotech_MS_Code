@@ -9,10 +9,11 @@ import com.bellaryinfotech.model.WorkOrderOutDrawingEntry;
 import com.bellaryinfotech.repo.WorkOrderOutDrawingEntryRepository;
 import com.bellaryinfotech.service.WorkOrderOutDrawingEntryService;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -141,6 +142,44 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
                 .collect(Collectors.toList());
     }
 
+    // NEW: Work Order Out Fabrication dropdown operations
+    @Override
+    public List<String> getDistinctClientNames() {
+        return repository.findDistinctClientNames();
+    }
+
+    @Override
+    public List<String> getDistinctWorkOrdersByClient(String clientName) {
+        return repository.findDistinctWorkOrdersByClient(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescByWorkOrder(String workOrder) {
+        return repository.findDistinctServiceDescByWorkOrder(workOrder);
+    }
+
+    @Override
+    public List<String> getDistinctUOMByWorkOrderAndService(String workOrder, String serviceDescription) {
+        return repository.findDistinctUOMByWorkOrderAndService(workOrder, serviceDescription);
+    }
+
+    @Override
+    public Map<String, String> getSubAgencyDetailsByWorkOrder(String workOrder) {
+        List<Object[]> results = repository.findSubAgencyDetailsByWorkOrder(workOrder);
+        Map<String, String> subAgencyDetails = new HashMap<>();
+        
+        if (!results.isEmpty()) {
+            Object[] result = results.get(0);
+            subAgencyDetails.put("subAgencyName", result[0] != null ? result[0].toString() : "");
+            subAgencyDetails.put("subAgencyWorkOrderName", result[1] != null ? result[1].toString() : "");
+        } else {
+            subAgencyDetails.put("subAgencyName", "");
+            subAgencyDetails.put("subAgencyWorkOrderName", "");
+        }
+        
+        return subAgencyDetails;
+    }
+
     @Override
     public List<String> getDistinctWorkOrders() {
         return repository.findDistinctWorkOrders();
@@ -186,6 +225,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         dto.setId(entity.getId());
         dto.setOrderId(entity.getOrderId());
         dto.setWorkOrder(entity.getWorkOrder());
+        dto.setClientName(entity.getClientName()); // NEW: Set client name
         dto.setSubAgencyName(entity.getSubAgencyName());
         dto.setSubAgencyWorkOrderName(entity.getSubAgencyWorkOrderName());
         dto.setPlantLocation(entity.getPlantLocation());
@@ -216,6 +256,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         WorkOrderOutDrawingEntry entity = new WorkOrderOutDrawingEntry();
         entity.setOrderId(dto.getOrderId());
         entity.setWorkOrder(dto.getWorkOrder());
+        entity.setClientName(dto.getClientName()); // NEW: Set client name
         entity.setSubAgencyName(dto.getSubAgencyName());
         entity.setSubAgencyWorkOrderName(dto.getSubAgencyWorkOrderName());
         entity.setPlantLocation(dto.getPlantLocation());
@@ -245,6 +286,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
     private void updateEntityFromDto(WorkOrderOutDrawingEntry entity, WorkOrderOutDrawingEntryDto dto) {
         entity.setOrderId(dto.getOrderId());
         entity.setWorkOrder(dto.getWorkOrder());
+        entity.setClientName(dto.getClientName()); // NEW: Set client name
         entity.setSubAgencyName(dto.getSubAgencyName());
         entity.setSubAgencyWorkOrderName(dto.getSubAgencyWorkOrderName());
         entity.setPlantLocation(dto.getPlantLocation());

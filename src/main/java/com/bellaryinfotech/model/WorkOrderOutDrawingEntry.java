@@ -20,6 +20,9 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "work_order")
     private String workOrder;
     
+    @Column(name = "client_name")  
+    private String clientName;
+    
     @Column(name = "sub_agency_name")
     private String subAgencyName;
     
@@ -87,7 +90,10 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "total_item_weight", precision = 10, scale = 3)
     private BigDecimal totalItemWeight;
     
-    // Audit fields
+    @Column(name = "status")
+    private String status;
+    
+     
     @Column(name = "tenant_id")
     private Integer tenantId = 1;
     
@@ -103,13 +109,10 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
     
-    @Column(name="status")
-    private String status;
-    
-    // Default constructor
+     
     public WorkOrderOutDrawingEntry() {}
     
-    // Getters and Setters
+    
     public Long getId() {
         return id;
     }
@@ -132,6 +135,15 @@ public class WorkOrderOutDrawingEntry {
     
     public void setWorkOrder(String workOrder) {
         this.workOrder = workOrder;
+    }
+    
+    // NEW: Client name getter and setter
+    public String getClientName() {
+        return clientName;
+    }
+    
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
     
     public String getSubAgencyName() {
@@ -310,6 +322,14 @@ public class WorkOrderOutDrawingEntry {
         this.totalItemWeight = totalItemWeight;
     }
     
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
     public Integer getTenantId() {
         return tenantId;
     }
@@ -349,14 +369,4 @@ public class WorkOrderOutDrawingEntry {
     public void setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
     }
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-    
-    
 }

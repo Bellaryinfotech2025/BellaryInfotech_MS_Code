@@ -15,38 +15,44 @@ public interface WorkOrderOutDrawingEntryRepository extends JpaRepository<WorkOr
     
     List<WorkOrderOutDrawingEntry> findByWorkOrderOrderByIdAsc(String workOrder);
     
-     
     List<WorkOrderOutDrawingEntry> findByWorkOrderAndPlantLocationOrderByIdAsc(String workOrder, String plantLocation);
-    
     
     List<WorkOrderOutDrawingEntry> findByDrawingNoOrderByIdAsc(String drawingNo);
     
-   
     List<WorkOrderOutDrawingEntry> findByMarkNoOrderByIdAsc(String markNo);
     
-     
     List<WorkOrderOutDrawingEntry> findByDrawingNoAndMarkNoOrderByIdAsc(String drawingNo, String markNo);
-    
     
     List<WorkOrderOutDrawingEntry> findByOrderIdOrderByIdAsc(Long orderId);
     
+    // NEW: Work Order Out Fabrication dropdown queries
+    @Query("SELECT DISTINCT w.clientName FROM WorkOrderOutDrawingEntry w WHERE w.clientName IS NOT NULL ORDER BY w.clientName")
+    List<String> findDistinctClientNames();
+    
+    @Query("SELECT DISTINCT w.workOrder FROM WorkOrderOutDrawingEntry w WHERE w.clientName = :clientName AND w.workOrder IS NOT NULL ORDER BY w.workOrder")
+    List<String> findDistinctWorkOrdersByClient(@Param("clientName") String clientName);
+    
+    @Query("SELECT DISTINCT w.sectionName FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.sectionName IS NOT NULL ORDER BY w.sectionName")
+    List<String> findDistinctServiceDescByWorkOrder(@Param("workOrder") String workOrder);
+    
+    @Query("SELECT DISTINCT 'KG' FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.sectionName = :serviceDescription")
+    List<String> findDistinctUOMByWorkOrderAndService(@Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+    
+    @Query("SELECT w.subAgencyName, w.subAgencyWorkOrderName FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.subAgencyName IS NOT NULL AND w.subAgencyWorkOrderName IS NOT NULL ORDER BY w.id ASC LIMIT 1")
+    List<Object[]> findSubAgencyDetailsByWorkOrder(@Param("workOrder") String workOrder);
     
     @Query("SELECT DISTINCT w.workOrder FROM WorkOrderOutDrawingEntry w WHERE w.workOrder IS NOT NULL ORDER BY w.workOrder")
     List<String> findDistinctWorkOrders();
     
-    
     @Query("SELECT DISTINCT w.plantLocation FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.plantLocation IS NOT NULL ORDER BY w.plantLocation")
     List<String> findDistinctPlantLocationsByWorkOrder(@Param("workOrder") String workOrder);
     
-   
     @Query("SELECT DISTINCT w.drawingNo FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.plantLocation = :plantLocation AND w.drawingNo IS NOT NULL ORDER BY w.drawingNo")
     List<String> findDistinctDrawingNumbersByWorkOrderAndPlantLocation(@Param("workOrder") String workOrder, @Param("plantLocation") String plantLocation);
-    
     
     @Query("SELECT DISTINCT w.markNo FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.plantLocation = :plantLocation AND w.markNo IS NOT NULL ORDER BY w.markNo")
     List<String> findDistinctMarkNumbersByWorkOrderAndPlantLocation(@Param("workOrder") String workOrder, @Param("plantLocation") String plantLocation);
     
-     
     @Query("SELECT w FROM WorkOrderOutDrawingEntry w WHERE " +
            "(:workOrder IS NULL OR w.workOrder = :workOrder) AND " +
            "(:plantLocation IS NULL OR w.plantLocation = :plantLocation) AND " +
@@ -59,17 +65,13 @@ public interface WorkOrderOutDrawingEntryRepository extends JpaRepository<WorkOr
             @Param("drawingNo") String drawingNo,
             @Param("markNo") String markNo);
     
-    
     boolean existsByDrawingNoAndMarkNo(String drawingNo, String markNo);
     
-    
     void deleteByDrawingNoAndMarkNo(String drawingNo, String markNo);
-    
     
     @Query("SELECT w FROM WorkOrderOutDrawingEntry w WHERE w.markNo = :markNo ORDER BY w.id ASC")
     List<WorkOrderOutDrawingEntry> findEntriesForEditingByMarkNo(@Param("markNo") String markNo);
     
-     
     @Query("SELECT w FROM WorkOrderOutDrawingEntry w WHERE w.markNo = :markNo ORDER BY w.id ASC LIMIT 1")
     Optional<WorkOrderOutDrawingEntry> findDrawingEntryByMarkNo(@Param("markNo") String markNo);
 }

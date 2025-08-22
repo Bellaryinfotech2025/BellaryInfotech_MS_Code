@@ -1,6 +1,7 @@
 package com.bellaryinfotech.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.bellaryinfotech.DTO.WorkOrderOutDrawingEntryDto;
@@ -23,6 +24,13 @@ public interface WorkOrderOutDrawingEntryService {
     List<WorkOrderOutDrawingEntryDto> searchByDrawingAndMark(String drawingNo, String markNo);
     List<WorkOrderOutDrawingEntryDto> searchByOrderId(Long orderId);
     List<WorkOrderOutDrawingEntryDto> searchByMultipleCriteria(String workOrder, String plantLocation, String drawingNo, String markNo);
+    
+    // NEW: Work Order Out Fabrication dropdown operations
+    List<String> getDistinctClientNames();
+    List<String> getDistinctWorkOrdersByClient(String clientName);
+    List<String> getDistinctServiceDescByWorkOrder(String workOrder);
+    List<String> getDistinctUOMByWorkOrderAndService(String workOrder, String serviceDescription);
+    Map<String, String> getSubAgencyDetailsByWorkOrder(String workOrder);
     
     // Dropdown data
     List<String> getDistinctWorkOrders();

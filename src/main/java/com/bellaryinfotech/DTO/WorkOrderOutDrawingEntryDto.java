@@ -8,6 +8,7 @@ public class WorkOrderOutDrawingEntryDto {
     private Long id;
     private Long orderId;
     private String workOrder;
+    private String clientName; 
     private String subAgencyName;
     private String subAgencyWorkOrderName;
     private String plantLocation;
@@ -34,10 +35,10 @@ public class WorkOrderOutDrawingEntryDto {
     private BigDecimal totalItemWeight;
     private String status;
     
-    // Default constructor
+    
     public WorkOrderOutDrawingEntryDto() {}
     
-    // Getters and Setters
+     
     public Long getId() {
         return id;
     }
@@ -60,6 +61,15 @@ public class WorkOrderOutDrawingEntryDto {
     
     public void setWorkOrder(String workOrder) {
         this.workOrder = workOrder;
+    }
+    
+    // NEW: Client name getter and setter
+    public String getClientName() {
+        return clientName;
+    }
+    
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
     }
     
     public String getSubAgencyName() {
@@ -237,13 +247,12 @@ public class WorkOrderOutDrawingEntryDto {
     public void setTotalItemWeight(BigDecimal totalItemWeight) {
         this.totalItemWeight = totalItemWeight;
     }
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
     
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
