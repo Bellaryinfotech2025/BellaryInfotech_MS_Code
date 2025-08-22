@@ -32,6 +32,7 @@ public class WorkOrderOutDrawingEntryDto {
     private BigDecimal itemWeight;
     private Integer itemQty;
     private BigDecimal totalItemWeight;
+    private String status;
     
     // Default constructor
     public WorkOrderOutDrawingEntryDto() {}
@@ -236,4 +237,13 @@ public class WorkOrderOutDrawingEntryDto {
     public void setTotalItemWeight(BigDecimal totalItemWeight) {
         this.totalItemWeight = totalItemWeight;
     }
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+    
 }

@@ -175,6 +175,9 @@ public class WorkOrderOutDrawingEntryController {
                     dto.setTotalItemWeight(new java.math.BigDecimal(bomEntry.get("totalItemWeight").toString()));
                 }
                 
+                // Set status
+                dto.setStatus("Work Order Out Entry");
+                
                 entriesToCreate.add(dto);
             }
             

@@ -51,6 +51,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
             entry.setCreatedBy("system");
             entry.setLastUpdatedBy("system");
             entry.setTenantId(1);
+            entry.setStatus("Work Order Out Entry"); // Set status for each entry
         });
         
         List<WorkOrderOutDrawingEntry> savedEntries = repository.saveAll(entries);
@@ -207,6 +208,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         dto.setItemWeight(entity.getItemWeight());
         dto.setItemQty(entity.getItemQty());
         dto.setTotalItemWeight(entity.getTotalItemWeight());
+        dto.setStatus(entity.getStatus());
         return dto;
     }
 
@@ -236,6 +238,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         entity.setItemWeight(dto.getItemWeight());
         entity.setItemQty(dto.getItemQty());
         entity.setTotalItemWeight(dto.getTotalItemWeight());
+        entity.setStatus(dto.getStatus());
         return entity;
     }
 
@@ -264,5 +267,6 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         entity.setItemWeight(dto.getItemWeight());
         entity.setItemQty(dto.getItemQty());
         entity.setTotalItemWeight(dto.getTotalItemWeight());
+        entity.setStatus(dto.getStatus());
     }
 }

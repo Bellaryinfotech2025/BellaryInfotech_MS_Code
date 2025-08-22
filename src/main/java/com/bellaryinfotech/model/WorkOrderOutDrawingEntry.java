@@ -103,6 +103,9 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
     
+    @Column(name="status")
+    private String status;
+    
     // Default constructor
     public WorkOrderOutDrawingEntry() {}
     
@@ -346,4 +349,14 @@ public class WorkOrderOutDrawingEntry {
     public void setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
     }
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+    
+    
 }
