@@ -29,7 +29,7 @@ public class WorkOrderOutDrawingEntryController {
     @Autowired
     private BitsHeaderRepository bitsHeaderRepository;
     
-    // Constants for endpoints
+     
     public static final String GET_ALL_WORK_ORDER_OUT_ENTRIES = "/getAllWorkOrderOutDrawingEntries/details";
     public static final String GET_WORK_ORDER_OUT_ENTRY_BY_ID = "/getWorkOrderOutDrawingEntryById/details";
     public static final String CREATE_BULK_WORK_ORDER_OUT_ENTRIES = "/createBulkWorkOrderOutDrawingEntries/details";
@@ -37,7 +37,7 @@ public class WorkOrderOutDrawingEntryController {
     public static final String DELETE_WORK_ORDER_OUT_ENTRY = "/deleteWorkOrderOutDrawingEntry/details";
     public static final String DELETE_BY_DRAWING_AND_MARK = "/deleteWorkOrderOutEntriesByDrawingAndMark/details";
     
-    // Search endpoints
+    
     public static final String SEARCH_BY_WORK_ORDER = "/searchWorkOrderOutByWorkOrder/details";
     public static final String SEARCH_BY_WORK_ORDER_AND_PLANT_LOCATION = "/searchWorkOrderOutEntriesByWorkOrderAndPlantLocation/details";
     public static final String SEARCH_BY_DRAWING_NO = "/searchWorkOrderOutEntriesByDrawingNo/details";
@@ -46,7 +46,7 @@ public class WorkOrderOutDrawingEntryController {
     public static final String SEARCH_BY_ORDER_ID = "/searchWorkOrderOutEntriesByOrderId/details";
     public static final String SEARCH_BY_MULTIPLE_CRITERIA = "/searchWorkOrderOutEntriesByMultipleCriteria/details";
     
-    // Work Order Out Fabrication Dropdown endpoints
+     
     public static final String GET_DISTINCT_CLIENT_NAMES_WOO = "/getDistinctClientNamesFromWorkOrderOut/details";
     public static final String GET_DISTINCT_WORK_ORDERS_BY_CLIENT_WOO = "/getDistinctWorkOrdersByClientFromWorkOrderOut/details";
     public static final String GET_DISTINCT_SERVICE_DESC_BY_WORK_ORDER_WOO = "/getDistinctServiceDescriptionsByWorkOrderFromWorkOrderOut/details";
@@ -55,13 +55,20 @@ public class WorkOrderOutDrawingEntryController {
     public static final String GET_DISTINCT_DRAWING_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctDrawingNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     public static final String GET_DISTINCT_MARK_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctMarkNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     
-    // Sub Agency endpoints
+    
+    public static final String GET_DISTINCT_REFERENCE_WORK_ORDERS_BY_CLIENT_WOO = "/getDistinctReferenceWorkOrdersByClientFromWorkOrderOut/details";
+    public static final String GET_DISTINCT_SERVICE_DESC_BY_REFERENCE_WORK_ORDER_WOO = "/getDistinctServiceDescriptionsByReferenceWorkOrderFromWorkOrderOut/details";
+    public static final String GET_DISTINCT_UOM_BY_REFERENCE_WORK_ORDER_AND_SERVICE_WOO = "/getDistinctUOMByReferenceWorkOrderAndServiceFromWorkOrderOut/details";
+    public static final String GET_DISTINCT_DATA_MODULE_BY_REFERENCE_WORK_ORDER_SERVICE_UOM_WOO = "/getDistinctDataModuleByReferenceWorkOrderAndServiceAndUOMFromWorkOrderOut/details";
+    public static final String GET_DISTINCT_SUB_AGENCY_NAMES_BY_REFERENCE_WORK_ORDER_WOO = "/getDistinctSubAgencyNamesByReferenceWorkOrderFromWorkOrderOut/details";
+    
+    
     public static final String GET_SUB_AGENCY_DETAILS_BY_WORK_ORDER = "/getSubAgencyDetailsByWorkOrder/details";
     
-    // Dropdown endpoints
+     
     public static final String GET_DISTINCT_WORK_ORDERS_WOO = "/getDistinctWorkOrdersFromWorkOrderOut/details";
     
-    // Edit endpoints
+    
     public static final String GET_ENTRIES_FOR_EDITING_BY_MARK_NO = "/getWorkOrderOutEntriesForEditingByMarkNo/details";
     public static final String GET_DRAWING_ENTRY_BY_MARK_NO = "/getWorkOrderOutDrawingEntryByMarkNo/details";
     
@@ -390,6 +397,20 @@ public class WorkOrderOutDrawingEntryController {
         }
     }
     
+    // NEW: Get distinct reference work orders by client name
+    @GetMapping(value = GET_DISTINCT_REFERENCE_WORK_ORDERS_BY_CLIENT_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctReferenceWorkOrdersByClientFromWorkOrderOut(@RequestParam String clientName) {
+        try {
+            LOG.info("Fetching distinct reference work orders for client: {} from work order out", clientName);
+            List<String> referenceWorkOrders = workOrderOutDrawingEntryService.getDistinctReferenceWorkOrdersByClient(clientName);
+            LOG.info("Found {} distinct reference work orders for client: {}", referenceWorkOrders.size(), clientName);
+            return ResponseEntity.ok(referenceWorkOrders);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct reference work orders for client: {} from work order out", clientName, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     @GetMapping(value = GET_DISTINCT_SERVICE_DESC_BY_WORK_ORDER_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getDistinctServiceDescriptionsByWorkOrderFromWorkOrderOut(@RequestParam String workOrder) {
         try {
@@ -399,6 +420,20 @@ public class WorkOrderOutDrawingEntryController {
             return ResponseEntity.ok(serviceDescs);
         } catch (Exception e) {
             LOG.error("Error fetching distinct service descriptions for work order: {} from work order out", workOrder, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // NEW: Get distinct service descriptions by reference work order
+    @GetMapping(value = GET_DISTINCT_SERVICE_DESC_BY_REFERENCE_WORK_ORDER_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctServiceDescriptionsByReferenceWorkOrderFromWorkOrderOut(@RequestParam String referenceWorkOrder) {
+        try {
+            LOG.info("Fetching distinct service descriptions for reference work order: {} from work order out", referenceWorkOrder);
+            List<String> serviceDescs = workOrderOutDrawingEntryService.getDistinctServiceDescByReferenceWorkOrder(referenceWorkOrder);
+            LOG.info("Found {} distinct service descriptions for reference work order: {}", serviceDescs.size(), referenceWorkOrder);
+            return ResponseEntity.ok(serviceDescs);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct service descriptions for reference work order: {} from work order out", referenceWorkOrder, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -413,6 +448,50 @@ public class WorkOrderOutDrawingEntryController {
             return ResponseEntity.ok(uoms);
         } catch (Exception e) {
             LOG.error("Error fetching distinct UOM from work order out", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // NEW: Get distinct UOM by reference work order and service description
+    @GetMapping(value = GET_DISTINCT_UOM_BY_REFERENCE_WORK_ORDER_AND_SERVICE_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctUOMByReferenceWorkOrderAndServiceFromWorkOrderOut(
+            @RequestParam String referenceWorkOrder, @RequestParam String serviceDescription) {
+        try {
+            LOG.info("Fetching distinct UOM for reference work order: {} and service: {} from work order out", referenceWorkOrder, serviceDescription);
+            List<String> uoms = workOrderOutDrawingEntryService.getDistinctUOMByReferenceWorkOrderAndService(referenceWorkOrder, serviceDescription);
+            LOG.info("Found {} distinct UOMs", uoms.size());
+            return ResponseEntity.ok(uoms);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct UOM from work order out", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // NEW: Get distinct data modules by reference work order, service description, and UOM
+    @GetMapping(value = GET_DISTINCT_DATA_MODULE_BY_REFERENCE_WORK_ORDER_SERVICE_UOM_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctDataModuleByReferenceWorkOrderAndServiceAndUOMFromWorkOrderOut(
+            @RequestParam String referenceWorkOrder, @RequestParam String serviceDescription, @RequestParam String uom) {
+        try {
+            LOG.info("Fetching distinct data modules for reference work order: {}, service: {}, and UOM: {} from work order out", referenceWorkOrder, serviceDescription, uom);
+            List<String> dataModules = workOrderOutDrawingEntryService.getDistinctDataModulesByReferenceWorkOrderAndServiceAndUOM(referenceWorkOrder, serviceDescription, uom);
+            LOG.info("Found {} distinct data modules", dataModules.size());
+            return ResponseEntity.ok(dataModules);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct data modules from work order out", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // NEW: Get distinct sub agency names by reference work order
+    @GetMapping(value = GET_DISTINCT_SUB_AGENCY_NAMES_BY_REFERENCE_WORK_ORDER_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getDistinctSubAgencyNamesByReferenceWorkOrderFromWorkOrderOut(@RequestParam String referenceWorkOrder) {
+        try {
+            LOG.info("Fetching distinct sub agency names for reference work order: {} from work order out", referenceWorkOrder);
+            List<String> subAgencyNames = workOrderOutDrawingEntryService.getDistinctSubAgencyNamesByReferenceWorkOrder(referenceWorkOrder);
+            LOG.info("Found {} distinct sub agency names", subAgencyNames.size());
+            return ResponseEntity.ok(subAgencyNames);
+        } catch (Exception e) {
+            LOG.error("Error fetching distinct sub agency names from work order out", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -32,7 +32,23 @@ public interface WorkOrderOutDrawingEntryRepository extends JpaRepository<WorkOr
     @Query("SELECT DISTINCT w.workOrder FROM WorkOrderOutDrawingEntry w WHERE w.clientName = :clientName AND w.workOrder IS NOT NULL ORDER BY w.workOrder")
     List<String> findDistinctWorkOrdersByClient(@Param("clientName") String clientName);
     
-    // NEW: Enhanced queries for service description, UOM, and data module
+    // NEW: Enhanced queries for cascading dropdowns using reference work order
+    @Query("SELECT DISTINCT w.workOrder FROM WorkOrderOutDrawingEntry w WHERE w.clientName = :clientName AND w.workOrder IS NOT NULL ORDER BY w.workOrder")
+    List<String> findDistinctReferenceWorkOrdersByClient(@Param("clientName") String clientName);
+    
+    @Query("SELECT DISTINCT w.serviceDescription FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :referenceWorkOrder AND w.serviceDescription IS NOT NULL ORDER BY w.serviceDescription")
+    List<String> findDistinctServiceDescByReferenceWorkOrder(@Param("referenceWorkOrder") String referenceWorkOrder);
+    
+    @Query("SELECT DISTINCT w.uom FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :referenceWorkOrder AND w.serviceDescription = :serviceDescription AND w.uom IS NOT NULL ORDER BY w.uom")
+    List<String> findDistinctUOMByReferenceWorkOrderAndService(@Param("referenceWorkOrder") String referenceWorkOrder, @Param("serviceDescription") String serviceDescription);
+    
+    @Query("SELECT DISTINCT w.dataModule FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :referenceWorkOrder AND w.serviceDescription = :serviceDescription AND w.uom = :uom AND w.dataModule IS NOT NULL ORDER BY w.dataModule")
+    List<String> findDistinctDataModulesByReferenceWorkOrderAndServiceAndUOM(@Param("referenceWorkOrder") String referenceWorkOrder, @Param("serviceDescription") String serviceDescription, @Param("uom") String uom);
+    
+    @Query("SELECT DISTINCT w.subAgencyName FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :referenceWorkOrder AND w.subAgencyName IS NOT NULL ORDER BY w.subAgencyName")
+    List<String> findDistinctSubAgencyNamesByReferenceWorkOrder(@Param("referenceWorkOrder") String referenceWorkOrder);
+    
+    // Enhanced queries for service description, UOM, and data module
     @Query("SELECT DISTINCT w.serviceDescription FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.serviceDescription IS NOT NULL ORDER BY w.serviceDescription")
     List<String> findDistinctServiceDescByWorkOrder(@Param("workOrder") String workOrder);
     

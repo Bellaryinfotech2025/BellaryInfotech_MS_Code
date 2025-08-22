@@ -168,6 +168,32 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         return repository.findDistinctDataModulesByWorkOrder(workOrder);
     }
 
+    // NEW: Additional methods for cascading dropdowns
+    @Override
+    public List<String> getDistinctReferenceWorkOrdersByClient(String clientName) {
+        return repository.findDistinctReferenceWorkOrdersByClient(clientName);
+    }
+
+    @Override
+    public List<String> getDistinctServiceDescByReferenceWorkOrder(String referenceWorkOrder) {
+        return repository.findDistinctServiceDescByReferenceWorkOrder(referenceWorkOrder);
+    }
+
+    @Override
+    public List<String> getDistinctUOMByReferenceWorkOrderAndService(String referenceWorkOrder, String serviceDescription) {
+        return repository.findDistinctUOMByReferenceWorkOrderAndService(referenceWorkOrder, serviceDescription);
+    }
+
+    @Override
+    public List<String> getDistinctDataModulesByReferenceWorkOrderAndServiceAndUOM(String referenceWorkOrder, String serviceDescription, String uom) {
+        return repository.findDistinctDataModulesByReferenceWorkOrderAndServiceAndUOM(referenceWorkOrder, serviceDescription, uom);
+    }
+
+    @Override
+    public List<String> getDistinctSubAgencyNamesByReferenceWorkOrder(String referenceWorkOrder) {
+        return repository.findDistinctSubAgencyNamesByReferenceWorkOrder(referenceWorkOrder);
+    }
+
     @Override
     public Map<String, String> getSubAgencyDetailsByWorkOrder(String workOrder) {
         List<Object[]> results = repository.findSubAgencyDetailsByWorkOrder(workOrder);

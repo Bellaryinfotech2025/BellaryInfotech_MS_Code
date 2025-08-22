@@ -8,7 +8,7 @@ import com.bellaryinfotech.DTO.WorkOrderOutDrawingEntryDto;
 
 public interface WorkOrderOutDrawingEntryService {
     
-    // CRUD operations
+     
     List<WorkOrderOutDrawingEntryDto> getAllEntries();
     Optional<WorkOrderOutDrawingEntryDto> getEntryById(Long id);
     List<WorkOrderOutDrawingEntryDto> createBulkEntries(List<WorkOrderOutDrawingEntryDto> entryDtos);
@@ -16,7 +16,7 @@ public interface WorkOrderOutDrawingEntryService {
     void deleteEntry(Long id);
     void deleteByDrawingAndMark(String drawingNo, String markNo);
     
-    // Search operations
+     
     List<WorkOrderOutDrawingEntryDto> searchByWorkOrder(String workOrder);
     List<WorkOrderOutDrawingEntryDto> searchByWorkOrderAndPlantLocation(String workOrder, String plantLocation);
     List<WorkOrderOutDrawingEntryDto> searchByDrawingNo(String drawingNo);
@@ -25,7 +25,7 @@ public interface WorkOrderOutDrawingEntryService {
     List<WorkOrderOutDrawingEntryDto> searchByOrderId(Long orderId);
     List<WorkOrderOutDrawingEntryDto> searchByMultipleCriteria(String workOrder, String plantLocation, String drawingNo, String markNo);
     
-    // Work Order Out Fabrication dropdown operations
+     
     List<String> getDistinctClientNames();
     List<String> getDistinctWorkOrdersByClient(String clientName);
     List<String> getDistinctServiceDescByWorkOrder(String workOrder);
@@ -33,16 +33,23 @@ public interface WorkOrderOutDrawingEntryService {
     List<String> getDistinctDataModulesByWorkOrder(String workOrder);
     Map<String, String> getSubAgencyDetailsByWorkOrder(String workOrder);
     
-    // Dropdown data
+    
+    List<String> getDistinctReferenceWorkOrdersByClient(String clientName);
+    List<String> getDistinctServiceDescByReferenceWorkOrder(String referenceWorkOrder);
+    List<String> getDistinctUOMByReferenceWorkOrderAndService(String referenceWorkOrder, String serviceDescription);
+    List<String> getDistinctDataModulesByReferenceWorkOrderAndServiceAndUOM(String referenceWorkOrder, String serviceDescription, String uom);
+    List<String> getDistinctSubAgencyNamesByReferenceWorkOrder(String referenceWorkOrder);
+    
+     
     List<String> getDistinctWorkOrders();
     List<String> getDistinctPlantLocationsByWorkOrder(String workOrder);
     List<String> getDistinctDrawingNumbersByWorkOrderAndPlantLocation(String workOrder, String plantLocation);
     List<String> getDistinctMarkNumbersByWorkOrderAndPlantLocation(String workOrder, String plantLocation);
     
-    // Edit operations
+     
     List<WorkOrderOutDrawingEntryDto> getEntriesForEditingByMarkNo(String markNo);
     Optional<WorkOrderOutDrawingEntryDto> getDrawingEntryByMarkNo(String markNo);
     
-    // Utility
+    
     boolean existsByDrawingAndMark(String drawingNo, String markNo);
 }
