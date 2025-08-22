@@ -25,18 +25,22 @@ public interface WorkOrderOutDrawingEntryRepository extends JpaRepository<WorkOr
     
     List<WorkOrderOutDrawingEntry> findByOrderIdOrderByIdAsc(Long orderId);
     
-    // NEW: Work Order Out Fabrication dropdown queries
+    // Work Order Out Fabrication dropdown queries
     @Query("SELECT DISTINCT w.clientName FROM WorkOrderOutDrawingEntry w WHERE w.clientName IS NOT NULL ORDER BY w.clientName")
     List<String> findDistinctClientNames();
     
     @Query("SELECT DISTINCT w.workOrder FROM WorkOrderOutDrawingEntry w WHERE w.clientName = :clientName AND w.workOrder IS NOT NULL ORDER BY w.workOrder")
     List<String> findDistinctWorkOrdersByClient(@Param("clientName") String clientName);
     
-    @Query("SELECT DISTINCT w.sectionName FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.sectionName IS NOT NULL ORDER BY w.sectionName")
+    // NEW: Enhanced queries for service description, UOM, and data module
+    @Query("SELECT DISTINCT w.serviceDescription FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.serviceDescription IS NOT NULL ORDER BY w.serviceDescription")
     List<String> findDistinctServiceDescByWorkOrder(@Param("workOrder") String workOrder);
     
-    @Query("SELECT DISTINCT 'KG' FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.sectionName = :serviceDescription")
+    @Query("SELECT DISTINCT w.uom FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.serviceDescription = :serviceDescription AND w.uom IS NOT NULL ORDER BY w.uom")
     List<String> findDistinctUOMByWorkOrderAndService(@Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+    
+    @Query("SELECT DISTINCT w.dataModule FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.dataModule IS NOT NULL ORDER BY w.dataModule")
+    List<String> findDistinctDataModulesByWorkOrder(@Param("workOrder") String workOrder);
     
     @Query("SELECT w.subAgencyName, w.subAgencyWorkOrderName FROM WorkOrderOutDrawingEntry w WHERE w.workOrder = :workOrder AND w.subAgencyName IS NOT NULL AND w.subAgencyWorkOrderName IS NOT NULL ORDER BY w.id ASC LIMIT 1")
     List<Object[]> findSubAgencyDetailsByWorkOrder(@Param("workOrder") String workOrder);

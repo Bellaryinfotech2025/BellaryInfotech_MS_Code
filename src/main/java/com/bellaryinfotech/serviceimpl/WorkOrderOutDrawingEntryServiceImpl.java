@@ -142,7 +142,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
                 .collect(Collectors.toList());
     }
 
-    // NEW: Work Order Out Fabrication dropdown operations
+    // Work Order Out Fabrication dropdown operations
     @Override
     public List<String> getDistinctClientNames() {
         return repository.findDistinctClientNames();
@@ -161,6 +161,11 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
     @Override
     public List<String> getDistinctUOMByWorkOrderAndService(String workOrder, String serviceDescription) {
         return repository.findDistinctUOMByWorkOrderAndService(workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<String> getDistinctDataModulesByWorkOrder(String workOrder) {
+        return repository.findDistinctDataModulesByWorkOrder(workOrder);
     }
 
     @Override
@@ -219,13 +224,13 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         return repository.existsByDrawingNoAndMarkNo(drawingNo, markNo);
     }
 
-    // Conversion methods
+    // Enhanced conversion methods with additional fields
     private WorkOrderOutDrawingEntryDto convertToDto(WorkOrderOutDrawingEntry entity) {
         WorkOrderOutDrawingEntryDto dto = new WorkOrderOutDrawingEntryDto();
         dto.setId(entity.getId());
         dto.setOrderId(entity.getOrderId());
         dto.setWorkOrder(entity.getWorkOrder());
-        dto.setClientName(entity.getClientName()); // NEW: Set client name
+        dto.setClientName(entity.getClientName());
         dto.setSubAgencyName(entity.getSubAgencyName());
         dto.setSubAgencyWorkOrderName(entity.getSubAgencyWorkOrderName());
         dto.setPlantLocation(entity.getPlantLocation());
@@ -239,6 +244,12 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         dto.setMarkWeight(entity.getMarkWeight());
         dto.setMarkQty(entity.getMarkQty());
         dto.setTotalMarkWeight(entity.getTotalMarkWeight());
+        
+        // NEW: Set additional fields
+        dto.setServiceDescription(entity.getServiceDescription());
+        dto.setUom(entity.getUom());
+        dto.setDataModule(entity.getDataModule());
+        
         dto.setItemNo(entity.getItemNo());
         dto.setSectionCode(entity.getSectionCode());
         dto.setSectionName(entity.getSectionName());
@@ -256,7 +267,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         WorkOrderOutDrawingEntry entity = new WorkOrderOutDrawingEntry();
         entity.setOrderId(dto.getOrderId());
         entity.setWorkOrder(dto.getWorkOrder());
-        entity.setClientName(dto.getClientName()); // NEW: Set client name
+        entity.setClientName(dto.getClientName());
         entity.setSubAgencyName(dto.getSubAgencyName());
         entity.setSubAgencyWorkOrderName(dto.getSubAgencyWorkOrderName());
         entity.setPlantLocation(dto.getPlantLocation());
@@ -270,6 +281,12 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         entity.setMarkWeight(dto.getMarkWeight());
         entity.setMarkQty(dto.getMarkQty());
         entity.setTotalMarkWeight(dto.getTotalMarkWeight());
+        
+        // NEW: Set additional fields
+        entity.setServiceDescription(dto.getServiceDescription());
+        entity.setUom(dto.getUom());
+        entity.setDataModule(dto.getDataModule());
+        
         entity.setItemNo(dto.getItemNo());
         entity.setSectionCode(dto.getSectionCode());
         entity.setSectionName(dto.getSectionName());
@@ -286,7 +303,7 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
     private void updateEntityFromDto(WorkOrderOutDrawingEntry entity, WorkOrderOutDrawingEntryDto dto) {
         entity.setOrderId(dto.getOrderId());
         entity.setWorkOrder(dto.getWorkOrder());
-        entity.setClientName(dto.getClientName()); // NEW: Set client name
+        entity.setClientName(dto.getClientName());
         entity.setSubAgencyName(dto.getSubAgencyName());
         entity.setSubAgencyWorkOrderName(dto.getSubAgencyWorkOrderName());
         entity.setPlantLocation(dto.getPlantLocation());
@@ -300,6 +317,12 @@ public class WorkOrderOutDrawingEntryServiceImpl implements WorkOrderOutDrawingE
         entity.setMarkWeight(dto.getMarkWeight());
         entity.setMarkQty(dto.getMarkQty());
         entity.setTotalMarkWeight(dto.getTotalMarkWeight());
+        
+        // NEW: Set additional fields
+        entity.setServiceDescription(dto.getServiceDescription());
+        entity.setUom(dto.getUom());
+        entity.setDataModule(dto.getDataModule());
+        
         entity.setItemNo(dto.getItemNo());
         entity.setSectionCode(dto.getSectionCode());
         entity.setSectionName(dto.getSectionName());

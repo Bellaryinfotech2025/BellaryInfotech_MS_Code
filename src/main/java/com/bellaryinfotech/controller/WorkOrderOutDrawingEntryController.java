@@ -29,7 +29,7 @@ public class WorkOrderOutDrawingEntryController {
     @Autowired
     private BitsHeaderRepository bitsHeaderRepository;
     
-     
+    // Constants for endpoints
     public static final String GET_ALL_WORK_ORDER_OUT_ENTRIES = "/getAllWorkOrderOutDrawingEntries/details";
     public static final String GET_WORK_ORDER_OUT_ENTRY_BY_ID = "/getWorkOrderOutDrawingEntryById/details";
     public static final String CREATE_BULK_WORK_ORDER_OUT_ENTRIES = "/createBulkWorkOrderOutDrawingEntries/details";
@@ -37,16 +37,16 @@ public class WorkOrderOutDrawingEntryController {
     public static final String DELETE_WORK_ORDER_OUT_ENTRY = "/deleteWorkOrderOutDrawingEntry/details";
     public static final String DELETE_BY_DRAWING_AND_MARK = "/deleteWorkOrderOutEntriesByDrawingAndMark/details";
     
-     
-    public static final String SEARCH_BY_WORK_ORDER = "/searchWorkOrderOutEntriesByWorkOrder/details";
+    // Search endpoints
+    public static final String SEARCH_BY_WORK_ORDER = "/searchWorkOrderOutByWorkOrder/details";
     public static final String SEARCH_BY_WORK_ORDER_AND_PLANT_LOCATION = "/searchWorkOrderOutEntriesByWorkOrderAndPlantLocation/details";
     public static final String SEARCH_BY_DRAWING_NO = "/searchWorkOrderOutEntriesByDrawingNo/details";
-    public static final String SEARCH_BY_MARK_NO = "/searchWorkOrderOutEntriesByMarkNo/details";
+    public static final String SEARCH_BY_MARK_NO = "/searchWorkOrderOutByMarkNo/details";
     public static final String SEARCH_BY_DRAWING_AND_MARK = "/searchWorkOrderOutEntriesByDrawingAndMark/details";
     public static final String SEARCH_BY_ORDER_ID = "/searchWorkOrderOutEntriesByOrderId/details";
     public static final String SEARCH_BY_MULTIPLE_CRITERIA = "/searchWorkOrderOutEntriesByMultipleCriteria/details";
     
-     
+    // Work Order Out Fabrication Dropdown endpoints
     public static final String GET_DISTINCT_CLIENT_NAMES_WOO = "/getDistinctClientNamesFromWorkOrderOut/details";
     public static final String GET_DISTINCT_WORK_ORDERS_BY_CLIENT_WOO = "/getDistinctWorkOrdersByClientFromWorkOrderOut/details";
     public static final String GET_DISTINCT_SERVICE_DESC_BY_WORK_ORDER_WOO = "/getDistinctServiceDescriptionsByWorkOrderFromWorkOrderOut/details";
@@ -55,13 +55,13 @@ public class WorkOrderOutDrawingEntryController {
     public static final String GET_DISTINCT_DRAWING_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctDrawingNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     public static final String GET_DISTINCT_MARK_NUMBERS_BY_WORK_ORDER_AND_PLANT_LOCATION_WOO = "/getDistinctMarkNumbersByWorkOrderAndPlantLocationFromWorkOrderOut/details";
     
-    
+    // Sub Agency endpoints
     public static final String GET_SUB_AGENCY_DETAILS_BY_WORK_ORDER = "/getSubAgencyDetailsByWorkOrder/details";
     
-     
+    // Dropdown endpoints
     public static final String GET_DISTINCT_WORK_ORDERS_WOO = "/getDistinctWorkOrdersFromWorkOrderOut/details";
     
-     
+    // Edit endpoints
     public static final String GET_ENTRIES_FOR_EDITING_BY_MARK_NO = "/getWorkOrderOutEntriesForEditingByMarkNo/details";
     public static final String GET_DRAWING_ENTRY_BY_MARK_NO = "/getWorkOrderOutDrawingEntryByMarkNo/details";
     
@@ -100,7 +100,7 @@ public class WorkOrderOutDrawingEntryController {
     @PostMapping(value = CREATE_BULK_WORK_ORDER_OUT_ENTRIES, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createBulkEntries(@RequestBody Map<String, Object> requestData) {
         try {
-            LOG.info("Creating bulk work order out drawing entries");
+            LOG.info("Creating bulk work order out drawing entries with enhanced data");
             
             // Extract drawing entry data
             Map<String, Object> drawingEntry = (Map<String, Object>) requestData.get("drawingEntry");
@@ -131,7 +131,7 @@ public class WorkOrderOutDrawingEntryController {
                 
                 // Set drawing entry data (duplicated for each BOM row)
                 dto.setWorkOrder((String) drawingEntry.get("workOrder"));
-                dto.setClientName((String) drawingEntry.get("clientName")); // NEW: Set client name
+                dto.setClientName((String) drawingEntry.get("clientName"));
                 dto.setSubAgencyName((String) drawingEntry.get("subAgencyName"));
                 dto.setSubAgencyWorkOrderName((String) drawingEntry.get("subAgencyWorkOrderName"));
                 dto.setPlantLocation((String) drawingEntry.get("plantLocation"));
@@ -139,6 +139,11 @@ public class WorkOrderOutDrawingEntryController {
                 dto.setWorkLocation((String) drawingEntry.get("workLocation"));
                 dto.setLineNumber((String) drawingEntry.get("lineNumber"));
                 dto.setDrawingNo((String) drawingEntry.get("drawingNo"));
+                
+                // NEW: Set additional fields for service description, UOM, and data module
+                dto.setServiceDescription((String) drawingEntry.get("serviceDescription"));
+                dto.setUom((String) drawingEntry.get("uom"));
+                dto.setDataModule((String) drawingEntry.get("dataModule"));
                 
                 // Handle dates
                 if (drawingEntry.get("drawingReceivedDate") != null) {
@@ -196,11 +201,15 @@ public class WorkOrderOutDrawingEntryController {
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Successfully created " + savedEntries.size() + " work order out drawing entries");
+            response.put("message", "Successfully created " + savedEntries.size() + " work order out drawing entries with service details");
             response.put("createdCount", savedEntries.size());
             response.put("entries", savedEntries);
             
-            LOG.info("Successfully created {} work order out drawing entries", savedEntries.size());
+            LOG.info("Successfully created {} work order out drawing entries with service description: {}, UOM: {}, data module: {}", 
+                    savedEntries.size(), 
+                    drawingEntry.get("serviceDescription"), 
+                    drawingEntry.get("uom"), 
+                    drawingEntry.get("dataModule"));
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
         } catch (Exception e) {
@@ -353,7 +362,7 @@ public class WorkOrderOutDrawingEntryController {
         }
     }
     
-    // ============ NEW: WORK ORDER OUT FABRICATION DROPDOWN DATA ============
+    // ============ WORK ORDER OUT FABRICATION DROPDOWN DATA ============
     
     @GetMapping(value = GET_DISTINCT_CLIENT_NAMES_WOO, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<String>> getDistinctClientNamesFromWorkOrderOut() {

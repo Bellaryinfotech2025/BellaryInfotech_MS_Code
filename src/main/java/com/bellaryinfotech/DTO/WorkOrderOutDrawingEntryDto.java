@@ -8,7 +8,7 @@ public class WorkOrderOutDrawingEntryDto {
     private Long id;
     private Long orderId;
     private String workOrder;
-    private String clientName; 
+    private String clientName;
     private String subAgencyName;
     private String subAgencyWorkOrderName;
     private String plantLocation;
@@ -23,6 +23,11 @@ public class WorkOrderOutDrawingEntryDto {
     private Integer markQty;
     private BigDecimal totalMarkWeight;
     
+    // NEW: Additional fields for service description, UOM, and data module
+    private String serviceDescription;
+    private String uom;
+    private String dataModule;
+    
     // BOM Entry fields
     private String itemNo;
     private String sectionCode;
@@ -35,10 +40,10 @@ public class WorkOrderOutDrawingEntryDto {
     private BigDecimal totalItemWeight;
     private String status;
     
-    
+    // Default constructor
     public WorkOrderOutDrawingEntryDto() {}
     
-     
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -63,7 +68,6 @@ public class WorkOrderOutDrawingEntryDto {
         this.workOrder = workOrder;
     }
     
-    // NEW: Client name getter and setter
     public String getClientName() {
         return clientName;
     }
@@ -176,6 +180,31 @@ public class WorkOrderOutDrawingEntryDto {
         this.totalMarkWeight = totalMarkWeight;
     }
     
+    // NEW: Getters and setters for additional fields
+    public String getServiceDescription() {
+        return serviceDescription;
+    }
+    
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+    
+    public String getUom() {
+        return uom;
+    }
+    
+    public void setUom(String uom) {
+        this.uom = uom;
+    }
+    
+    public String getDataModule() {
+        return dataModule;
+    }
+    
+    public void setDataModule(String dataModule) {
+        this.dataModule = dataModule;
+    }
+    
     public String getItemNo() {
         return itemNo;
     }
@@ -254,5 +283,24 @@ public class WorkOrderOutDrawingEntryDto {
     
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    @Override
+    public String toString() {
+        return "WorkOrderOutDrawingEntryDto{" +
+                "id=" + id +
+                ", orderId=" + orderId +
+                ", workOrder='" + workOrder + '\'' +
+                ", clientName='" + clientName + '\'' +
+                ", serviceDescription='" + serviceDescription + '\'' +
+                ", uom='" + uom + '\'' +
+                ", dataModule='" + dataModule + '\'' +
+                ", subAgencyName='" + subAgencyName + '\'' +
+                ", subAgencyWorkOrderName='" + subAgencyWorkOrderName + '\'' +
+                ", plantLocation='" + plantLocation + '\'' +
+                ", drawingNo='" + drawingNo + '\'' +
+                ", markNo='" + markNo + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }

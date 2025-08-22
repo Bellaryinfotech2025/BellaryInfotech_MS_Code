@@ -20,7 +20,7 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "work_order")
     private String workOrder;
     
-    @Column(name = "client_name")  
+    @Column(name = "client_name")
     private String clientName;
     
     @Column(name = "sub_agency_name")
@@ -62,6 +62,16 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "total_mark_weight", precision = 10, scale = 3)
     private BigDecimal totalMarkWeight;
     
+    // NEW: Additional fields for service description, UOM, and data module
+    @Column(name = "service_description")
+    private String serviceDescription;
+    
+    @Column(name = "uom")
+    private String uom;
+    
+    @Column(name = "data_module")
+    private String dataModule;
+    
     // BOM Entry fields - duplicated for each BOM row
     @Column(name = "item_no")
     private String itemNo;
@@ -93,7 +103,7 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "status")
     private String status;
     
-     
+    // Audit fields
     @Column(name = "tenant_id")
     private Integer tenantId = 1;
     
@@ -109,10 +119,10 @@ public class WorkOrderOutDrawingEntry {
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
     
-     
+    // Default constructor
     public WorkOrderOutDrawingEntry() {}
     
-    
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -137,7 +147,6 @@ public class WorkOrderOutDrawingEntry {
         this.workOrder = workOrder;
     }
     
-    // NEW: Client name getter and setter
     public String getClientName() {
         return clientName;
     }
@@ -248,6 +257,31 @@ public class WorkOrderOutDrawingEntry {
     
     public void setTotalMarkWeight(BigDecimal totalMarkWeight) {
         this.totalMarkWeight = totalMarkWeight;
+    }
+    
+    // NEW: Getters and setters for additional fields
+    public String getServiceDescription() {
+        return serviceDescription;
+    }
+    
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
+    }
+    
+    public String getUom() {
+        return uom;
+    }
+    
+    public void setUom(String uom) {
+        this.uom = uom;
+    }
+    
+    public String getDataModule() {
+        return dataModule;
+    }
+    
+    public void setDataModule(String dataModule) {
+        this.dataModule = dataModule;
     }
     
     public String getItemNo() {
@@ -368,5 +402,22 @@ public class WorkOrderOutDrawingEntry {
     
     public void setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
+    }
+    
+    @Override
+    public String toString() {
+        return "WorkOrderOutDrawingEntry{" +
+                "id=" + id +
+                ", orderId=" + orderId +
+                ", workOrder='" + workOrder + '\'' +
+                ", clientName='" + clientName + '\'' +
+                ", serviceDescription='" + serviceDescription + '\'' +
+                ", uom='" + uom + '\'' +
+                ", dataModule='" + dataModule + '\'' +
+                ", plantLocation='" + plantLocation + '\'' +
+                ", drawingNo='" + drawingNo + '\'' +
+                ", markNo='" + markNo + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
