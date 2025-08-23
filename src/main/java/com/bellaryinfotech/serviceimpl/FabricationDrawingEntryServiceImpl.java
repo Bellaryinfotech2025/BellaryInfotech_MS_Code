@@ -284,4 +284,47 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             throw new RuntimeException("Error fetching distinct item numbers: " + e.getMessage(), e);
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    public List<FabricationDrawingEntryDto> getFabricationEntriesByWorkOrderAndRaNo(String workOrder, String raNo) {
+        List<FabricationDrawingEntry> entities = fabricationDrawingEntryRepository.findByWorkOrderAndRaNo(workOrder, raNo);
+        return entities.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<FabricationDrawingEntryDto> getFabricationEntriesByRaNo(String raNo) {
+        List<FabricationDrawingEntry> entities = fabricationDrawingEntryRepository.findByRaNo(raNo);
+        return entities.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getRaNumbersByWorkOrder(String workOrder) {
+        return fabricationDrawingEntryRepository.findDistinctRaNoByWorkOrder(workOrder);
+    }
+
+    public List<String> getServiceDescriptionsByWorkOrder(String workOrder) {
+        // This might need to be implemented based on your service description logic
+        // For now, returning session names as service descriptions
+        return fabricationDrawingEntryRepository.findDistinctSessionNameByWorkOrder(workOrder);
+    }
+
+    
 }

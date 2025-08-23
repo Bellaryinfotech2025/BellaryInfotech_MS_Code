@@ -45,4 +45,6 @@ public interface FabricationDrawingEntryService {
 	Double getTotalMarkedWeightByDrawingAndMark(Long orderId, String drawingNo, String markNo);
 
 	List<String> getDistinctItemNumbers();
+
+	List<FabricationDrawingEntryDto> getFabricationEntriesByWorkOrderAndRaNo(String workOrder, String raNo);
 }

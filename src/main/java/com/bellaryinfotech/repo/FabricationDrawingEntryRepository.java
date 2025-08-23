@@ -69,4 +69,25 @@ public interface FabricationDrawingEntryRepository extends JpaRepository<Fabrica
     
     @Query("SELECT DISTINCT f.itemNo FROM FabricationDrawingEntry f WHERE f.itemNo IS NOT NULL AND f.itemNo != ''")
     List<String> findDistinctItemNo();
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Query("SELECT f FROM FabricationDrawingEntry f WHERE f.workOrder = :workOrder AND f.raNo = :raNo ORDER BY f.drawingNo, f.markNo, f.itemNo")
+    List<FabricationDrawingEntry> findByWorkOrderAndRaNo(@Param("workOrder") String workOrder, @Param("raNo") String raNo);
+
+    @Query("SELECT f FROM FabricationDrawingEntry f WHERE f.raNo = :raNo ORDER BY f.workOrder, f.drawingNo, f.markNo, f.itemNo")
+    List<FabricationDrawingEntry> findByRaNoreport(@Param("raNo") String raNo);
+
+    @Query("SELECT DISTINCT f.raNo FROM FabricationDrawingEntry f WHERE f.workOrder = :workOrder AND f.raNo IS NOT NULL ORDER BY f.raNo")
+    List<String> findDistinctRaNoByWorkOrder(@Param("workOrder") String workOrder);
+
+    @Query("SELECT DISTINCT f.sessionName FROM FabricationDrawingEntry f WHERE f.workOrder = :workOrder AND f.sessionName IS NOT NULL ORDER BY f.sessionName")
+    List<String> findDistinctSessionNameByWorkOrder(@Param("workOrder") String workOrder);
 }

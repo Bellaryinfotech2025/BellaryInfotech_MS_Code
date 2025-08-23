@@ -411,4 +411,33 @@ public class FabricationDrawingEntryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    
+ 
+    
+ // NEW: Get fabrication data by work order and RA number
+    @GetMapping("/getFabricationDataByWorkOrderAndRaNo/details")
+    public ResponseEntity<?> getFabricationDataByWorkOrderAndRaNo(
+            @RequestParam String workOrder,
+            @RequestParam String raNo) {
+        try {
+            List<FabricationDrawingEntryDto> entries = fabricationDrawingEntryService.getFabricationEntriesByWorkOrderAndRaNo(workOrder, raNo);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Fabrication entries retrieved successfully");
+            response.put("count", entries.size());
+            response.put("data", entries);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error retrieving fabrication entries: " + e.getMessage());
+            errorResponse.put("error", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
 }

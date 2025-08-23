@@ -50,4 +50,9 @@ public interface VendorProfileService {
     void deleteLogo(Long id);
     
     void deleteLetterHead(Long id);
+    
+    
+    
+    
+    
 }
