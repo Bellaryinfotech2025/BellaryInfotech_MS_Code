@@ -17,7 +17,7 @@ public interface BitsHeaderService {
     List<BitsHeaderDto> searchByDepartment(String department);
     List<BitsHeaderDto> searchByWorkLocation(String workLocation);
 
-    // Add these methods to the existing interface
+   
     List<String> getDistinctWorkOrders();
     List<String> getDistinctPlantLocations();
 }

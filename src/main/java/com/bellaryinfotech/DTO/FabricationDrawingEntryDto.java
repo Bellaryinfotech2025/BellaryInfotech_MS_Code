@@ -32,6 +32,7 @@ public class FabricationDrawingEntryDto {
     private String lastUpdatedBy;
     private LocalDateTime creationDate;
     private LocalDateTime lastUpdateDate;
+    private String itemNo;
     
     // Constructors
     public FabricationDrawingEntryDto() {}
@@ -42,7 +43,7 @@ public class FabricationDrawingEntryDto {
                                     Double totalMarkedWgt, Double sessionWeight, Double width,
                                     Double length, Integer itemQty, Double itemWeight, 
                                     Double totalItemWeight, String cuttingStage, String fitUpStage,
-                                    String weldingStage, String finishingStage, String createdBy, String lastUpdatedBy) {
+                                    String weldingStage, String finishingStage, String createdBy, String lastUpdatedBy,String itemNo) {
         this.workOrder = workOrder;
         this.buildingName = buildingName;
         this.drawingNo = drawingNo;
@@ -66,6 +67,7 @@ public class FabricationDrawingEntryDto {
         this.finishingStage = finishingStage;
         this.createdBy = createdBy;
         this.lastUpdatedBy = lastUpdatedBy;
+        this.itemNo=itemNo;
     }
     
     // Getters and Setters
@@ -276,4 +278,13 @@ public class FabricationDrawingEntryDto {
     public void setFinishingStage(String finishingStage) {
         this.finishingStage = finishingStage;
     }
+
+	public String getItemNo() {
+		return itemNo;
+	}
+
+	public void setItemNo(String itemNo) {
+		this.itemNo = itemNo;
+	}
+    
 }

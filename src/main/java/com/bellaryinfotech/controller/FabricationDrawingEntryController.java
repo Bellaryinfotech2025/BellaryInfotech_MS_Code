@@ -387,4 +387,28 @@ public class FabricationDrawingEntryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    
+    
+    
+    
+    
+ // NEW: Get distinct item numbers
+    @GetMapping("/getDistinctItemNumbers/details")
+    public ResponseEntity<?> getDistinctItemNumbers() {
+        try {
+            List<String> itemNumbers = fabricationDrawingEntryService.getDistinctItemNumbers();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Distinct item numbers retrieved successfully");
+            response.put("count", itemNumbers.size());
+            response.put("data", itemNumbers);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error retrieving distinct item numbers: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

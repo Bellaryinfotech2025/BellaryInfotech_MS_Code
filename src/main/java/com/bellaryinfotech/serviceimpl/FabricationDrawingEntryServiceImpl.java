@@ -134,6 +134,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
         entity.setFinishingStage(dto.getFinishingStage());
         entity.setCreatedBy(dto.getCreatedBy());
         entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+        entity.setItemNo(dto.getItemNo());
 
         if (dto.getCreationDate() != null) {
             entity.setCreationDate(dto.getCreationDate());
@@ -173,6 +174,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
         dto.setLastUpdatedBy(entity.getLastUpdatedBy());
         dto.setCreationDate(entity.getCreationDate());
         dto.setLastUpdateDate(entity.getLastUpdateDate());
+        dto.setItemNo(entity.getItemNo());
         return dto;
     }
 
@@ -271,6 +273,15 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
             return fabricationDrawingEntryRepository.sumTotalMarkedWgtByOrderIdAndDrawingNoAndMarkNo(orderId, drawingNo, markNo);
         } catch (Exception e) {
             throw new RuntimeException("Error getting total marked weight by drawing and mark: " + e.getMessage(), e);
+        }
+    }
+    
+    @Override
+    public List<String> getDistinctItemNumbers() {
+        try {
+            return fabricationDrawingEntryRepository.findDistinctItemNo();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching distinct item numbers: " + e.getMessage(), e);
         }
     }
 }

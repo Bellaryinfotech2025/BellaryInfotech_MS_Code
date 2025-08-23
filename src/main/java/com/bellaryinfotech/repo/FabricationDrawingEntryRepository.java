@@ -64,4 +64,9 @@ public interface FabricationDrawingEntryRepository extends JpaRepository<Fabrica
     // NEW: Method to sum total_marked_wgt by orderId, drawingNo, and markNo
     @Query("SELECT SUM(f.totalMarkedWgt) FROM FabricationDrawingEntry f WHERE f.orderId = :orderId AND f.drawingNo = :drawingNo AND f.markNo = :markNo")
     Double sumTotalMarkedWgtByOrderIdAndDrawingNoAndMarkNo(@Param("orderId") Long orderId, @Param("drawingNo") String drawingNo, @Param("markNo") String markNo);
+
+
+    
+    @Query("SELECT DISTINCT f.itemNo FROM FabricationDrawingEntry f WHERE f.itemNo IS NOT NULL AND f.itemNo != ''")
+    List<String> findDistinctItemNo();
 }

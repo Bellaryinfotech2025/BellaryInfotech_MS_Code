@@ -88,6 +88,9 @@ public class FabricationDrawingEntry {
     @Column(name = "last_update_date")
     private LocalDateTime lastUpdateDate;
     
+    @Column(name = "item_no")
+    private String itemNo;
+    
     // Constructors
     public FabricationDrawingEntry() {
         this.creationDate = LocalDateTime.now();
@@ -336,7 +339,17 @@ public class FabricationDrawingEntry {
         this.lastUpdateDate = lastUpdateDate;
     }
     
-    @PreUpdate
+    
+    
+    public String getItemNo() {
+		return itemNo;
+	}
+
+	public void setItemNo(String itemNo) {
+		this.itemNo = itemNo;
+	}
+
+	@PreUpdate
     public void preUpdate() {
         this.lastUpdateDate = LocalDateTime.now();
     }
