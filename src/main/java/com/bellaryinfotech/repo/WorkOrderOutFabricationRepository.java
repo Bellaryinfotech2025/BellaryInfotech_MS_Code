@@ -86,4 +86,16 @@ public interface WorkOrderOutFabricationRepository extends JpaRepository<WorkOrd
     
     @Query("SELECT w FROM WorkOrderOutFabrication w WHERE w.clientName = :clientName AND w.workOrder = :workOrder AND w.serviceDescription = :serviceDescription AND w.raNo = :raNo ORDER BY w.id ASC")
     List<WorkOrderOutFabrication> searchByAllFiltersWithoutSubAgency(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("raNo") String raNo);
+
+
+ 
+  //new to get the production
+    @Query("SELECT DISTINCT w.subAgencyRaNo FROM WorkOrderOutFabrication w WHERE w.clientName = :clientName AND w.workOrder = :workOrder AND w.serviceDescription = :serviceDescription AND w.subAgencyRaNo IS NOT NULL ORDER BY w.subAgencyRaNo")
+    List<String> findDistinctSubAgencyRaNosByClientWorkOrderAndService(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription);
+
+    @Query("SELECT DISTINCT w.subAgencyName FROM WorkOrderOutFabrication w WHERE w.clientName = :clientName AND w.workOrder = :workOrder AND w.serviceDescription = :serviceDescription AND w.subAgencyRaNo = :subAgencyRaNo AND w.subAgencyName IS NOT NULL ORDER BY w.subAgencyName")
+    List<String> findDistinctSubAgencyNamesByRaNo(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("subAgencyRaNo") String subAgencyRaNo);
+
+    @Query("SELECT w FROM WorkOrderOutFabrication w WHERE w.clientName = :clientName AND w.workOrder = :workOrder AND w.serviceDescription = :serviceDescription AND w.subAgencyRaNo = :subAgencyRaNo AND (:subAgencyName IS NULL OR w.subAgencyName = :subAgencyName) ORDER BY w.id ASC")
+    List<WorkOrderOutFabrication> searchBySubAgencyRaNoAndSubAgencyName(@Param("clientName") String clientName, @Param("workOrder") String workOrder, @Param("serviceDescription") String serviceDescription, @Param("subAgencyRaNo") String subAgencyRaNo, @Param("subAgencyName") String subAgencyName);
 }

@@ -55,4 +55,15 @@ public interface WorkOrderOutFabricationService {
     List<WorkOrderOutFabricationDto> searchByAllFiltersWithSubAgency(String clientName, String workOrder, String serviceDescription, String raNo, String subAgencyName);
     
     List<WorkOrderOutFabricationDto> searchByAllFiltersWithoutSubAgency(String clientName, String workOrder, String serviceDescription, String raNo);
+
+
+
+
+
+
+ //new to get the production
+    List<String> getDistinctSubAgencyRaNosByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription);
+    List<String> getDistinctSubAgencyNamesByRaNo(String clientName, String workOrder, String serviceDescription, String subAgencyRaNo);
+    List<WorkOrderOutFabricationDto> searchBySubAgencyRaNoAndSubAgencyName(String clientName, String workOrder, String serviceDescription, String subAgencyRaNo, String subAgencyName);
+
 }

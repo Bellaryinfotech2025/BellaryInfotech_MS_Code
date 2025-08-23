@@ -469,4 +469,56 @@ public class WorkOrderOutFabricationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error checking fabrication existence: " + e.getMessage());
         }
     }
+    
+    
+  
+  //new to get the production
+
+ // NEW: Get distinct sub_agency_ra_no values
+ @GetMapping(value = "/getDistinctSubAgencyRaNosByClientWorkOrderAndService/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<List<String>> getDistinctSubAgencyRaNosByClientWorkOrderAndService(
+         @RequestParam String clientName, @RequestParam String workOrder, @RequestParam String serviceDescription) {
+     try {
+         LOG.info("Fetching distinct sub agency RA NOs for client: {}, work order: {}, and service: {}", clientName, workOrder, serviceDescription);
+         List<String> subAgencyRaNumbers = workOrderOutFabricationService.getDistinctSubAgencyRaNosByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+         LOG.info("Found {} distinct sub agency RA NOs", subAgencyRaNumbers.size());
+         return ResponseEntity.ok(subAgencyRaNumbers);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct sub agency RA NOs", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+     }
+ }
+
+ // NEW: Get distinct sub agency names by RA NO (sub_agency_ra_no)
+ @GetMapping(value = "/getDistinctSubAgencyNamesByRaNo/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<List<String>> getDistinctSubAgencyNamesByRaNo(
+         @RequestParam String clientName, @RequestParam String workOrder, 
+         @RequestParam String serviceDescription, @RequestParam String subAgencyRaNo) {
+     try {
+         LOG.info("Fetching distinct sub agency names by RA NO for client: {}, work order: {}, service: {}, RA NO: {}", clientName, workOrder, serviceDescription, subAgencyRaNo);
+         List<String> subAgencyNames = workOrderOutFabricationService.getDistinctSubAgencyNamesByRaNo(clientName, workOrder, serviceDescription, subAgencyRaNo);
+         LOG.info("Found {} distinct sub agency names", subAgencyNames.size());
+         return ResponseEntity.ok(subAgencyNames);
+     } catch (Exception e) {
+         LOG.error("Error fetching distinct sub agency names by RA NO", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+     }
+ }
+
+ // NEW: Search by sub_agency_ra_no and sub_agency_name
+ @GetMapping(value = "/searchBySubAgencyRaNoAndSubAgencyName/details", produces = MediaType.APPLICATION_JSON_VALUE)
+ public ResponseEntity<List<WorkOrderOutFabricationDto>> searchBySubAgencyRaNoAndSubAgencyName(
+         @RequestParam String clientName, @RequestParam String workOrder, 
+         @RequestParam String serviceDescription, @RequestParam String subAgencyRaNo,
+         @RequestParam(required = false) String subAgencyName) {
+     try {
+         LOG.info("Searching by sub agency RA NO and sub agency name for client: {}, work order: {}, service: {}, sub agency RA NO: {}, sub agency name: {}", clientName, workOrder, serviceDescription, subAgencyRaNo, subAgencyName);
+         List<WorkOrderOutFabricationDto> fabrications = workOrderOutFabricationService.searchBySubAgencyRaNoAndSubAgencyName(clientName, workOrder, serviceDescription, subAgencyRaNo, subAgencyName);
+         LOG.info("Found {} fabrications", fabrications.size());
+         return ResponseEntity.ok(fabrications);
+     } catch (Exception e) {
+         LOG.error("Error searching by sub agency RA NO and sub agency name", e);
+         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+     }
+ }
 }

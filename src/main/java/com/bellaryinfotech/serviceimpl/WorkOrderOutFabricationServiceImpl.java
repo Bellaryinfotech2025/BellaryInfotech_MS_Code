@@ -325,4 +325,35 @@ public class WorkOrderOutFabricationServiceImpl implements WorkOrderOutFabricati
         entity.setStatus(dto.getStatus());
         // Don't update editableEnable here, it's set in the service method
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  //new to get the production 
+    @Override
+    public List<String> getDistinctSubAgencyRaNosByClientWorkOrderAndService(String clientName, String workOrder, String serviceDescription) {
+        return repository.findDistinctSubAgencyRaNosByClientWorkOrderAndService(clientName, workOrder, serviceDescription);
+    }
+
+    @Override
+    public List<String> getDistinctSubAgencyNamesByRaNo(String clientName, String workOrder, String serviceDescription, String subAgencyRaNo) {
+        return repository.findDistinctSubAgencyNamesByRaNo(clientName, workOrder, serviceDescription, subAgencyRaNo);
+    }
+
+    @Override
+    public List<WorkOrderOutFabricationDto> searchBySubAgencyRaNoAndSubAgencyName(String clientName, String workOrder, String serviceDescription, String subAgencyRaNo, String subAgencyName) {
+        List<WorkOrderOutFabrication> fabrications = repository.searchBySubAgencyRaNoAndSubAgencyName(clientName, workOrder, serviceDescription, subAgencyRaNo, subAgencyName);
+        return fabrications.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 }
