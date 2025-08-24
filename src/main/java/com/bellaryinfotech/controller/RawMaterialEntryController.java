@@ -18,26 +18,29 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class RawMaterialEntryController {
 
-        private static final Logger LOG = LoggerFactory.getLogger(RawMaterialEntryController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RawMaterialEntryController.class);
 
-        @Autowired
+    @Autowired
     private RawMaterialEntryService rawMaterialEntryService;
 
-        @PostMapping(value = "/rawmaterialentry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> createRawMaterialEntry(@RequestBody RawMaterialEntryDTO rawMaterialEntryDTO) {
+    @PostMapping(value = "/rawmaterialentry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createRawMaterialEntry(@RequestBody RawMaterialEntryDTO rawMaterialEntryDTO) {
         try {
             LOG.info("Creating raw material entry with data: {}", rawMaterialEntryDTO);
             List<RawMaterialEntry> savedEntries = rawMaterialEntryService.saveRawMaterialEntry(rawMaterialEntryDTO);
             LOG.info("Successfully created {} raw material entries", savedEntries.size());
             return new ResponseEntity<>(savedEntries, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Validation error creating raw material entry: {}", e.getMessage());
+            return new ResponseEntity<>("Validation error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             LOG.error("Error creating raw material entry", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to create raw material entry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> getAllRawMaterialEntries() {
+    @GetMapping(value = "/rawmaterialentry", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllRawMaterialEntries() {
         try {
             LOG.info("Fetching all raw material entries");
             List<RawMaterialEntry> entries = rawMaterialEntryService.getAllRawMaterialEntries();
@@ -45,12 +48,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching raw material entries", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entries: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RawMaterialEntry> getRawMaterialEntryById(@PathVariable Long id) {
+    @GetMapping(value = "/rawmaterialentry/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getRawMaterialEntryById(@PathVariable Long id) {
         try {
             LOG.info("Fetching raw material entry by ID: {}", id);
             RawMaterialEntry entry = rawMaterialEntryService.getRawMaterialEntryById(id);
@@ -59,16 +62,16 @@ public class RawMaterialEntryController {
                 return new ResponseEntity<>(entry, HttpStatus.OK);
             } else {
                 LOG.warn("Raw material entry not found with ID: {}", id);
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Raw material entry not found with ID: " + id, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             LOG.error("Error fetching raw material entry by ID: {}", id, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/workorder/{workOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> getRawMaterialEntriesByWorkOrder(@PathVariable String workOrder) {
+    @GetMapping(value = "/rawmaterialentry/workorder/{workOrder}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getRawMaterialEntriesByWorkOrder(@PathVariable String workOrder) {
         try {
             LOG.info("Fetching raw material entries by work order: {}", workOrder);
             List<RawMaterialEntry> entries = rawMaterialEntryService.getRawMaterialEntriesByWorkOrder(workOrder);
@@ -76,12 +79,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching raw material entries by work order: {}", workOrder, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entries by work order: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/section/{section}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> getRawMaterialEntriesBySection(@PathVariable String section) {
+    @GetMapping(value = "/rawmaterialentry/section/{section}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getRawMaterialEntriesBySection(@PathVariable String section) {
         try {
             LOG.info("Fetching raw material entries by section: {}", section);
             List<RawMaterialEntry> entries = rawMaterialEntryService.getRawMaterialEntriesBySection(section);
@@ -89,13 +92,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching raw material entries by section: {}", section, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entries by section: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        // NEW: Get entries by section code
     @GetMapping(value = "/rawmaterialentry/sectioncode/{sectionCode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> getRawMaterialEntriesBySectionCode(@PathVariable String sectionCode) {
+    public ResponseEntity<?> getRawMaterialEntriesBySectionCode(@PathVariable String sectionCode) {
         try {
             LOG.info("Fetching raw material entries by section code: {}", sectionCode);
             List<RawMaterialEntry> entries = rawMaterialEntryService.getRawMaterialEntriesBySectionCode(sectionCode);
@@ -103,13 +105,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching raw material entries by section code: {}", sectionCode, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entries by section code: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        // NEW: Get entries by receipt type
     @GetMapping(value = "/rawmaterialentry/receipttype/{receiptType}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RawMaterialEntry>> getRawMaterialEntriesByReceiptType(@PathVariable String receiptType) {
+    public ResponseEntity<?> getRawMaterialEntriesByReceiptType(@PathVariable String receiptType) {
         try {
             LOG.info("Fetching raw material entries by receipt type: {}", receiptType);
             List<RawMaterialEntry> entries = rawMaterialEntryService.getRawMaterialEntriesByReceiptType(receiptType);
@@ -117,12 +118,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching raw material entries by receipt type: {}", receiptType, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch raw material entries by receipt type: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @PutMapping(value = "/rawmaterialentry/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RawMaterialEntry> updateRawMaterialEntry(@PathVariable Long id, @RequestBody RawMaterialEntry rawMaterialEntry) {
+    @PutMapping(value = "/rawmaterialentry/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateRawMaterialEntry(@PathVariable Long id, @RequestBody RawMaterialEntry rawMaterialEntry) {
         try {
             LOG.info("Updating raw material entry with ID: {}", id);
             RawMaterialEntry updatedEntry = rawMaterialEntryService.updateRawMaterialEntry(id, rawMaterialEntry);
@@ -131,16 +132,16 @@ public class RawMaterialEntryController {
                 return new ResponseEntity<>(updatedEntry, HttpStatus.OK);
             } else {
                 LOG.warn("Raw material entry not found with ID: {}", id);
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Raw material entry not found with ID: " + id, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             LOG.error("Error updating raw material entry with ID: {}", id, e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to update raw material entry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @DeleteMapping(value = "/rawmaterialentry/{id}")
-    public ResponseEntity<HttpStatus> deleteRawMaterialEntry(@PathVariable Long id) {
+    @DeleteMapping(value = "/rawmaterialentry/{id}")
+    public ResponseEntity<?> deleteRawMaterialEntry(@PathVariable Long id) {
         try {
             LOG.info("Deleting raw material entry with ID: {}", id);
             rawMaterialEntryService.deleteRawMaterialEntry(id);
@@ -148,12 +149,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             LOG.error("Error deleting raw material entry with ID: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to delete raw material entry: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/workorders/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getDistinctWorkOrders() {
+    @GetMapping(value = "/rawmaterialentry/workorders/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDistinctWorkOrders() {
         try {
             LOG.info("Fetching distinct work orders");
             List<String> workOrders = rawMaterialEntryService.getDistinctWorkOrders();
@@ -161,12 +162,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(workOrders, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching distinct work orders", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch distinct work orders: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/sections/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getDistinctSections() {
+    @GetMapping(value = "/rawmaterialentry/sections/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDistinctSections() {
         try {
             LOG.info("Fetching distinct sections");
             List<String> sections = rawMaterialEntryService.getDistinctSections();
@@ -174,13 +175,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(sections, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching distinct sections", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch distinct sections: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        // NEW: Get distinct section codes
     @GetMapping(value = "/rawmaterialentry/sectioncodes/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getDistinctSectionCodes() {
+    public ResponseEntity<?> getDistinctSectionCodes() {
         try {
             LOG.info("Fetching distinct section codes");
             List<String> sectionCodes = rawMaterialEntryService.getDistinctSectionCodes();
@@ -188,12 +188,12 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(sectionCodes, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching distinct section codes", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch distinct section codes: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-        @GetMapping(value = "/rawmaterialentry/uoms/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getDistinctUoms() {
+    @GetMapping(value = "/rawmaterialentry/uoms/distinct", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getDistinctUoms() {
         try {
             LOG.info("Fetching distinct UOMs");
             List<String> uoms = rawMaterialEntryService.getDistinctUoms();
@@ -201,7 +201,7 @@ public class RawMaterialEntryController {
             return new ResponseEntity<>(uoms, HttpStatus.OK);
         } catch (Exception e) {
             LOG.error("Error fetching distinct UOMs", e);
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to fetch distinct UOMs: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
