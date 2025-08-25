@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -784,6 +786,69 @@ public class BitsDrawingEntryServiceImpl implements BitsDrawingEntryService {
         } catch (Exception e) {
             logger.error("Error getting distinct mark numbers by attributes", e);
             throw new RuntimeException("Failed to get distinct mark numbers: " + e.getMessage(), e);
+        }
+    }
+
+    // NEW: Session name comparison methods implementation
+    @Override
+    public Map<String, Object> getSessionNamesByWorkOrderAndRa(String workOrder, String raNo) {
+        try {
+            logger.info("Getting session names from bits_drawing_entry by work order: {} and RA: {}", workOrder, raNo);
+            
+            List<Object[]> results = bitsDrawingEntryRepository.findSessionNamesByWorkOrderAndRaNo(workOrder, raNo);
+            Map<String, Object> sessionData = new HashMap<>();
+            
+            for (Object[] result : results) {
+                String drawingNo = (String) result[0];
+                String markNo = (String) result[1];
+                String sessionName = (String) result[2];
+                Long orderId = (Long) result[3];
+                
+                String key = drawingNo + "_" + markNo;
+                Map<String, Object> entryData = new HashMap<>();
+                entryData.put("drawingNo", drawingNo);
+                entryData.put("markNo", markNo);
+                entryData.put("sessionName", sessionName);
+                entryData.put("orderId", orderId);
+                
+                sessionData.put(key, entryData);
+            }
+            
+            return sessionData;
+        } catch (Exception e) {
+            logger.error("Error getting session names by work order and RA", e);
+            throw new RuntimeException("Failed to get session names: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getSessionNamesByOrderId(Long orderId) {
+        try {
+            logger.info("Getting session names from bits_drawing_entry by order ID: {}", orderId);
+            
+            List<Object[]> results = bitsDrawingEntryRepository.findSessionNamesByOrderId(orderId);
+            Map<String, Object> sessionData = new HashMap<>();
+            
+            for (Object[] result : results) {
+                String drawingNo = (String) result[0];
+                String markNo = (String) result[1];
+                String sessionName = (String) result[2];
+                Long orderIdResult = (Long) result[3];
+                
+                String key = drawingNo + "_" + markNo;
+                Map<String, Object> entryData = new HashMap<>();
+                entryData.put("drawingNo", drawingNo);
+                entryData.put("markNo", markNo);
+                entryData.put("sessionName", sessionName);
+                entryData.put("orderId", orderIdResult);
+                
+                sessionData.put(key, entryData);
+            }
+            
+            return sessionData;
+        } catch (Exception e) {
+            logger.error("Error getting session names by order ID", e);
+            throw new RuntimeException("Failed to get session names: " + e.getMessage(), e);
         }
     }
 }

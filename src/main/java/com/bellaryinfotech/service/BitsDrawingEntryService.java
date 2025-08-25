@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface BitsDrawingEntryService {
@@ -193,4 +194,17 @@ public interface BitsDrawingEntryService {
      * Get distinct mark numbers filtered by work order and building name
      */
     List<String> getDistinctMarkNumbersByAttributes(String workOrder, String buildingName);
+
+    // NEW: Session name comparison methods
+    /**
+     * Get session names from bits_drawing_entry by work order and RA number
+     * Returns a map with drawing_no + mark_no as key and session_name as value
+     */
+    Map<String, Object> getSessionNamesByWorkOrderAndRa(String workOrder, String raNo);
+
+    /**
+     * Get session names from bits_drawing_entry by order ID
+     * Returns a map with drawing_no + mark_no as key and session_name as value
+     */
+    Map<String, Object> getSessionNamesByOrderId(Long orderId);
 }

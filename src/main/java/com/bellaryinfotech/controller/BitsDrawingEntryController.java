@@ -72,6 +72,10 @@ public class BitsDrawingEntryController {
  */
 public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEntryRaNumbers/details";
 
+// NEW: Session name comparison endpoints
+public static final String GET_SESSION_NAMES_BY_WORK_ORDER_AND_RA = "/getBitsDrawingEntrySessionNamesByWorkOrderAndRa/details";
+public static final String GET_SESSION_NAMES_BY_ORDER_ID = "/getBitsDrawingEntrySessionNamesByOrderId/details";
+
     private static final Logger LOG = LoggerFactory.getLogger(BitsDrawingEntryController.class);
     
     private static final Logger logger = LoggerFactory.getLogger(BitsDrawingEntryController.class);
@@ -846,7 +850,8 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
                     .body("Failed to get distinct RA numbers: " + e.getMessage());
         }
     }
-//Newly added apis that fetch the work order from the  bits_drawing_entry
+
+    //Newly added apis that fetch the work order from the  bits_drawing_entry
 
     /**
      * Get distinct work orders from bits_drawing_entry
@@ -908,4 +913,51 @@ public static final String GET_DISTINCT_RA_NUMBERS = "/getDistinctBitsDrawingEnt
         }
     }
 
+    // NEW: Get session names from bits_drawing_entry by work order and RA number for comparison
+    @RequestMapping(value = GET_SESSION_NAMES_BY_WORK_ORDER_AND_RA, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getBitsDrawingEntrySessionNamesByWorkOrderAndRa(
+            @RequestParam String workOrder,
+            @RequestParam String raNo) {
+        try {
+            LOG.info("Getting session names from bits_drawing_entry by work order: {} and RA: {}", workOrder, raNo);
+            
+            Map<String, Object> sessionData = bitsDrawingEntryService.getSessionNamesByWorkOrderAndRa(workOrder, raNo);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Session names retrieved successfully from bits_drawing_entry");
+            response.put("data", sessionData);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            LOG.error("Error getting session names from bits_drawing_entry", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error retrieving session names: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // NEW: Get session names from bits_drawing_entry by order ID for comparison
+    @RequestMapping(value = GET_SESSION_NAMES_BY_ORDER_ID, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
+    public ResponseEntity<?> getBitsDrawingEntrySessionNamesByOrderId(@RequestParam Long orderId) {
+        try {
+            LOG.info("Getting session names from bits_drawing_entry by order ID: {}", orderId);
+            
+            Map<String, Object> sessionData = bitsDrawingEntryService.getSessionNamesByOrderId(orderId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Session names retrieved successfully from bits_drawing_entry");
+            response.put("data", sessionData);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            LOG.error("Error getting session names from bits_drawing_entry by order ID", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error retrieving session names: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

@@ -226,13 +226,22 @@ public interface BitsDrawingEntryRepository extends JpaRepository<BitsDrawingEnt
     @Query("SELECT DISTINCT bde.markNo FROM BitsDrawingEntry bde WHERE bde.attribute1V = :attribute1V AND bde.attribute2V = :attribute2V AND bde.markNo IS NOT NULL AND bde.markNo != '' ORDER BY bde.markNo")
     List<String> findDistinctMarkNoByAttributes(@Param("attribute1V") String attribute1V, @Param("attribute2V") String attribute2V);
     
-    
-    
-    
-    
-    
-    
-    
-    
+    // NEW: Session name comparison queries
+    /**
+     * Get session names from bits_drawing_entry by work order (attribute1V) and RA number
+     */
+    @Query("SELECT bde.drawingNo, bde.markNo, bde.sessionName, bde.orderId FROM BitsDrawingEntry bde WHERE bde.attribute1V = :workOrder AND bde.raNo = :raNo AND bde.sessionName IS NOT NULL ORDER BY bde.drawingNo, bde.markNo")
+    List<Object[]> findSessionNamesByWorkOrderAndRaNo(@Param("workOrder") String workOrder, @Param("raNo") String raNo);
 
+    /**
+     * Get session names from bits_drawing_entry by order ID
+     */
+    @Query("SELECT bde.drawingNo, bde.markNo, bde.sessionName, bde.orderId FROM BitsDrawingEntry bde WHERE bde.orderId = :orderId AND bde.sessionName IS NOT NULL ORDER BY bde.drawingNo, bde.markNo")
+    List<Object[]> findSessionNamesByOrderId(@Param("orderId") Long orderId);
+
+    /**
+     * Get entries by work order (attribute1V) and RA number for session comparison
+     */
+    @Query("SELECT bde FROM BitsDrawingEntry bde WHERE bde.attribute1V = :workOrder AND bde.raNo = :raNo ORDER BY bde.drawingNo, bde.markNo")
+    List<BitsDrawingEntry> findByWorkOrderAndRaNoForComparison(@Param("workOrder") String workOrder, @Param("raNo") String raNo);
 }
