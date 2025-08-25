@@ -1,11 +1,12 @@
 package com.bellaryinfotech.repo;
 
+import com.bellaryinfotech.model.FabricationDrawingEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import com.bellaryinfotech.model.FabricationDrawingEntry;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FabricationDrawingEntryRepository extends JpaRepository<FabricationDrawingEntry, Long> {
@@ -90,4 +91,7 @@ public interface FabricationDrawingEntryRepository extends JpaRepository<Fabrica
 
     @Query("SELECT DISTINCT f.sessionName FROM FabricationDrawingEntry f WHERE f.workOrder = :workOrder AND f.sessionName IS NOT NULL ORDER BY f.sessionName")
     List<String> findDistinctSessionNameByWorkOrder(@Param("workOrder") String workOrder);
+
+    // NEW: Method to find a FabricationDrawingEntry by lineId
+    Optional<FabricationDrawingEntry> findByLineId(Long lineId);
 }

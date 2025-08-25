@@ -1,6 +1,5 @@
 package com.bellaryinfotech.DTO;
  
- 
 
 import java.time.LocalDateTime;
 
@@ -33,6 +32,7 @@ public class FabricationDrawingEntryDto {
     private LocalDateTime creationDate;
     private LocalDateTime lastUpdateDate;
     private String itemNo;
+    private String remarks;
     
     // Constructors
     public FabricationDrawingEntryDto() {}
@@ -43,7 +43,7 @@ public class FabricationDrawingEntryDto {
                                     Double totalMarkedWgt, Double sessionWeight, Double width,
                                     Double length, Integer itemQty, Double itemWeight, 
                                     Double totalItemWeight, String cuttingStage, String fitUpStage,
-                                    String weldingStage, String finishingStage, String createdBy, String lastUpdatedBy,String itemNo) {
+                                    String weldingStage, String finishingStage, String createdBy, String lastUpdatedBy,String itemNo, String remarks) {
         this.workOrder = workOrder;
         this.buildingName = buildingName;
         this.drawingNo = drawingNo;
@@ -68,6 +68,7 @@ public class FabricationDrawingEntryDto {
         this.createdBy = createdBy;
         this.lastUpdatedBy = lastUpdatedBy;
         this.itemNo=itemNo;
+        this.remarks = remarks;
     }
     
     // Getters and Setters
@@ -286,5 +287,13 @@ public class FabricationDrawingEntryDto {
 	public void setItemNo(String itemNo) {
 		this.itemNo = itemNo;
 	}
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
     
 }

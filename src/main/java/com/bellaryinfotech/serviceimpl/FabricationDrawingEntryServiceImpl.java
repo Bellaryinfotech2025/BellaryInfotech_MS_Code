@@ -107,77 +107,6 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
         }
     }
 
-    // Helper methods for conversion
-    private FabricationDrawingEntry convertToEntity(FabricationDrawingEntryDto dto) {
-        FabricationDrawingEntry entity = new FabricationDrawingEntry();
-        entity.setId(dto.getId());
-        entity.setWorkOrder(dto.getWorkOrder());
-        entity.setBuildingName(dto.getBuildingName());
-        entity.setDrawingNo(dto.getDrawingNo());
-        entity.setMarkNo(dto.getMarkNo());
-        entity.setRaNo(dto.getRaNo());
-        entity.setOrderId(dto.getOrderId());
-        entity.setLineId(dto.getLineId());
-        entity.setSessionCode(dto.getSessionCode());
-        entity.setSessionName(dto.getSessionName());
-        entity.setMarkedQty(dto.getMarkedQty());
-        entity.setTotalMarkedWgt(dto.getTotalMarkedWgt());
-        entity.setSessionWeight(dto.getSessionWeight());
-        entity.setWidth(dto.getWidth());
-        entity.setLength(dto.getLength());
-        entity.setItemQty(dto.getItemQty());
-        entity.setItemWeight(dto.getItemWeight());
-        entity.setTotalItemWeight(dto.getTotalItemWeight());
-        entity.setCuttingStage(dto.getCuttingStage());
-        entity.setFitUpStage(dto.getFitUpStage());
-        entity.setWeldingStage(dto.getWeldingStage());
-        entity.setFinishingStage(dto.getFinishingStage());
-        entity.setCreatedBy(dto.getCreatedBy());
-        entity.setLastUpdatedBy(dto.getLastUpdatedBy());
-        entity.setItemNo(dto.getItemNo());
-
-        if (dto.getCreationDate() != null) {
-            entity.setCreationDate(dto.getCreationDate());
-        }
-        if (dto.getLastUpdateDate() != null) {
-            entity.setLastUpdateDate(dto.getLastUpdateDate());
-        }
-
-        return entity;
-    }
-
-    private FabricationDrawingEntryDto convertToDto(FabricationDrawingEntry entity) {
-        FabricationDrawingEntryDto dto = new FabricationDrawingEntryDto();
-        dto.setId(entity.getId());
-        dto.setWorkOrder(entity.getWorkOrder());
-        dto.setBuildingName(entity.getBuildingName());
-        dto.setDrawingNo(entity.getDrawingNo());
-        dto.setMarkNo(entity.getMarkNo());
-        dto.setRaNo(entity.getRaNo());
-        dto.setOrderId(entity.getOrderId());
-        dto.setLineId(entity.getLineId());
-        dto.setSessionCode(entity.getSessionCode());
-        dto.setSessionName(entity.getSessionName());
-        dto.setMarkedQty(entity.getMarkedQty());
-        dto.setTotalMarkedWgt(entity.getTotalMarkedWgt());
-        dto.setSessionWeight(entity.getSessionWeight());
-        dto.setWidth(entity.getWidth());
-        dto.setLength(entity.getLength());
-        dto.setItemQty(entity.getItemQty());
-        dto.setItemWeight(entity.getItemWeight());
-        dto.setTotalItemWeight(entity.getTotalItemWeight());
-        dto.setCuttingStage(entity.getCuttingStage());
-        dto.setFitUpStage(entity.getFitUpStage());
-        dto.setWeldingStage(entity.getWeldingStage());
-        dto.setFinishingStage(entity.getFinishingStage());
-        dto.setCreatedBy(entity.getCreatedBy());
-        dto.setLastUpdatedBy(entity.getLastUpdatedBy());
-        dto.setCreationDate(entity.getCreationDate());
-        dto.setLastUpdateDate(entity.getLastUpdateDate());
-        dto.setItemNo(entity.getItemNo());
-        return dto;
-    }
-
     @Override
     public List<FabricationDrawingEntryDto> getFabricationEntriesByMultipleFilters(String workOrder, String buildingName, String drawingNo, String markNo) {
         try {
@@ -289,19 +218,6 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public List<FabricationDrawingEntryDto> getFabricationEntriesByWorkOrderAndRaNo(String workOrder, String raNo) {
         List<FabricationDrawingEntry> entities = fabricationDrawingEntryRepository.findByWorkOrderAndRaNo(workOrder, raNo);
         return entities.stream()
@@ -310,7 +226,7 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
     }
 
     public List<FabricationDrawingEntryDto> getFabricationEntriesByRaNo(String raNo) {
-        List<FabricationDrawingEntry> entities = fabricationDrawingEntryRepository.findByRaNo(raNo);
+        List<FabricationDrawingEntry> entities = fabricationDrawingEntryRepository.findByRaNoreport(raNo);
         return entities.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -326,5 +242,91 @@ public class FabricationDrawingEntryServiceImpl implements FabricationDrawingEnt
         return fabricationDrawingEntryRepository.findDistinctSessionNameByWorkOrder(workOrder);
     }
 
-    
+    @Override
+    public FabricationDrawingEntryDto getFabricationEntryByLineId(Long lineId) {
+        try {
+            FabricationDrawingEntry entity = fabricationDrawingEntryRepository.findByLineId(lineId)
+                    .orElseThrow(() -> new RuntimeException("Fabrication entry not found with line ID: " + lineId));
+            return convertToDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching fabrication entry by line ID: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public FabricationDrawingEntryDto updateFabricationDrawingEntry(FabricationDrawingEntryDto fabricationDrawingEntryDto) {
+        try {
+            FabricationDrawingEntry entity = convertToEntity(fabricationDrawingEntryDto);
+            FabricationDrawingEntry updatedEntity = fabricationDrawingEntryRepository.save(entity);
+            return convertToDto(updatedEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating fabrication drawing entry: " + e.getMessage(), e);
+        }
+    }
+
+    private FabricationDrawingEntry convertToEntity(FabricationDrawingEntryDto dto) {
+        FabricationDrawingEntry entity = new FabricationDrawingEntry();
+        entity.setId(dto.getId());
+        entity.setWorkOrder(dto.getWorkOrder());
+        entity.setBuildingName(dto.getBuildingName());
+        entity.setDrawingNo(dto.getDrawingNo());
+        entity.setMarkNo(dto.getMarkNo());
+        entity.setRaNo(dto.getRaNo());
+        entity.setOrderId(dto.getOrderId());
+        entity.setLineId(dto.getLineId());
+        entity.setSessionCode(dto.getSessionCode());
+        entity.setSessionName(dto.getSessionName());
+        entity.setMarkedQty(dto.getMarkedQty());
+        entity.setTotalMarkedWgt(dto.getTotalMarkedWgt());
+        entity.setSessionWeight(dto.getSessionWeight());
+        entity.setWidth(dto.getWidth());
+        entity.setLength(dto.getLength());
+        entity.setItemQty(dto.getItemQty());
+        entity.setItemWeight(dto.getItemWeight());
+        entity.setTotalItemWeight(dto.getTotalItemWeight());
+        entity.setCuttingStage(dto.getCuttingStage());
+        entity.setFitUpStage(dto.getFitUpStage());
+        entity.setWeldingStage(dto.getWeldingStage());
+        entity.setFinishingStage(dto.getFinishingStage());
+        entity.setCreatedBy(dto.getCreatedBy());
+        entity.setLastUpdatedBy(dto.getLastUpdatedBy());
+        entity.setCreationDate(dto.getCreationDate());
+        entity.setLastUpdateDate(dto.getLastUpdateDate());
+        entity.setItemNo(dto.getItemNo());
+        entity.setRemarks(dto.getRemarks());
+        return entity;
+    }
+
+    private FabricationDrawingEntryDto convertToDto(FabricationDrawingEntry entity) {
+        FabricationDrawingEntryDto dto = new FabricationDrawingEntryDto();
+        dto.setId(entity.getId());
+        dto.setWorkOrder(entity.getWorkOrder());
+        dto.setBuildingName(entity.getBuildingName());
+        dto.setDrawingNo(entity.getDrawingNo());
+        dto.setMarkNo(entity.getMarkNo());
+        dto.setRaNo(entity.getRaNo());
+        dto.setOrderId(entity.getOrderId());
+        dto.setLineId(entity.getLineId());
+        dto.setSessionCode(entity.getSessionCode());
+        dto.setSessionName(entity.getSessionName());
+        dto.setMarkedQty(entity.getMarkedQty());
+        dto.setTotalMarkedWgt(entity.getTotalMarkedWgt());
+        dto.setSessionWeight(entity.getSessionWeight());
+        dto.setWidth(entity.getWidth());
+        dto.setLength(entity.getLength());
+        dto.setItemQty(entity.getItemQty());
+        dto.setItemWeight(entity.getItemWeight());
+        dto.setTotalItemWeight(entity.getTotalItemWeight());
+        dto.setCuttingStage(entity.getCuttingStage());
+        dto.setFitUpStage(entity.getFitUpStage());
+        dto.setWeldingStage(entity.getWeldingStage());
+        dto.setFinishingStage(entity.getFinishingStage());
+        dto.setCreatedBy(entity.getCreatedBy());
+        dto.setLastUpdatedBy(entity.getLastUpdatedBy());
+        dto.setCreationDate(entity.getCreationDate());
+        dto.setLastUpdateDate(entity.getLastUpdateDate());
+        dto.setItemNo(entity.getItemNo());
+        dto.setRemarks(entity.getRemarks());
+        return dto;
+    }
 }

@@ -47,4 +47,10 @@ public interface FabricationDrawingEntryService {
 	List<String> getDistinctItemNumbers();
 
 	List<FabricationDrawingEntryDto> getFabricationEntriesByWorkOrderAndRaNo(String workOrder, String raNo);
+
+    // NEW: Method to find a FabricationDrawingEntry by lineId
+    FabricationDrawingEntryDto getFabricationEntryByLineId(Long lineId);
+
+    // NEW: Method to update FabricationDrawingEntry
+    FabricationDrawingEntryDto updateFabricationDrawingEntry(FabricationDrawingEntryDto fabricationDrawingEntryDto);
 }

@@ -8,6 +8,7 @@ import com.bellaryinfotech.DTO.FabricationDrawingEntryDto;
 import com.bellaryinfotech.service.FabricationDrawingEntryService;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,60 @@ public class FabricationDrawingEntryController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "Error creating fabrication drawing entries: " + e.getMessage());
+            errorResponse.put("error", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // NEW: Endpoint to create or update fabrication drawing entries
+    @PostMapping("/createOrUpdateFabricationDrawingEntries/details")
+    public ResponseEntity<?> createOrUpdateFabricationDrawingEntries(@RequestBody List<FabricationDrawingEntryDto> fabricationEntries) {
+        try {
+            List<FabricationDrawingEntryDto> processedEntries = new ArrayList<>();
+            
+            for (FabricationDrawingEntryDto entry : fabricationEntries) {
+                // Check if entry exists by lineId
+                if (entry.getLineId() != null && fabricationDrawingEntryService.existsByLineId(entry.getLineId())) {
+                    // Update existing entry
+                    FabricationDrawingEntryDto existingEntry = fabricationDrawingEntryService.getFabricationEntryByLineId(entry.getLineId());
+                    
+                    // Update only the modified fields
+                    existingEntry.setSessionCode(entry.getSessionCode());
+                    existingEntry.setSessionName(entry.getSessionName());
+                    existingEntry.setSessionWeight(entry.getSessionWeight());
+                    existingEntry.setWidth(entry.getWidth());
+                    existingEntry.setLength(entry.getLength());
+                    existingEntry.setItemQty(entry.getItemQty());
+                    existingEntry.setItemWeight(entry.getItemWeight());
+                    existingEntry.setTotalItemWeight(entry.getTotalItemWeight());
+                    existingEntry.setCuttingStage(entry.getCuttingStage());
+                    existingEntry.setFitUpStage(entry.getFitUpStage());
+                    existingEntry.setWeldingStage(entry.getWeldingStage());
+                    existingEntry.setFinishingStage(entry.getFinishingStage());
+                    existingEntry.setRemarks(entry.getRemarks());
+                    existingEntry.setLastUpdatedBy("system");
+                    
+                    FabricationDrawingEntryDto updatedEntry = fabricationDrawingEntryService.updateFabricationDrawingEntry(existingEntry);
+                    processedEntries.add(updatedEntry);
+                } else {
+                    // Create new entry
+                    List<FabricationDrawingEntryDto> newEntries = fabricationDrawingEntryService.createFabricationDrawingEntries(List.of(entry));
+                    processedEntries.addAll(newEntries);
+                }
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Fabrication drawing entries processed successfully");
+            response.put("processedCount", processedEntries.size());
+            response.put("data", processedEntries);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error processing fabrication drawing entries: " + e.getMessage());
             errorResponse.put("error", e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -388,12 +443,7 @@ public class FabricationDrawingEntryController {
         }
     }
     
-    
-    
-    
-    
-    
- // NEW: Get distinct item numbers
+    // NEW: Get distinct item numbers
     @GetMapping("/getDistinctItemNumbers/details")
     public ResponseEntity<?> getDistinctItemNumbers() {
         try {
@@ -412,10 +462,7 @@ public class FabricationDrawingEntryController {
         }
     }
     
-    
- 
-    
- // NEW: Get fabrication data by work order and RA number
+    // NEW: Get fabrication data by work order and RA number
     @GetMapping("/getFabricationDataByWorkOrderAndRaNo/details")
     public ResponseEntity<?> getFabricationDataByWorkOrderAndRaNo(
             @RequestParam String workOrder,
@@ -439,5 +486,4 @@ public class FabricationDrawingEntryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-    
 }

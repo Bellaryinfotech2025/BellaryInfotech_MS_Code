@@ -90,6 +90,9 @@ public class FabricationDrawingEntry {
     
     @Column(name = "item_no")
     private String itemNo;
+
+    @Column(name = "remarks", columnDefinition = "TEXT")
+    private String remarks;
     
     // Constructors
     public FabricationDrawingEntry() {
@@ -348,6 +351,14 @@ public class FabricationDrawingEntry {
 	public void setItemNo(String itemNo) {
 		this.itemNo = itemNo;
 	}
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
 
 	@PreUpdate
     public void preUpdate() {
